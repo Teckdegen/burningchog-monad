@@ -553,11 +553,14 @@ function SiteHeader({
 
 function LandingHero() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [progress, setProgress] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  // Auto-show images 0→1→2 without scroll; only after 3rd image is shown does scroll activate
-  const [autoIndex, setAutoIndex] = useState(0);
-  const [scrollUnlocked, setScrollUnlocked] = useState(false);
+  // imageIndex: which image is currently centered (0, 1, 2)
+  const [imageIndex, setImageIndex] = useState(0);
+  // locked: true means scroll is hijacked for image cycling
+  const [locked, setLocked] = useState(true);
+  const lockedRef = useRef(true);
+  const imageIndexRef = useRef(0);
+  const advancingRef = useRef(false);
 
   useEffect(() => {
     HERO_IMAGES.forEach(({ src }) => {
@@ -573,54 +576,75 @@ function LandingHero() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Auto-advance to next image every 1.4s; once last image shown, unlock scroll after pause
+  // Keep refs in sync with state
   useEffect(() => {
-    if (autoIndex >= HERO_IMAGES.length - 1) {
-      const t = setTimeout(() => setScrollUnlocked(true), 800);
-      return () => clearTimeout(t);
-    }
-    const t = setTimeout(() => setAutoIndex((i) => i + 1), 1400);
-    return () => clearTimeout(t);
-  }, [autoIndex]);
+    lockedRef.current = locked;
+  }, [locked]);
+  useEffect(() => {
+    imageIndexRef.current = imageIndex;
+  }, [imageIndex]);
 
-  // Block page scroll until all images have been shown
-  useEffect(() => {
-    if (!scrollUnlocked) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+  // Advance image index, unlock scroll after last image is shown
+  const advanceImage = () => {
+    if (advancingRef.current) return;
+    const cur = imageIndexRef.current;
+    const next = cur + 1;
+    if (next >= HERO_IMAGES.length) {
+      // last image already shown — unlock page scroll
+      lockedRef.current = false;
+      setLocked(false);
+      return;
     }
-    return () => { document.body.style.overflow = ""; };
-  }, [scrollUnlocked]);
+    advancingRef.current = true;
+    imageIndexRef.current = next;
+    setImageIndex(next);
+    // debounce: don't allow another advance for 800ms
+    setTimeout(() => { advancingRef.current = false; }, 800);
+    // if this was the last image, also schedule unlock
+    if (next === HERO_IMAGES.length - 1) {
+      setTimeout(() => {
+        lockedRef.current = false;
+        setLocked(false);
+      }, 900);
+    }
+  };
 
+  // Intercept wheel and touch events while locked
   useEffect(() => {
-    if (!scrollUnlocked) return;
-    let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const el = sectionRef.current;
-        if (!el) return;
-        const scrollable = Math.max(el.offsetHeight - window.innerHeight, 1);
-        const scrolled = Math.min(Math.max(-el.getBoundingClientRect().top, 0), scrollable);
-        setProgress(scrolled / scrollable);
-      });
+    let touchStartY = 0;
+
+    const onWheel = (e: WheelEvent) => {
+      if (!lockedRef.current) return;
+      if (e.deltaY > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        advanceImage();
+      }
     };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!lockedRef.current) return;
+      const dy = touchStartY - e.touches[0].clientY;
+      if (dy > 30) {
+        e.preventDefault();
+        advanceImage();
+      }
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
     };
-  }, [scrollUnlocked]);
+  }, []);
 
-  const maxIndex = HERO_IMAGES.length - 1;
-  // Before scroll unlocked, use auto-advancing index; after unlock, use scroll progress
-  const activeIndex = scrollUnlocked
-    ? Math.min(Math.floor(progress * HERO_IMAGES.length), maxIndex)
-    : autoIndex;
+  const activeIndex = imageIndex;
 
   const carouselTransition = `transform ${CAROUSEL_MS} ${CAROUSEL_EASE}, filter ${CAROUSEL_MS} ${CAROUSEL_EASE}, opacity ${CAROUSEL_MS} ${CAROUSEL_EASE}, left ${CAROUSEL_MS} ${CAROUSEL_EASE}, height ${CAROUSEL_MS} ${CAROUSEL_EASE}, bottom ${CAROUSEL_MS} ${CAROUSEL_EASE}`;
 
@@ -692,20 +716,19 @@ function LandingHero() {
     };
   }
 
-  const scrollTrackVh = 0; // images auto-play via timer, no scroll track needed
+  const scrollTrackVh = 0; // images advance via scroll hijack, no scroll track needed
 
   return (
     <section
-      ref={sectionRef}
       id="top"
       className="relative w-full overflow-hidden"
       style={{
-        height: `calc(100dvh + ${scrollTrackVh}dvh)`,
+        height: `100dvh`,
         backgroundColor: BG,
         fontFamily: "'Inter', sans-serif",
       }}
     >
-      <div className="sticky top-0 w-full overflow-hidden" style={{ height: "100dvh" }}>
+      <div className="w-full overflow-hidden" style={{ height: "100dvh", position: "relative" }}>
         <div className="absolute inset-0 bchog-grid-bg opacity-40 pointer-events-none" />
         <div
           className="absolute inset-0 pointer-events-none"
@@ -763,6 +786,35 @@ function LandingHero() {
               </div>
             );
           })}
+        </div>
+
+        {/* Scroll hint — visible while locked, fades out when unlocked */}
+        <div
+          className="absolute bottom-8 inset-x-0 flex flex-col items-center gap-2 pointer-events-none"
+          style={{ zIndex: 10, opacity: locked ? 1 : 0, transition: "opacity 600ms ease" }}
+        >
+          <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: MUTED }}>
+            {imageIndex < HERO_IMAGES.length - 1 ? "Scroll to reveal" : "Scroll to continue"}
+          </span>
+          <div className="flex flex-col gap-0.5 items-center" aria-hidden>
+            <div className="w-px h-6 rounded-full" style={{ background: `linear-gradient(to bottom, transparent, ${PURPLE_BRIGHT})` }} />
+            <div style={{ width: 0, height: 0, borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: `6px solid ${PURPLE_BRIGHT}` }} />
+          </div>
+          {/* Dot progress for images */}
+          <div className="flex items-center gap-1.5 mt-1">
+            {HERO_IMAGES.map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  width: imageIndex === i ? 18 : 5,
+                  height: 5,
+                  borderRadius: 99,
+                  background: imageIndex === i ? PURPLE_BRIGHT : "rgba(181,76,255,0.3)",
+                  transition: "width 300ms ease, background 300ms ease",
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -861,7 +913,7 @@ function SectionBlock({
     >
       <div className="absolute inset-0 bchog-grid-bg opacity-20 pointer-events-none" />
       <div
-        className="relative px-4 sm:px-8 lg:px-14 pt-24 sm:pt-28 pb-20 w-full max-w-7xl mx-auto"
+        className="relative px-4 sm:px-8 lg:px-16 pt-24 sm:pt-28 pb-20 w-full max-w-6xl mx-auto"
         style={{ zIndex: 2 }}
       >
         <div className="mb-10 sm:mb-12">
@@ -1289,75 +1341,181 @@ function DeflationaryFlywheelDiagram({ lockProgress }: { lockProgress: number })
   );
 }
 
-function ArchBox({
-  label,
-  sub,
-  href,
-  highlight = false,
-}: {
-  label: string;
-  sub?: string;
-  href?: string;
-  highlight?: boolean;
-}) {
-  const box = (
-    <div
-      className="rounded-xl px-4 py-3.5 text-center transition-opacity hover:opacity-90"
-      style={{
-        background: highlight ? PANEL : SURFACE,
-        border: `1px solid ${highlight ? PURPLE_BRIGHT : BORDER_STRONG}`,
-      }}
-    >
-      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white">{label}</p>
-      {sub && (
-        <p className="text-[10px] mt-1 uppercase tracking-[0.06em]" style={{ color: MUTED }}>
-          {sub}
-        </p>
-      )}
-    </div>
-  );
-  if (href) {
-    return (
-      <a href={href} target="_blank" rel="noreferrer" className="block no-underline">
-        {box}
-      </a>
-    );
-  }
-  return box;
-}
+// ArchBox removed — replaced by EcosystemArchitecture NodeCard
 
 function EcosystemArchitecture() {
+  const nodes = [
+    {
+      id: "treasury",
+      label: "TREASURY WALLET",
+      sub: "Ecosystem Engine",
+      desc: "The engine that powers the BCHOG ecosystem.",
+      href: explorerAddr(WALLETS.treasury),
+      color: PURPLE_BRIGHT,
+      glow: "rgba(181,76,255,0.35)",
+      icon: "⚙️",
+      highlight: true,
+    },
+    {
+      id: "lock",
+      label: "LOCK HOLDING WALLET",
+      sub: "The Vault",
+      desc: "Accumulating lock tokens, locked with Atlantis at 1M.",
+      href: explorerAddr(WALLETS.lockHolding),
+      color: PURPLE,
+      glow: "rgba(122,45,255,0.25)",
+      icon: "🔒",
+    },
+    {
+      id: "rewards",
+      label: "REWARDS WALLET",
+      sub: "Community Rewards",
+      desc: "Funds community engagement, contests, and rewards.",
+      color: PURPLE_BRIGHT,
+      glow: "rgba(181,76,255,0.2)",
+      icon: "🎁",
+    },
+    {
+      id: "trading",
+      label: "TRADING WALLET",
+      sub: "Market Support",
+      desc: "Investing in the community, profits feed the BCHOG flywheel.",
+      href: explorerAddr(WALLETS.trading),
+      color: CORAL,
+      glow: "rgba(255,92,138,0.2)",
+      icon: "💼",
+    },
+    {
+      id: "burn",
+      label: "BUYBACK & BURN",
+      sub: "Deflation",
+      desc: "Tokens are permanently removed from circulation to drive deflation.",
+      color: CORAL,
+      glow: "rgba(255,92,138,0.2)",
+      icon: "🔥",
+    },
+  ];
+
+  const NodeCard = ({ node }: { node: (typeof nodes)[number] }) => {
+    const inner = (
+      <div
+        className="rounded-2xl p-4 flex flex-col gap-2 text-center transition-all hover:scale-[1.02]"
+        style={{
+          background: node.highlight
+            ? `linear-gradient(135deg, ${PANEL} 0%, ${INDIGO} 100%)`
+            : `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+          border: `1px solid ${node.color}`,
+          boxShadow: `0 0 24px 4px ${node.glow}, inset 0 1px 0 rgba(255,255,255,0.08)`,
+          minWidth: 140,
+        }}
+      >
+        <div className="text-2xl">{node.icon}</div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white leading-tight">
+          {node.label}
+        </p>
+        <p className="text-[9px] uppercase tracking-[0.1em]" style={{ color: node.color }}>
+          ({node.sub})
+        </p>
+        <p className="text-[10px] leading-snug mt-1" style={{ color: MUTED }}>
+          {node.desc}
+        </p>
+      </div>
+    );
+    return node.href ? (
+      <a href={node.href} target="_blank" rel="noreferrer" className="no-underline block">
+        {inner}
+      </a>
+    ) : (
+      inner
+    );
+  };
+
+  const Arrow = ({ dashed = false, dir = "down" }: { dashed?: boolean; dir?: "down" | "left" | "right" | "diag-left" | "diag-right" }) => {
+    const color = dashed ? CORAL : PURPLE_BRIGHT;
+    const base = `2px ${dashed ? "dashed" : "solid"} ${color}`;
+    if (dir === "down") return (
+      <div className="flex justify-center items-center py-1" aria-hidden>
+        <div className="flex flex-col items-center gap-0.5">
+          <div style={{ width: 2, height: 20, background: color, opacity: dashed ? 0.7 : 1 }} />
+          <div style={{ width: 0, height: 0, borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderTop: `8px solid ${color}` }} />
+        </div>
+      </div>
+    );
+    if (dir === "diag-left") return (
+      <div className="flex justify-start items-center py-2 pl-4" aria-hidden>
+        <svg width="60" height="36" viewBox="0 0 60 36">
+          <path d="M55 4 Q10 4 10 32" fill="none" stroke={color} strokeWidth="2" strokeDasharray={dashed ? "4 3" : "none"} />
+          <polygon points="6,32 14,32 10,40" fill={color} />
+        </svg>
+      </div>
+    );
+    if (dir === "diag-right") return (
+      <div className="flex justify-end items-center py-2 pr-4" aria-hidden>
+        <svg width="60" height="36" viewBox="0 0 60 36">
+          <path d="M5 4 Q50 4 50 32" fill="none" stroke={color} strokeWidth="2" strokeDasharray={dashed ? "4 3" : "none"} />
+          <polygon points="46,32 54,32 50,40" fill={color} />
+        </svg>
+      </div>
+    );
+    return null;
+  };
+
   return (
-    <div className="mt-6 max-w-md mx-auto flex flex-col items-stretch gap-0">
-      <ArchBox
-        label="Treasury"
-        sub="Ecosystem engine"
-        href={explorerAddr(WALLETS.treasury)}
-        highlight
-      />
-      <div className="flex justify-center py-1" aria-hidden>
-        <div className="w-px h-5" style={{ background: PURPLE }} />
+    <div className="mt-6">
+      {/* Title */}
+      <div className="text-center mb-6">
+        <p
+          className="text-[clamp(1rem,3vw,1.4rem)] font-bold uppercase tracking-[0.18em] text-white"
+          style={{ fontFamily: "'Anton', sans-serif", textShadow: `0 0 20px ${PURPLE_BRIGHT}` }}
+        >
+          BCHOG ECOSYSTEM WALLET FLOW
+        </p>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <ArchBox label="Lock Holding" sub="Vault" href={explorerAddr(WALLETS.lockHolding)} />
-        <ArchBox label="Rewards" sub="Community" />
+
+      {/* Treasury at top center */}
+      <div className="flex justify-center">
+        <div className="max-w-[200px] w-full">
+          <NodeCard node={nodes[0]} />
+        </div>
       </div>
-      <div className="relative h-5 mx-[25%]" aria-hidden>
-        <div className="absolute inset-x-0 top-0 h-px" style={{ background: PURPLE }} />
-        <div className="absolute left-0 top-0 w-px h-full" style={{ background: PURPLE }} />
-        <div className="absolute right-0 top-0 w-px h-full" style={{ background: PURPLE }} />
+
+      {/* Arrows down to Lock + Rewards */}
+      <div className="grid grid-cols-3 items-end" style={{ maxWidth: 520, margin: "0 auto" }}>
+        <Arrow dir="diag-left" />
+        <Arrow dir="down" />
+        <Arrow dir="diag-right" />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <ArchBox label="Trading Desk" sub="Market support" href={explorerAddr(WALLETS.trading)} />
-        <ArchBox label="Buyback & Burn" sub="Deflation" />
+
+      {/* Lock | Trading | Rewards row */}
+      <div
+        className="grid grid-cols-3 gap-3"
+        style={{ maxWidth: 520, margin: "0 auto" }}
+      >
+        <NodeCard node={nodes[1]} />
+        <NodeCard node={nodes[3]} />
+        <NodeCard node={nodes[2]} />
       </div>
-      <div className="flex items-center justify-center gap-6 mt-5 pt-4" style={{ borderTop: `1px solid ${BORDER}` }}>
-        <span className="flex items-center gap-2 text-[9px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-          <span className="w-4 h-px" style={{ background: PURPLE_BRIGHT }} />
+
+      {/* Arrow from Trading to Burn */}
+      <div className="flex justify-center mt-1">
+        <Arrow dir="down" dashed />
+      </div>
+
+      {/* Burn at bottom center */}
+      <div className="flex justify-center">
+        <div className="max-w-[200px] w-full">
+          <NodeCard node={nodes[4]} />
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-8 mt-5 pt-4" style={{ borderTop: `1px solid ${BORDER}` }}>
+        <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+          <span className="inline-block w-6 h-0.5" style={{ background: PURPLE_BRIGHT }} />
           Flow
         </span>
-        <span className="flex items-center gap-2 text-[9px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-          <span className="w-4 h-px border-t border-dashed" style={{ borderColor: CORAL }} />
+        <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+          <span className="inline-block w-6 h-0 border-t-2 border-dashed" style={{ borderColor: CORAL }} />
           Buyback
         </span>
       </div>
@@ -1590,125 +1748,150 @@ function SectionMock({
       { k: "Lifetime USDC Yield", v: veDust ? formatUsd(veDust.lifetimeUsd) : "$---" },
     ];
     return (
-      <div className="flex flex-col gap-8">
-        <Stagger>
-          <StatGrid>
-            <StatTile
-              dot={STAT_DOTS.green}
-              label="Trading Wallet"
-              value={formatToken(stats.balances.trading, stats.decimals)}
-              sub="BCHOG balance"
-            />
-            <StatTile
-              dot={STAT_DOTS.purple}
-              label="Meme Portfolio"
-              value={memeTotal > 0 ? formatUsd(memeTotal) : "$---"}
-            />
-            <StatTile
-              dot={STAT_DOTS.cream}
-              label="veDUST Portfolio"
-              value={veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---"}
-            />
-            <StatTile
-              dot={STAT_DOTS.blue}
-              label="Recent Trades"
-              value={market.trades.length ? String(market.trades.length) : "---"}
-              sub="Last 5 swaps"
-            />
-          </StatGrid>
-
-          <Panel>
-            <SectionLabel>Meme Portfolio</SectionLabel>
-            {roster.length === 0 ? (
-              <div className="text-sm py-6" style={{ color: MUTED }}>
-                Loading holdings…
-              </div>
-            ) : (
+      <div className="flex flex-col gap-6">
+        {/* Top stats row */}
+        <Reveal>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { dot: STAT_DOTS.green, label: "Trading Wallet", value: formatToken(stats.balances.trading, stats.decimals), sub: "BCHOG balance" },
+              { dot: STAT_DOTS.purple, label: "Meme Portfolio", value: memeTotal > 0 ? formatUsd(memeTotal) : "$---", sub: undefined },
+              { dot: STAT_DOTS.cream, label: "veDUST Portfolio", value: veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---", sub: undefined },
+              { dot: STAT_DOTS.pink, label: "Weekly Yield", value: veDust?.weeklyUsd ? formatUsd(veDust.weeklyUsd) : "$---", sub: "USDC" },
+            ].map((s) => (
               <div
-                className="no-scrollbar mt-4 flex gap-2 overflow-x-auto pb-1 snap-x"
-                style={{ scrollbarWidth: "none" }}
+                key={s.label}
+                className="rounded-xl p-4 sm:p-5 flex flex-col"
+                style={{
+                  background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+                  border: `1px solid ${BORDER_STRONG}`,
+                  boxShadow: `0 0 16px 2px rgba(122,45,255,0.12)`,
+                }}
               >
-                {roster.map((t) => (
-                  <a
-                    key={t.address}
-                    href={explorerToken(t.address)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="snap-start shrink-0 w-24 sm:w-28 rounded-lg p-3 text-center no-underline text-white transition-opacity hover:opacity-80"
-                    style={{ background: SURFACE, border: `1px solid ${BORDER}` }}
-                  >
-                    <div
-                      className="w-9 h-9 rounded-full mx-auto mb-2 overflow-hidden"
-                      style={{ background: PANEL, border: `1px solid ${BORDER}` }}
-                    >
-                      {t.iconUrl ? (
-                        <img src={t.iconUrl} alt="" className="w-full h-full object-cover" draggable={false} />
-                      ) : null}
-                    </div>
-                    <div className="text-xs font-medium uppercase truncate">{t.symbol}</div>
-                    <div className="bchog-stat-value text-base font-semibold mt-1">{formatUsd(t.valueUsd)}</div>
-                    <div className="text-[10px] mt-1" style={{ color: MUTED }}>
-                      {memeTotal > 0 ? Math.round((t.valueUsd / memeTotal) * 100) : "--"}%
-                    </div>
-                  </a>
-                ))}
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: s.dot }} />
+                  <span className="text-[10px] font-medium uppercase tracking-[0.12em]" style={{ color: MUTED }}>
+                    {s.label}
+                  </span>
+                </div>
+                <div className="bchog-stat-value text-[clamp(1.2rem,3.5vw,1.8rem)] font-bold text-white">{s.value}</div>
+                {s.sub && <div className="text-[10px] mt-1 uppercase tracking-[0.1em]" style={{ color: MUTED }}>{s.sub}</div>}
               </div>
-            )}
-          </Panel>
+            ))}
+          </div>
+        </Reveal>
 
-          <Panel>
-            <SectionLabel>Neverland veDUST Vault</SectionLabel>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-px mt-5" style={{ background: BORDER }}>
-              {vault.map((r) => (
-                <div key={r.k} className="p-4" style={{ background: SURFACE }}>
-                  <SectionLabel>{r.k}</SectionLabel>
-                  <div className="bchog-stat-value text-lg font-semibold mt-2">{r.v}</div>
-                </div>
-              ))}
-            </div>
-          </Panel>
-
-          <Panel>
-            <SectionLabel>Recent Trades</SectionLabel>
-            <div className="mt-4 flex flex-col gap-1">
-              {market.trades.length === 0 ? (
-                <div className="text-sm py-4" style={{ color: MUTED }}>
-                  Loading recent trades…
-                </div>
+        {/* Two-column on desktop: portfolio + vault/trades */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* Left: Meme Portfolio */}
+          <Reveal>
+            <div
+              className="rounded-xl p-5 sm:p-6 h-full"
+              style={{ background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`, border: `1px solid ${BORDER_STRONG}` }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: PURPLE_BRIGHT }}>
+                  Meme Portfolio
+                </span>
+                {memeTotal > 0 && (
+                  <span className="text-xs font-semibold text-white">{formatUsd(memeTotal)}</span>
+                )}
+              </div>
+              {roster.length === 0 ? (
+                <div className="text-sm py-6" style={{ color: MUTED }}>Loading holdings…</div>
               ) : (
-                market.trades.map((t) => (
-                  <a
-                    key={t.hash}
-                    href={explorerTx(t.hash)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-3 no-underline rounded-lg px-3 py-2.5 transition-colors hover:bg-white/[0.03]"
-                    style={{ color: "white", borderBottom: `1px solid ${BORDER}` }}
-                  >
-                    <span
-                      className="px-2 py-0.5 rounded text-[10px] font-medium uppercase shrink-0"
-                      style={{
-                        background: t.type === "BUY" ? "rgba(94,230,168,0.15)" : "rgba(255,92,138,0.15)",
-                        color: t.type === "BUY" ? STAT_DOTS.green : STAT_DOTS.pink,
-                      }}
+                <div
+                  className="no-scrollbar flex flex-wrap gap-2"
+                  style={{ maxHeight: 280, overflowY: "auto" }}
+                >
+                  {roster.map((t) => (
+                    <a
+                      key={t.address}
+                      href={explorerToken(t.address)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 no-underline text-white transition-all hover:scale-[1.02]"
+                      style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}`, minWidth: 130 }}
                     >
-                      {t.type}
-                    </span>
-                    <span className="flex-1 text-sm font-medium truncate">
-                      {compactAmount(t.tokenAmount)} BCHOG
-                    </span>
-                    <span className="text-sm font-mono shrink-0" style={{ color: MUTED }}>
-                      {formatUsd(t.valueUsd)}
-                    </span>
-                    <span className="text-[10px] w-7 text-right shrink-0" style={{ color: MUTED }}>
-                      {timeAgo(t.ts)}
-                    </span>
-                  </a>
-                ))
+                      <div
+                        className="w-8 h-8 rounded-full overflow-hidden shrink-0"
+                        style={{ background: PANEL, border: `1px solid ${BORDER}` }}
+                      >
+                        {t.iconUrl && <img src={t.iconUrl} alt="" className="w-full h-full object-cover" draggable={false} />}
+                      </div>
+                      <div>
+                        <div className="text-[11px] font-semibold uppercase truncate" style={{ maxWidth: 80 }}>{t.symbol}</div>
+                        <div className="text-xs font-bold" style={{ color: PURPLE_BRIGHT }}>{formatUsd(t.valueUsd)}</div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
               )}
             </div>
-          </Panel>
-        </Stagger>
+          </Reveal>
+
+          {/* Right: veDUST Vault + Recent Trades */}
+          <div className="flex flex-col gap-5">
+            <Reveal delay={80}>
+              <div
+                className="rounded-xl p-5 sm:p-6"
+                style={{ background: `linear-gradient(160deg, ${PANEL} 0%, ${INDIGO} 100%)`, border: `1px solid ${BORDER_STRONG}`, boxShadow: `0 0 20px 4px rgba(61,20,136,0.3)` }}
+              >
+                <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: PURPLE_BRIGHT }}>
+                  Neverland veDUST Vault
+                </span>
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  {vault.map((r) => (
+                    <div key={r.k} className="rounded-lg p-3" style={{ background: "rgba(0,0,0,0.2)" }}>
+                      <div className="text-[9px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>{r.k}</div>
+                      <div className="bchog-stat-value text-base font-bold text-white mt-1">{r.v}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal delay={120}>
+              <div
+                className="rounded-xl p-5 sm:p-6"
+                style={{ background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`, border: `1px solid ${BORDER_STRONG}` }}
+              >
+                <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: PURPLE_BRIGHT }}>
+                  Recent Trades
+                </span>
+                <div className="mt-4 flex flex-col gap-1">
+                  {market.trades.length === 0 ? (
+                    <div className="text-sm py-4" style={{ color: MUTED }}>Loading recent trades…</div>
+                  ) : (
+                    market.trades.map((t) => (
+                      <a
+                        key={t.hash}
+                        href={explorerTx(t.hash)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-3 no-underline rounded-lg px-3 py-2.5 transition-colors hover:bg-white/[0.04]"
+                        style={{ color: "white", borderBottom: `1px solid ${BORDER}` }}
+                      >
+                        <span
+                          className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase shrink-0"
+                          style={{
+                            background: t.type === "BUY" ? "rgba(122,45,255,0.25)" : "rgba(255,92,138,0.18)",
+                            color: t.type === "BUY" ? PURPLE_BRIGHT : CORAL,
+                            border: `1px solid ${t.type === "BUY" ? PURPLE : CORAL}`,
+                          }}
+                        >
+                          {t.type}
+                        </span>
+                        <span className="flex-1 text-sm font-medium truncate">{compactAmount(t.tokenAmount)} BCHOG</span>
+                        <span className="text-sm font-mono shrink-0" style={{ color: CREAM }}>{formatUsd(t.valueUsd)}</span>
+                        <span className="text-[10px] w-7 text-right shrink-0" style={{ color: MUTED }}>{timeAgo(t.ts)}</span>
+                      </a>
+                    ))
+                  )}
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
       </div>
     );
   }
@@ -1784,32 +1967,31 @@ function ComingSoonBlock() {
     <div
       ref={blockRef}
       className="relative flex flex-col items-center justify-center overflow-hidden"
-      style={{ minHeight: 360 }}
+      style={{ minHeight: 280 }}
     >
       {/* Counter */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 text-[11px] tracking-[0.3em] font-medium uppercase"
+        className="text-[11px] tracking-[0.3em] font-medium uppercase mb-4"
         style={{ color: MUTED }}
       >
-        {String(activeIdx + 1).padStart(2, "0")}
+        {String(activeIdx + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
       </div>
 
-      {/* The big bold word */}
-      <div className="relative w-full flex items-center justify-center" style={{ height: 180 }}>
+      {/* The cycling word — smaller than the "Coming Soon" section header */}
+      <div className="relative w-full flex items-center justify-center" style={{ height: 120 }}>
         {/* Exiting item — flies up */}
         {prevIdx !== null && (
           <div
             className="absolute inset-0 flex items-center justify-center"
-            style={{
-              animation: "cs-exit-up 500ms cubic-bezier(0.4,0,1,1) forwards",
-            }}
+            style={{ animation: "cs-exit-up 500ms cubic-bezier(0.4,0,1,1) forwards" }}
           >
             <span
               className="uppercase text-white text-center leading-none"
               style={{
                 fontFamily: "'Anton', sans-serif",
-                fontSize: "clamp(3rem, 14vw, 9rem)",
-                letterSpacing: "0.04em",
+                fontSize: "clamp(1.8rem, 6vw, 3.2rem)",
+                letterSpacing: "0.06em",
+                color: PURPLE_BRIGHT,
               }}
             >
               {items[prevIdx].label}
@@ -1821,17 +2003,16 @@ function ComingSoonBlock() {
           key={activeIdx}
           className="absolute inset-0 flex items-center justify-center"
           style={{
-            animation: dir === "in"
-              ? "cs-enter-up 600ms cubic-bezier(0.22,1,0.36,1) forwards"
-              : "none",
+            animation: dir === "in" ? "cs-enter-up 600ms cubic-bezier(0.22,1,0.36,1) forwards" : "none",
           }}
         >
           <span
-            className="uppercase text-white text-center leading-none"
+            className="uppercase text-center leading-none"
             style={{
               fontFamily: "'Anton', sans-serif",
-              fontSize: "clamp(3rem, 14vw, 9rem)",
-              letterSpacing: "0.04em",
+              fontSize: "clamp(1.8rem, 6vw, 3.2rem)",
+              letterSpacing: "0.06em",
+              color: PURPLE_BRIGHT,
             }}
           >
             {items[activeIdx].label}
@@ -1840,34 +2021,19 @@ function ComingSoonBlock() {
       </div>
 
       {/* Dot bar */}
-      <div className="flex items-center gap-2 mt-6">
+      <div className="flex items-center gap-2 mt-4">
         {items.map((_, i) => (
           <div
             key={i}
             style={{
-              width: activeIdx === i ? 28 : 7,
+              width: activeIdx === i ? 24 : 7,
               height: 7,
               borderRadius: 99,
-              background: activeIdx === i ? "white" : "rgba(255,255,255,0.2)",
+              background: activeIdx === i ? PURPLE_BRIGHT : "rgba(181,76,255,0.25)",
               transition: "width 400ms cubic-bezier(0.22,1,0.36,1), background 400ms ease",
             }}
           />
         ))}
-      </div>
-
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 w-full px-2">
-        <a
-          href={NADFUN_TOKEN_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="text-[11px] font-medium uppercase tracking-[0.1em] no-underline transition-opacity hover:opacity-70"
-          style={{ color: CREAM }}
-        >
-          Buy on Nad.fun →
-        </a>
-        <span className="text-[10px]" style={{ color: MUTED }}>
-          Follow X &amp; Telegram for updates
-        </span>
       </div>
     </div>
   );
