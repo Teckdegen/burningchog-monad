@@ -140,13 +140,13 @@
   html,
   body,
   #root {
-    background: #0a0612;
+    background: #12052a;
     min-height: 100%;
     overflow-x: clip;
   }
 
   body {
-    background-color: #0a0612;
+    background-color: #12052a;
     color: var(--color-foreground);
   }
 }

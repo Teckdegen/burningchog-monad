@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useRef, Children, type CSSProperties, type ReactNode } from "react";
-import { Menu, X, Flame, ChevronDown } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import nadfunLogo from "@/assets/nadfun.jpg";
 import { getPortfolio, type PortfolioToken } from "@/lib/portfolio";
 import { getVeDust, type VeDustData } from "@/lib/vedust";
@@ -16,18 +16,20 @@ export const Route = createFileRoute("/")({
 
 const EASE = "cubic-bezier(0.22,1,0.36,1)";
 
-// Premium dark palette — RAILGUN-inspired, BCHOG brand colors
-const BG = "#0A0612";
-const BG_DEEP = "#12052A";
-const SURFACE = "#141020";
-const PANEL = "#1A0B35";
-const BORDER = "rgba(255,255,255,0.08)";
-const BORDER_STRONG = "rgba(255,255,255,0.12)";
+// BCHOG brand palette
+const BG = "#12052A";
+const BG_DEEP = "#0D0418";
+const SURFACE = "#1E0A42";
+const PANEL = "#2A1058";
+const INDIGO = "#3D1488";
+const BORDER = "rgba(181, 76, 255, 0.12)";
+const BORDER_STRONG = "rgba(181, 76, 255, 0.22)";
 const PURPLE = "#7A2DFF";
 const PURPLE_BRIGHT = "#B54CFF";
 const CREAM = "#FFE8B4";
-const MUTED = "rgba(255,255,255,0.5)";
-const FOOTER_BG = "#07040E";
+const CORAL = "#FF5C8A";
+const MUTED = "rgba(255, 232, 180, 0.45)";
+const FOOTER_BG = "#0D0418";
 const TOKEN_LOGO = "/bchoglogo.png";
 const MASCOT_HERO = "/photo_2026-06-25_20-11-35-removebg-preview.png";
 
@@ -49,9 +51,9 @@ const CAROUSEL_MS = "650ms";
 const STAT_DOTS = {
   purple: PURPLE_BRIGHT,
   cream: CREAM,
-  green: "#5EE6A8",
-  pink: "#FF5C8A",
-  blue: "#5EC8FF",
+  green: PURPLE,
+  pink: CORAL,
+  blue: INDIGO,
 } as const;
 
 const EXPLORER = "https://monadvision.com";
@@ -66,11 +68,9 @@ const GRAIN_SVG =
   );
 
 const SECTION_SUBTITLES: Record<string, string> = {
-  dashboard: "Live on-chain stats. Built for the community.",
-  "how-it-works": "The deflationary engine behind BCHOG.",
+  dashboard: "Live on-chain stats.",
   "trading-desk": "Market support and portfolio activity.",
   contests: "Community contests and collaborations.",
-  "coming-soon": "What's next for the ecosystem.",
 };
 
 const SECTIONS = [
@@ -457,54 +457,58 @@ function SiteHeader({
 }) {
   return (
     <>
-      <header
-        className="fixed top-0 inset-x-0 z-[100] h-14 flex items-center justify-between px-4 sm:px-6 lg:px-10"
-        style={{
-          background: "rgba(10,6,18,0.85)",
-          backdropFilter: "blur(12px)",
-          borderBottom: `1px solid ${BORDER}`,
-        }}
-      >
-        <a href="#top" className="flex items-center gap-2.5 no-underline shrink-0" style={{ color: "white" }}>
-          <img src={TOKEN_LOGO} alt="BCHOG" className="w-8 h-8 rounded-full object-cover" />
-          <span className="text-sm font-semibold tracking-[0.18em] uppercase">BCHOG</span>
-        </a>
-
-        <nav className="hidden lg:flex items-center gap-1">
-          {SECTIONS.map((s) => (
-            <button
-              type="button"
-              key={s.id}
-              onClick={() => scrollToId(s.id)}
-              className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] transition-colors hover:text-white"
-              style={{ color: MUTED }}
-            >
-              {s.short}
-              {s.soon && (
-                <span
-                  className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full align-middle"
-                  style={{ background: CREAM }}
-                />
-              )}
-            </button>
-          ))}
-        </nav>
-
-        <button
-          type="button"
-          aria-label="Open menu"
-          onClick={() => setMenuOpen(true)}
-          className="lg:hidden w-9 h-9 flex items-center justify-center"
-          style={{ color: "white" }}
+      <div className="fixed top-4 sm:top-5 inset-x-0 z-[100] flex justify-center px-4 pointer-events-none">
+        <header
+          className="pointer-events-auto w-[70%] max-w-[880px] min-w-[260px] h-12 sm:h-[52px] rounded-full flex items-center justify-between px-4 sm:px-6"
+          style={{
+            background: "rgba(18, 5, 42, 0.55)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: `1px solid ${BORDER_STRONG}`,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
+          }}
         >
-          <Menu size={20} strokeWidth={1.75} />
-        </button>
-      </header>
+          <a href="#top" className="flex items-center gap-2 no-underline shrink-0" style={{ color: "white" }}>
+            <img src={TOKEN_LOGO} alt="BCHOG" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover" />
+            <span className="text-xs sm:text-sm font-semibold tracking-[0.16em] uppercase">BCHOG</span>
+          </a>
+
+          <nav className="hidden lg:flex items-center gap-0.5">
+            {SECTIONS.map((s) => (
+              <button
+                type="button"
+                key={s.id}
+                onClick={() => scrollToId(s.id)}
+                className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.1em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06]"
+                style={{ color: MUTED }}
+              >
+                {s.short}
+                {s.soon && (
+                  <span
+                    className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full align-middle"
+                    style={{ background: CORAL }}
+                  />
+                )}
+              </button>
+            ))}
+          </nav>
+
+          <button
+            type="button"
+            aria-label="Open menu"
+            onClick={() => setMenuOpen(true)}
+            className="lg:hidden w-9 h-9 flex items-center justify-center rounded-full transition-colors hover:bg-white/[0.06]"
+            style={{ color: "white" }}
+          >
+            <Menu size={20} strokeWidth={1.75} />
+          </button>
+        </header>
+      </div>
 
       {menuOpen && (
         <div
           className="fixed inset-0 z-[200] flex items-center justify-center px-6"
-          style={{ background: "rgba(10,6,18,0.92)", backdropFilter: "blur(16px)" }}
+          style={{ background: "rgba(13,4,24,0.92)", backdropFilter: "blur(16px)" }}
           onClick={() => setMenuOpen(false)}
         >
           <button
@@ -565,24 +569,29 @@ function LandingHero() {
   }, []);
 
   useEffect(() => {
+    let raf = 0;
     const onScroll = () => {
-      const el = sectionRef.current;
-      if (!el) return;
-      const scrollable = Math.max(el.offsetHeight - window.innerHeight, 1);
-      const scrolled = Math.min(Math.max(-el.getBoundingClientRect().top, 0), scrollable);
-      setProgress(scrolled / scrollable);
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const el = sectionRef.current;
+        if (!el) return;
+        const scrollable = Math.max(el.offsetHeight - window.innerHeight, 1);
+        const scrolled = Math.min(Math.max(-el.getBoundingClientRect().top, 0), scrollable);
+        setProgress(scrolled / scrollable);
+      });
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
   }, []);
 
   const maxIndex = HERO_IMAGES.length - 1;
-  const activeIndex = Math.min(Math.round(progress * maxIndex), maxIndex);
+  const activeIndex = Math.min(Math.floor(progress * HERO_IMAGES.length), maxIndex);
 
   const carouselTransition = `transform ${CAROUSEL_MS} ${CAROUSEL_EASE}, filter ${CAROUSEL_MS} ${CAROUSEL_EASE}, opacity ${CAROUSEL_MS} ${CAROUSEL_EASE}, left ${CAROUSEL_MS} ${CAROUSEL_EASE}, height ${CAROUSEL_MS} ${CAROUSEL_EASE}, bottom ${CAROUSEL_MS} ${CAROUSEL_EASE}`;
 
@@ -605,12 +614,12 @@ function LandingHero() {
     if (role === "hidden") {
       return {
         ...base,
-        transform: "translateX(-50%) scale(0.6)",
+        transform: "translateX(-50%) scale(0.3)",
         filter: "blur(6px)",
         opacity: 0,
         zIndex: 1,
         left: "50%",
-        height: isMobile ? "10%" : "18%",
+        height: isMobile ? "5%" : "9%",
         bottom: isMobile ? "32%" : "12%",
         pointerEvents: "none",
       };
@@ -619,12 +628,12 @@ function LandingHero() {
     if (role === "center") {
       return {
         ...base,
-        transform: `translateX(-50%) scale(${isMobile ? 1.25 : 1.68})`,
+        transform: `translateX(-50%) scale(${isMobile ? 0.625 : 0.84})`,
         filter: "none",
         opacity: 1,
         zIndex: 20,
         left: "50%",
-        height: isMobile ? "60%" : "92%",
+        height: isMobile ? "30%" : "46%",
         bottom: isMobile ? "22%" : 0,
       };
     }
@@ -632,27 +641,29 @@ function LandingHero() {
     if (role === "left") {
       return {
         ...base,
-        transform: "translateX(-50%) scale(1)",
+        transform: "translateX(-50%) scale(0.5)",
         filter: "blur(2px)",
         opacity: 0.85,
         zIndex: 10,
         left: isMobile ? "20%" : "30%",
-        height: isMobile ? "16%" : "28%",
+        height: isMobile ? "8%" : "14%",
         bottom: isMobile ? "32%" : "12%",
       };
     }
 
     return {
       ...base,
-      transform: "translateX(-50%) scale(1)",
+      transform: "translateX(-50%) scale(0.5)",
       filter: "blur(2px)",
       opacity: 0.85,
       zIndex: 10,
       left: isMobile ? "80%" : "70%",
-      height: isMobile ? "16%" : "28%",
+      height: isMobile ? "8%" : "14%",
       bottom: isMobile ? "32%" : "12%",
     };
   }
+
+  const scrollTrackVh = maxIndex * 40;
 
   return (
     <section
@@ -660,13 +671,12 @@ function LandingHero() {
       id="top"
       className="relative w-full overflow-hidden"
       style={{
-        height: `${100 + maxIndex * 85}vh`,
+        height: `calc(100dvh + ${scrollTrackVh}dvh)`,
         backgroundColor: BG,
         fontFamily: "'Inter', sans-serif",
-        transition: `background-color ${CAROUSEL_MS} ${CAROUSEL_EASE}`,
       }}
     >
-      <div className="sticky top-0 w-full overflow-hidden" style={{ height: "100vh" }}>
+      <div className="sticky top-0 w-full overflow-hidden" style={{ height: "100dvh" }}>
         <div className="absolute inset-0 bchog-grid-bg opacity-40 pointer-events-none" />
         <div
           className="absolute inset-0 pointer-events-none"
@@ -724,34 +734,6 @@ function LandingHero() {
               </div>
             );
           })}
-        </div>
-
-        <div
-          className="absolute bottom-6 left-4 sm:bottom-20 sm:left-24 max-w-[320px]"
-          style={{ zIndex: 60 }}
-        >
-          <p
-            className="font-bold uppercase tracking-widest mb-2 sm:mb-3 text-base sm:text-[22px] text-white"
-            style={{ opacity: 0.95, letterSpacing: "0.02em" }}
-          >
-            Burning Chog
-          </p>
-          <p
-            className="hidden sm:block text-xs sm:text-sm text-white mb-4 sm:mb-5"
-            style={{ opacity: 0.85, lineHeight: 1.6 }}
-          >
-            Deflationary. Rewarding. Unstoppable. Always less — always more for those who get it.
-          </p>
-          <button
-            type="button"
-            onClick={() => document.getElementById("dashboard")?.scrollIntoView({ behavior: "smooth" })}
-            className="flex flex-col items-start gap-1 bg-transparent border-0 cursor-pointer p-0"
-            style={{ color: "rgba(255,255,255,0.55)" }}
-            aria-label="Scroll to dashboard"
-          >
-            <span className="text-[10px] uppercase tracking-[0.16em]">Scroll</span>
-            <ChevronDown size={18} strokeWidth={1.5} className="animate-bounce" />
-          </button>
         </div>
       </div>
     </section>
@@ -1050,9 +1032,9 @@ function StatTile({
 
 // ---- dashboard charts (monochrome, reference-style) ----
 
-const CHART_STROKE = "rgba(255,255,255,0.85)";
-const CHART_FILL = "rgba(255,255,255,0.12)";
-const CHART_MUTED = "rgba(255,255,255,0.28)";
+const CHART_STROKE = PURPLE_BRIGHT;
+const CHART_FILL = "rgba(181, 76, 255, 0.18)";
+const CHART_MUTED = "rgba(61, 20, 136, 0.8)";
 
 function DashCard({
   title,
@@ -1204,575 +1186,151 @@ function TargetCompare({ current, target }: { current: number; target: number })
   );
 }
 
-function SupplyTimeline({
-  milestones,
-  progressPct,
-}: {
-  milestones: { label: string; value: string; pct: number }[];
-  progressPct: number;
-}) {
-  const bars = 72;
+// ---- How It Works ----
+
+function FlyStep({ step, title }: { step: string; title: string }) {
   return (
-    <div className="mt-6">
-      <div className="relative h-16 flex items-end gap-[2px]">
-        {Array.from({ length: bars }).map((_, i) => {
-          const t = i / (bars - 1);
-          const lit = t <= progressPct / 100;
-          const intensity = lit ? 0.15 + t * 0.85 : 0.08;
-          return (
-            <div
-              key={i}
-              className="flex-1 rounded-sm"
-              style={{
-                height: `${28 + Math.sin(i * 0.35) * 8 + (lit ? 12 : 0)}px`,
-                background: `rgba(255,255,255,${intensity})`,
-              }}
-            />
-          );
-        })}
-        {milestones.map((m) => (
-          <div
-            key={m.label}
-            className="absolute bottom-full flex flex-col items-center"
-            style={{ left: `${m.pct}%`, transform: "translateX(-50%)" }}
-          >
-            <span className="text-[10px] font-medium text-white whitespace-nowrap">{m.value}</span>
-            <span className="text-[9px] mt-0.5 whitespace-nowrap" style={{ color: MUTED }}>
-              {m.label}
-            </span>
-            <div className="w-px h-3 mt-1" style={{ background: CHART_STROKE }} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TypewriterText({ lines, speed = 42 }: { lines: string[]; speed?: number }) {
-  const full = lines.join("\n");
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-  const [started, setStarted] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) setStarted(true);
-    }, { threshold: 0.35 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!started || count >= full.length) return;
-    const t = window.setTimeout(() => setCount((c) => c + 1), speed);
-    return () => window.clearTimeout(t);
-  }, [started, count, full.length, speed]);
-
-  const shown = full.slice(0, count);
-  return (
-    <div ref={ref} className="font-mono text-sm sm:text-base leading-relaxed whitespace-pre-wrap" style={{ color: "rgba(255,255,255,0.88)" }}>
-      {shown}
-      {started && count < full.length && (
-        <span className="bchog-typewriter-cursor inline-block w-[2px] h-[1em] align-[-2px] ml-0.5 bg-white" />
-      )}
-    </div>
-  );
-}
-
-function FlowArrow({ direction = "down" }: { direction?: "down" | "right" }) {
-  return (
-    <div className="flex justify-center py-1" aria-hidden style={{ color: MUTED }}>
-      {direction === "down" ? (
-        <ChevronDown size={20} strokeWidth={1.5} />
-      ) : (
-        <span className="text-lg">→</span>
-      )}
-    </div>
-  );
-}
-
-// ---- ecosystem diagrams (How It Works) ----
-
-const DG = PURPLE_BRIGHT;
-
-/* ── Node metadata ── */
-const WALLET_NODES = [
-  {
-    id: "treasury",
-    cx: 250,
-    cy: 130,
-    r: 54,
-    label: "TREASURY WALLET",
-    sub: "Ecosystem Engine",
-    desc: "The engine that powers the BCHOG ecosystem.",
-    icon: "cog",
-    href: (w: typeof WALLETS) => explorerAddr(w.treasury),
-  },
-  {
-    id: "lock",
-    cx: 82,
-    cy: 250,
-    r: 44,
-    label: "LOCK HOLDING",
-    sub: "The Vault",
-    desc: "Accumulating lock tokens, locked with Atlantis at 1M.",
-    icon: "lock",
-    href: (w: typeof WALLETS) => explorerAddr(w.lockHolding),
-  },
-  {
-    id: "rewards",
-    cx: 418,
-    cy: 250,
-    r: 44,
-    label: "REWARDS WALLET",
-    sub: "Community Rewards",
-    desc: "Funds community engagement, contests, and rewards.",
-    icon: "gift",
-    href: () => undefined,
-  },
-  {
-    id: "trading",
-    cx: 250,
-    cy: 370,
-    r: 44,
-    label: "TRADING WALLET",
-    sub: "Market Support",
-    desc: "Investing in the community, profits feed the BCHOG flywheel.",
-    icon: "trending",
-    href: (w: typeof WALLETS) => explorerAddr(w.trading),
-  },
-  {
-    id: "burn",
-    cx: 82,
-    cy: 370,
-    r: 36,
-    label: "BUYBACK & BURN",
-    sub: "",
-    desc: "Tokens permanently removed from circulation to drive deflation.",
-    icon: "flame",
-    href: () => undefined,
-  },
-] as const;
-
-// per-node accent — monochrome professional
-const NODE_COLOR: Record<string, string> = {
-  treasury: "rgba(255,255,255,0.85)",
-  lock: "rgba(255,255,255,0.7)",
-  rewards: "rgba(255,255,255,0.7)",
-  trading: "rgba(255,255,255,0.7)",
-  burn: "rgba(255,255,255,0.55)",
-};
-
-function WalletIcon({
-  id,
-  cx,
-  cy,
-  size,
-  color = DG,
-}: {
-  id: string;
-  cx: number;
-  cy: number;
-  size: number;
-  color?: string;
-}) {
-  const s = size * 0.48;
-  const x = cx - s / 2;
-  const y = cy - s / 2;
-  if (id === "cog")
-    return (
-      <g transform={`translate(${cx},${cy})`}>
-        <circle r={s * 0.45} fill="none" stroke={color} strokeWidth={s * 0.1} />
-        {[0, 60, 120, 180, 240, 300].map((a) => (
-          <rect
-            key={a}
-            x={-s * 0.07}
-            y={-s * 0.52}
-            width={s * 0.14}
-            height={s * 0.18}
-            rx={s * 0.04}
-            fill={color}
-            transform={`rotate(${a})`}
-          />
-        ))}
-        <circle r={s * 0.18} fill={color} />
-      </g>
-    );
-  if (id === "lock")
-    return (
-      <g transform={`translate(${x},${y})`}>
-        <rect
-          x={s * 0.18}
-          y={s * 0.44}
-          width={s * 0.64}
-          height={s * 0.48}
-          rx={s * 0.09}
-          fill={color}
-        />
-        <path
-          d={`M${s * 0.28} ${s * 0.44} V${s * 0.26} a${s * 0.22} ${s * 0.22} 0 0 1 ${s * 0.44} 0 V${s * 0.44}`}
-          fill="none"
-          stroke={color}
-          strokeWidth={s * 0.11}
-          strokeLinecap="round"
-        />
-        <circle cx={s * 0.5} cy={s * 0.68} r={s * 0.09} fill={BG} />
-      </g>
-    );
-  if (id === "gift")
-    return (
-      <g transform={`translate(${x},${y})`}>
-        <rect
-          x={s * 0.1}
-          y={s * 0.4}
-          width={s * 0.8}
-          height={s * 0.52}
-          rx={s * 0.08}
-          fill={color}
-        />
-        <rect
-          x={s * 0.15}
-          y={s * 0.28}
-          width={s * 0.7}
-          height={s * 0.18}
-          rx={s * 0.06}
-          fill={color}
-        />
-        <line
-          x1={s * 0.5}
-          y1={s * 0.28}
-          x2={s * 0.5}
-          y2={s * 0.92}
-          stroke={BG}
-          strokeWidth={s * 0.1}
-        />
-        <path
-          d={`M${s * 0.5} ${s * 0.28} C${s * 0.5} ${s * 0.12} ${s * 0.22} ${s * 0.12} ${s * 0.28} ${s * 0.28}`}
-          fill="none"
-          stroke={color}
-          strokeWidth={s * 0.1}
-          strokeLinecap="round"
-        />
-        <path
-          d={`M${s * 0.5} ${s * 0.28} C${s * 0.5} ${s * 0.12} ${s * 0.78} ${s * 0.12} ${s * 0.72} ${s * 0.28}`}
-          fill="none"
-          stroke={color}
-          strokeWidth={s * 0.1}
-          strokeLinecap="round"
-        />
-      </g>
-    );
-  if (id === "trending")
-    return (
-      <g transform={`translate(${x},${y})`}>
-        <polyline
-          points={`${s * 0.08},${s * 0.72} ${s * 0.3},${s * 0.42} ${s * 0.52},${s * 0.58} ${s * 0.82},${s * 0.22}`}
-          fill="none"
-          stroke={color}
-          strokeWidth={s * 0.12}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <polyline
-          points={`${s * 0.65},${s * 0.22} ${s * 0.82},${s * 0.22} ${s * 0.82},${s * 0.38}`}
-          fill="none"
-          stroke={color}
-          strokeWidth={s * 0.12}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </g>
-    );
-  if (id === "flame")
-    return (
-      <g transform={`translate(${x},${y})`}>
-        <path
-          d={`M${s * 0.5} ${s * 0.95} C${s * 0.1} ${s * 0.75} ${s * 0.15} ${s * 0.45} ${s * 0.35} ${s * 0.38} C${s * 0.28} ${s * 0.55} ${s * 0.42} ${s * 0.62} ${s * 0.42} ${s * 0.62} C${s * 0.42} ${s * 0.42} ${s * 0.55} ${s * 0.22} ${s * 0.65} ${s * 0.1} C${s * 0.7} ${s * 0.35} ${s * 0.6} ${s * 0.42} ${s * 0.72} ${s * 0.52} C${s * 0.88} ${s * 0.32} ${s * 0.78} ${s * 0.1} ${s * 0.78} ${s * 0.1} C${s * 0.98} ${s * 0.32} ${s * 0.95} ${s * 0.65} ${s * 0.75} ${s * 0.82} C${s * 0.88} ${s * 0.58} ${s * 0.82} ${s * 0.48} ${s * 0.82} ${s * 0.48} C${s * 0.92} ${s * 0.72} ${s * 0.88} ${s * 0.85} ${s * 0.5} ${s * 0.95} Z`}
-          fill={color}
-        />
-      </g>
-    );
-  return null;
-}
-
-function EcosystemWalletFlowDiagram() {
-  /* Arrow paths: [from-node-id, to-node-id, bend-direction, dashed] */
-  const arrows: [string, string, number, boolean][] = [
-    ["treasury", "lock", -0.18, false], // engine → vault
-    ["treasury", "rewards", 0.18, false], // engine → rewards
-    ["treasury", "trading", 0, false], // engine → trading
-    ["trading", "rewards", 0.22, false], // profits feed the flywheel
-    ["treasury", "burn", 0.16, true], // dashed buyback path
-    ["trading", "burn", -0.06, true], // dashed buyback path
-  ];
-
-  // build lookup
-  const nodeMap = Object.fromEntries(WALLET_NODES.map((n) => [n.id, n]));
-
-  function curvedPath(a: string, b: string, bend: number) {
-    const n1 = nodeMap[a],
-      n2 = nodeMap[b];
-    const dx = n2.cx - n1.cx,
-      dy = n2.cy - n1.cy;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    // offset start/end to circle edge
-    const ratio1 = n1.r / dist,
-      ratio2 = n2.r / dist;
-    const sx = n1.cx + dx * ratio1,
-      sy = n1.cy + dy * ratio1;
-    const ex = n2.cx - dx * ratio2,
-      ey = n2.cy - dy * ratio2;
-    // control point perpendicular to the line
-    const mx = (sx + ex) / 2 - dy * bend;
-    const my = (sy + ey) / 2 + dx * bend;
-    return `M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}`;
-  }
-
-  return (
-    <div className="relative w-full max-w-2xl mx-auto mt-6">
-      <svg
-        viewBox="0 0 500 470"
-        className="w-full h-auto"
-        style={{ overflow: "visible" }}
-        aria-label="BCHOG Ecosystem Wallet Flow Diagram"
-      >
-        <defs>
-          <marker
-            id="ew-arr"
-            viewBox="0 0 12 12"
-            refX="10"
-            refY="6"
-            markerWidth="6"
-            markerHeight="6"
-            orient="auto"
-          >
-            <path d="M1,2 L10,6 L1,10 Z" fill="context-stroke" />
-          </marker>
-          <marker
-            id="ew-arr-d"
-            viewBox="0 0 12 12"
-            refX="10"
-            refY="6"
-            markerWidth="6"
-            markerHeight="6"
-            orient="auto"
-          >
-            <path d="M1,2 L10,6 L1,10 Z" fill="context-stroke" />
-          </marker>
-        </defs>
-
-        {arrows.map(([a, b, bend, dashed], i) => (
-          <path
-            key={i}
-            d={curvedPath(a, b, bend)}
-            fill="none"
-            stroke={dashed ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.65)"}
-            strokeWidth={dashed ? 1.2 : 1.5}
-            strokeLinecap="round"
-            strokeDasharray={dashed ? "5 4" : undefined}
-            markerEnd={dashed ? "url(#ew-arr-d)" : "url(#ew-arr)"}
-            opacity={dashed ? 0.55 : 0.85}
-          />
-        ))}
-
-        {WALLET_NODES.map((n) => {
-          const href = n.href(WALLETS as unknown as typeof WALLETS);
-          const nodeEl = (
-            <g key={n.id} className="cursor-pointer">
-              <circle
-                cx={n.cx}
-                cy={n.cy}
-                r={n.r + 1}
-                fill={SURFACE}
-                stroke={NODE_COLOR[n.id] ?? "rgba(255,255,255,0.7)"}
-                strokeWidth="1.5"
-              />
-              <WalletIcon
-                id={n.icon}
-                cx={n.cx}
-                cy={n.cy}
-                size={n.r * 1.0}
-                color={NODE_COLOR[n.id] ?? "rgba(255,255,255,0.7)"}
-              />
-            </g>
-          );
-
-          const label = (
-            <g key={`lbl-${n.id}`}>
-              <text
-                x={n.cx}
-                y={n.cy + n.r + 18}
-                textAnchor="middle"
-                fontFamily="Inter, sans-serif"
-                fontSize={n.id === "treasury" ? 10 : 8.5}
-                fontWeight="600"
-                fill="white"
-                letterSpacing="0.06em"
-              >
-                {n.label}
-              </text>
-              {n.sub && (
-                <text
-                  x={n.cx}
-                  y={n.cy + n.r + 30}
-                  textAnchor="middle"
-                  fontFamily="Inter, sans-serif"
-                  fontSize={8}
-                  fill={MUTED}
-                  letterSpacing="0.04em"
-                >
-                  ({n.sub})
-                </text>
-              )}
-              {/* Description — wrap manually at ~22 chars */}
-              {n.desc.match(/.{1,22}(\s|$)/g)?.map((line, li) => (
-                <text
-                  key={li}
-                  x={n.cx}
-                  y={n.cy + n.r + 46 + li * 12}
-                  textAnchor="middle"
-                  fontFamily="Inter, sans-serif"
-                  fontSize={7.5}
-                  fill={MUTED}
-                >
-                  {line.trim()}
-                </text>
-              ))}
-            </g>
-          );
-
-          return href ? (
-            <a key={n.id} href={href} target="_blank" rel="noreferrer">
-              {nodeEl}
-              {label}
-            </a>
-          ) : (
-            <g key={n.id}>
-              {nodeEl}
-              {label}
-            </g>
-          );
-        })}
-
-        {/* ── Legend ── */}
-        <g transform="translate(130, 450)">
-          <line x1="0" y1="6" x2="24" y2="6" stroke="rgba(255,255,255,0.65)" strokeWidth="1.2" strokeLinecap="round" />
-          <polygon points="21,3 28,6 21,9" fill="rgba(255,255,255,0.65)" />
-          <text x="32" y="10" fontFamily="Inter, sans-serif" fontSize="8" fill={MUTED} letterSpacing="0.08em">
-            FLOW
-          </text>
-          <line
-            x1="90"
-            y1="6"
-            x2="114"
-            y2="6"
-            stroke="rgba(255,255,255,0.35)"
-            strokeWidth="1"
-            strokeLinecap="round"
-            strokeDasharray="4 3"
-          />
-          <polygon points="111,3 118,6 111,9" fill="rgba(255,255,255,0.35)" />
-          <text x="122" y="10" fontFamily="Inter, sans-serif" fontSize="8" fill={MUTED} letterSpacing="0.08em">
-            BUYBACK PATH
-          </text>
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function DeflationaryFlywheelDiagram({
-  lockProgress,
-  lockBalance,
-  decimals,
-}: {
-  lockProgress: number;
-  lockBalance: bigint | undefined;
-  decimals: number;
-}) {
-  const branches = [
-    {
-      label: "+100k Bonus Burn",
-      sub: "Extra supply torched forever",
-      outcome: "Burned forever",
-    },
-    {
-      label: "+50k → Lock Holding",
-      sub: "Accumulates until 1M, then locked 1 yr with Atlantis",
-      outcome: "The Vault",
-      progress: true,
-    },
-    {
-      label: "+50k → Rewards",
-      sub: "Fuels community contests & engagement",
-      outcome: "Rewards",
-    },
-  ];
-
-  const nodeCard: CSSProperties = {
-    background: SURFACE,
-    border: `1px solid ${BORDER}`,
-  };
-
-  return (
-    <div className="mt-6 flex flex-col gap-2">
-      <div className="rounded-lg p-5 text-center" style={nodeCard}>
-        <SectionLabel>Trigger</SectionLabel>
-        <div className="flex items-center justify-center gap-2 mt-3">
-          <Flame size={28} strokeWidth={1.5} color="rgba(255,255,255,0.85)" />
-          <span className="bchog-section-title text-3xl sm:text-4xl text-white">Burn</span>
-        </div>
-        <p className="text-xs mt-3 max-w-md mx-auto leading-relaxed" style={{ color: MUTED }}>
-          Every 100k $BCHOG burned automatically by the Nad.fun 1% fee
-        </p>
-      </div>
-
-      <FlowArrow />
-
-      <div className="rounded-lg p-5 text-center" style={nodeCard}>
-        <SectionLabel>Treasury Response</SectionLabel>
-        <p className="text-lg sm:text-xl font-semibold text-white mt-2">200% Match</p>
-        <p className="text-xs mt-2" style={{ color: MUTED }}>
-          Treasury deploys matched supply across three outcomes
-        </p>
-      </div>
-
-      <FlowArrow />
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-px" style={{ background: BORDER, border: `1px solid ${BORDER}` }}>
-        {branches.map((b) => (
-          <div key={b.label} className="p-4 sm:p-5 flex flex-col" style={{ background: SURFACE }}>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-white" />
-              <span className="text-xs font-medium uppercase tracking-[0.08em]">{b.label}</span>
-            </div>
-            <p className="text-[11px] leading-relaxed" style={{ color: MUTED }}>
-              {b.sub}
-            </p>
-            {b.progress ? (
-              <div className="mt-4">
-                <div className="h-1 rounded-full overflow-hidden" style={{ background: BG }}>
-                  <div className="h-full rounded-full bg-white" style={{ width: `${lockProgress}%` }} />
-                </div>
-                <p className="text-[10px] mt-2 uppercase tracking-[0.08em]" style={{ color: MUTED }}>
-                  {formatToken(lockBalance, decimals)} / 1M target
-                </p>
-              </div>
-            ) : null}
-            <p className="mt-auto pt-3 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED, borderTop: `1px solid ${BORDER}` }}>
-              {b.outcome}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <FlowArrow />
-
-      <p className="text-center text-[11px] uppercase tracking-[0.14em]" style={{ color: MUTED }}>
-        Flywheel spins — supply keeps shrinking
+    <div
+      className="shrink-0 rounded-xl px-5 py-4 min-w-[120px]"
+      style={{ background: PANEL, border: `1px solid ${BORDER_STRONG}` }}
+    >
+      <p className="text-[10px] font-medium uppercase tracking-[0.14em]" style={{ color: PURPLE_BRIGHT }}>
+        {step}
       </p>
+      <p className="text-sm font-semibold text-white mt-1.5">{title}</p>
+    </div>
+  );
+}
+
+function FlyConnector() {
+  return (
+    <div className="shrink-0 flex items-center px-2 sm:px-3" aria-hidden>
+      <div className="w-6 sm:w-10 h-px" style={{ background: PURPLE }} />
+    </div>
+  );
+}
+
+function FlyOutcome({
+  amount,
+  label,
+  progress,
+}: {
+  amount: string;
+  label: string;
+  progress?: number;
+}) {
+  return (
+    <div
+      className="rounded-xl px-4 py-4 flex flex-col min-h-[88px]"
+      style={{ background: SURFACE, border: `1px solid ${BORDER}` }}
+    >
+      <p className="text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+        {label}
+      </p>
+      <p className="text-base font-semibold mt-1" style={{ color: CREAM }}>
+        {amount}
+      </p>
+      {progress !== undefined && (
+        <div className="mt-auto pt-3">
+          <div className="h-1 rounded-full overflow-hidden" style={{ background: INDIGO }}>
+            <div className="h-full rounded-full" style={{ width: `${progress}%`, background: PURPLE_BRIGHT }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DeflationaryFlywheelDiagram({ lockProgress }: { lockProgress: number }) {
+  return (
+    <div className="mt-6 overflow-x-auto pb-1">
+      <div className="flex items-stretch min-w-[min(100%,680px)]">
+        <FlyStep step="01" title="100k Burn" />
+        <FlyConnector />
+        <FlyStep step="02" title="200% Match" />
+        <FlyConnector />
+        <div className="flex-1 grid grid-cols-3 gap-2 min-w-[240px]">
+          <FlyOutcome amount="+100k" label="Burn" />
+          <FlyOutcome amount="+50k" label="Lock" progress={lockProgress} />
+          <FlyOutcome amount="+50k" label="Rewards" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ArchBox({
+  label,
+  sub,
+  href,
+  highlight = false,
+}: {
+  label: string;
+  sub?: string;
+  href?: string;
+  highlight?: boolean;
+}) {
+  const box = (
+    <div
+      className="rounded-xl px-4 py-3.5 text-center transition-opacity hover:opacity-90"
+      style={{
+        background: highlight ? PANEL : SURFACE,
+        border: `1px solid ${highlight ? PURPLE_BRIGHT : BORDER_STRONG}`,
+      }}
+    >
+      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white">{label}</p>
+      {sub && (
+        <p className="text-[10px] mt-1 uppercase tracking-[0.06em]" style={{ color: MUTED }}>
+          {sub}
+        </p>
+      )}
+    </div>
+  );
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className="block no-underline">
+        {box}
+      </a>
+    );
+  }
+  return box;
+}
+
+function EcosystemArchitecture() {
+  return (
+    <div className="mt-6 max-w-md mx-auto flex flex-col items-stretch gap-0">
+      <ArchBox
+        label="Treasury"
+        sub="Ecosystem engine"
+        href={explorerAddr(WALLETS.treasury)}
+        highlight
+      />
+      <div className="flex justify-center py-1" aria-hidden>
+        <div className="w-px h-5" style={{ background: PURPLE }} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <ArchBox label="Lock Holding" sub="Vault" href={explorerAddr(WALLETS.lockHolding)} />
+        <ArchBox label="Rewards" sub="Community" />
+      </div>
+      <div className="relative h-5 mx-[25%]" aria-hidden>
+        <div className="absolute inset-x-0 top-0 h-px" style={{ background: PURPLE }} />
+        <div className="absolute left-0 top-0 w-px h-full" style={{ background: PURPLE }} />
+        <div className="absolute right-0 top-0 w-px h-full" style={{ background: PURPLE }} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <ArchBox label="Trading Desk" sub="Market support" href={explorerAddr(WALLETS.trading)} />
+        <ArchBox label="Buyback & Burn" sub="Deflation" />
+      </div>
+      <div className="flex items-center justify-center gap-6 mt-5 pt-4" style={{ borderTop: `1px solid ${BORDER}` }}>
+        <span className="flex items-center gap-2 text-[9px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+          <span className="w-4 h-px" style={{ background: PURPLE_BRIGHT }} />
+          Flow
+        </span>
+        <span className="flex items-center gap-2 text-[9px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+          <span className="w-4 h-px border-t border-dashed" style={{ borderColor: CORAL }} />
+          Buyback
+        </span>
+      </div>
     </div>
   );
 }
@@ -1901,54 +1459,23 @@ function SectionMock({
 
         <Reveal delay={80}>
           <div
-            className="rounded-xl p-5 sm:p-8"
+            className="rounded-xl px-5 py-4"
             style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
           >
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-              <div className="max-w-lg">
-                <p className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: MUTED }}>
-                  Lock holding target
-                </p>
-                <p className="bchog-stat-value text-[clamp(1.75rem,5vw,2.75rem)] font-semibold text-white mt-2">
-                  {formatToken(stats.balances.lockHolding, stats.decimals)}
-                </p>
-                <p className="text-sm mt-3 leading-relaxed" style={{ color: MUTED }}>
-                  Lock holding accumulates toward a 1M BCHOG target. Once reached, tokens are locked for one year
-                  with Atlantis — reducing circulating supply and strengthening the flywheel.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-6 lg:gap-10 shrink-0">
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-                    Lock target
-                  </p>
-                  <p className="text-lg font-semibold text-white mt-1">1M BCHOG</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-                    Progress
-                  </p>
-                  <p className="text-lg font-semibold text-white mt-1">{Math.round(lockProgress)}%</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-                    Circulating
-                  </p>
-                  <p className="text-lg font-semibold text-white mt-1">
-                    {formatToken(circulating, stats.decimals)}
-                  </p>
-                </div>
-              </div>
+            <div className="flex items-baseline justify-between gap-4">
+              <p className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: MUTED }}>
+                Lock Holding
+              </p>
+              <p className="bchog-stat-value text-xl sm:text-2xl font-semibold text-white">
+                {formatToken(stats.balances.lockHolding, stats.decimals)}
+              </p>
             </div>
-
-            <SupplyTimeline
-              progressPct={lockProgress}
-              milestones={[
-                { label: "Burn milestone", value: `${Math.round(burnedPct)}%`, pct: 18 },
-                { label: "Treasury reserve", value: formatToken(stats.balances.treasury, stats.decimals), pct: 48 },
-                { label: "1M lock target", value: "1M", pct: 82 },
-              ]}
-            />
+            <div className="h-1.5 rounded-full overflow-hidden mt-3" style={{ background: INDIGO }}>
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${lockProgress}%`, background: PURPLE_BRIGHT }}
+              />
+            </div>
           </div>
         </Reveal>
 
@@ -1971,8 +1498,8 @@ function SectionMock({
                     {s.label}
                   </p>
                   <p className="text-xl font-semibold text-white mt-1">{Math.round(s.pct)}%</p>
-                  <div className="h-1 rounded-full mt-2 overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
-                    <div className="h-full bg-white rounded-full" style={{ width: `${s.pct}%` }} />
+                  <div className="h-1 rounded-full mt-2 overflow-hidden" style={{ background: INDIGO }}>
+                    <div className="h-full rounded-full" style={{ width: `${s.pct}%`, background: PURPLE_BRIGHT }} />
                   </div>
                 </div>
               ))}
@@ -1987,7 +1514,7 @@ function SectionMock({
           >
             <span>Live on-chain data · refreshes every 60s</span>
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-white" />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: PURPLE_BRIGHT }} />
               Live
             </span>
           </div>
@@ -2001,22 +1528,19 @@ function SectionMock({
       LOCK_TARGET * scaledDivisor(stats.decimals),
     );
     return (
-      <div className="flex flex-col gap-8">
-        <Stagger>
-          <Panel>
+      <div className="flex flex-col gap-6">
+        <Reveal>
+          <div className="rounded-xl p-5 sm:p-6" style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}>
             <SectionLabel>Deflationary Flywheel</SectionLabel>
-            <DeflationaryFlywheelDiagram
-              lockProgress={lockProgress}
-              lockBalance={stats.balances.lockHolding}
-              decimals={stats.decimals}
-            />
-          </Panel>
-
-          <Panel>
-            <SectionLabel>Ecosystem Wallet Flow</SectionLabel>
-            <EcosystemWalletFlowDiagram />
-          </Panel>
-        </Stagger>
+            <DeflationaryFlywheelDiagram lockProgress={lockProgress} />
+          </div>
+        </Reveal>
+        <Reveal delay={80}>
+          <div className="rounded-xl p-5 sm:p-6" style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}>
+            <SectionLabel>Ecosystem Architecture</SectionLabel>
+            <EcosystemArchitecture />
+          </div>
+        </Reveal>
       </div>
     );
   }
@@ -2176,61 +1700,53 @@ function SectionMock({
     );
   }
   if (id === "coming-soon") {
-    return (
-      <ComingSoonBlock
-        lines={[
-          "> Initializing BCHOG roadmap...",
-          "> NFT Collection — exclusive drops for holders",
-          "> BCHOG Gear — merch and community wear",
-          "> Staking Program — earn by holding",
-          "",
-          "Status: In development. Stay tuned.",
-        ]}
-      />
-    );
+    return <ComingSoonBlock />;
   }
   return null;
 }
 
-function ComingSoonBlock({ lines }: { lines: string[] }) {
+function ComingSoonBlock() {
+  const items = [
+    { title: "NFT Collection", detail: "Exclusive holder drops" },
+    { title: "BCHOG Gear", detail: "Merch & community wear" },
+    { title: "Staking Program", detail: "Earn by holding" },
+  ];
+
   return (
     <Reveal>
-      <div
-        className="rounded-xl overflow-hidden"
-        style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
-      >
-        <div
-          className="px-5 sm:px-8 py-4 flex items-center justify-between"
-          style={{ borderBottom: `1px solid ${BORDER}` }}
-        >
-          <span className="text-[11px] font-medium uppercase tracking-[0.12em]" style={{ color: MUTED }}>
-            Roadmap terminal
-          </span>
-          <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            Pending
-          </span>
-        </div>
-        <div className="px-5 sm:px-8 py-8 sm:py-10 min-h-[220px]">
-          <TypewriterText lines={lines} speed={36} />
-        </div>
-        <div
-          className="px-5 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-3"
-          style={{ borderTop: `1px solid ${BORDER}` }}
-        >
-          <a
-            href={NADFUN_TOKEN_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="text-[11px] font-medium uppercase tracking-[0.1em] no-underline transition-opacity hover:opacity-70"
-            style={{ color: "white" }}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {items.map((item) => (
+          <div
+            key={item.title}
+            className="rounded-xl p-6 flex flex-col"
+            style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
           >
-            Buy on Nad.fun →
-          </a>
-          <span className="text-[10px]" style={{ color: MUTED }}>
-            Updates posted on X & Telegram
-          </span>
-        </div>
+            <span
+              className="text-[10px] font-medium uppercase tracking-[0.12em] w-fit px-2 py-0.5 rounded-full"
+              style={{ color: CREAM, background: "rgba(61, 20, 136, 0.5)" }}
+            >
+              Soon
+            </span>
+            <h3 className="text-lg font-semibold text-white mt-4">{item.title}</h3>
+            <p className="text-sm mt-2" style={{ color: MUTED }}>
+              {item.detail}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <a
+          href={NADFUN_TOKEN_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="text-[11px] font-medium uppercase tracking-[0.1em] no-underline transition-opacity hover:opacity-70"
+          style={{ color: CREAM }}
+        >
+          Buy on Nad.fun →
+        </a>
+        <span className="text-[10px]" style={{ color: MUTED }}>
+          Follow X & Telegram for updates
+        </span>
       </div>
     </Reveal>
   );
