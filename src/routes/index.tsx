@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useRef, Children, type CSSProperties, type ReactNode } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Cog, Lock, Gift, Briefcase, Flame } from "lucide-react";
 import nadfunLogo from "@/assets/nadfun.jpg";
 import { getPortfolio, type PortfolioToken } from "@/lib/portfolio";
 import { getVeDust, type VeDustData } from "@/lib/vedust";
@@ -458,8 +458,9 @@ function SiteHeader({
   return (
     <>
       <div className="fixed top-4 sm:top-5 inset-x-0 z-[100] flex justify-center px-4 pointer-events-none">
+// Navbar — smaller height, perfectly centered nav
         <header
-          className="pointer-events-auto w-[82%] max-w-[1080px] min-w-[300px] h-16 sm:h-[68px] rounded-full flex items-center justify-between px-5 sm:px-8 relative"
+          className="pointer-events-auto w-[82%] max-w-[1080px] min-w-[300px] h-11 sm:h-12 rounded-full flex items-center justify-between px-4 sm:px-6 relative"
           style={{
             background: "rgba(18, 5, 42, 0.55)",
             backdropFilter: "blur(20px)",
@@ -469,17 +470,17 @@ function SiteHeader({
           }}
         >
           <a href="#top" className="flex items-center gap-2 no-underline shrink-0" style={{ color: "white" }}>
-            <img src={TOKEN_LOGO} alt="BCHOG" className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover" />
-            <span className="text-sm sm:text-base font-semibold tracking-[0.16em] uppercase">BCHOG</span>
+            <img src={TOKEN_LOGO} alt="BCHOG" className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover" />
+            <span className="text-xs sm:text-sm font-semibold tracking-[0.16em] uppercase">BCHOG</span>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2">
+          <nav className="hidden lg:flex items-center gap-0 absolute left-1/2 -translate-x-1/2">
             {SECTIONS.map((s) => (
               <button
                 type="button"
                 key={s.id}
                 onClick={() => scrollToId(s.id)}
-                className="px-4 py-2 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06]"
+                className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06]"
                 style={{ color: MUTED }}
               >
                 {s.short}
@@ -502,8 +503,8 @@ function SiteHeader({
           >
             <Menu size={20} strokeWidth={1.75} />
           </button>
-          {/* Spacer to keep nav centered on desktop */}
-          <div className="hidden lg:block w-[130px] shrink-0" aria-hidden />
+          {/* Spacer mirrors logo+text width to keep nav perfectly centered */}
+          <div className="hidden lg:block w-[100px] shrink-0" aria-hidden />
         </header>
       </div>
 
@@ -1344,7 +1345,7 @@ function DeflationaryFlywheelDiagram({ lockProgress }: { lockProgress: number })
 // ArchBox removed — replaced by EcosystemArchitecture NodeCard
 
 function EcosystemArchitecture() {
-  const nodes = [
+  const nodes: NodeDef[] = [
     {
       id: "treasury",
       label: "TREASURY WALLET",
@@ -1352,19 +1353,29 @@ function EcosystemArchitecture() {
       desc: "The engine that powers the BCHOG ecosystem.",
       href: explorerAddr(WALLETS.treasury),
       color: PURPLE_BRIGHT,
-      glow: "rgba(181,76,255,0.35)",
-      icon: "⚙️",
+      glow: "rgba(181,76,255,0.4)",
+      Icon: Cog,
       highlight: true,
     },
     {
       id: "lock",
-      label: "LOCK HOLDING WALLET",
+      label: "LOCK HOLDING",
       sub: "The Vault",
       desc: "Accumulating lock tokens, locked with Atlantis at 1M.",
       href: explorerAddr(WALLETS.lockHolding),
       color: PURPLE,
-      glow: "rgba(122,45,255,0.25)",
-      icon: "🔒",
+      glow: "rgba(122,45,255,0.3)",
+      Icon: Lock,
+    },
+    {
+      id: "trading",
+      label: "TRADING WALLET",
+      sub: "Market Support",
+      desc: "Investing in the community, profits feed the BCHOG flywheel.",
+      href: explorerAddr(WALLETS.trading),
+      color: CREAM,
+      glow: "rgba(255,232,180,0.15)",
+      Icon: Briefcase,
     },
     {
       id: "rewards",
@@ -1373,149 +1384,183 @@ function EcosystemArchitecture() {
       desc: "Funds community engagement, contests, and rewards.",
       color: PURPLE_BRIGHT,
       glow: "rgba(181,76,255,0.2)",
-      icon: "🎁",
-    },
-    {
-      id: "trading",
-      label: "TRADING WALLET",
-      sub: "Market Support",
-      desc: "Investing in the community, profits feed the BCHOG flywheel.",
-      href: explorerAddr(WALLETS.trading),
-      color: CORAL,
-      glow: "rgba(255,92,138,0.2)",
-      icon: "💼",
+      Icon: Gift,
     },
     {
       id: "burn",
       label: "BUYBACK & BURN",
       sub: "Deflation",
-      desc: "Tokens are permanently removed from circulation to drive deflation.",
+      desc: "Tokens permanently removed from circulation.",
       color: CORAL,
-      glow: "rgba(255,92,138,0.2)",
-      icon: "🔥",
+      glow: "rgba(255,92,138,0.3)",
+      Icon: Flame,
     },
   ];
 
-  const NodeCard = ({ node }: { node: (typeof nodes)[number] }) => {
+  type NodeDef = {
+    id: string;
+    label: string;
+    sub: string;
+    desc: string;
+    href?: string;
+    color: string;
+    glow: string;
+    Icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+    highlight?: boolean;
+  };
+
+  const NodeCard = ({ node, compact = false }: { node: NodeDef; compact?: boolean }) => {
+    const { Icon } = node;
     const inner = (
       <div
-        className="rounded-2xl p-4 flex flex-col gap-2 text-center transition-all hover:scale-[1.02]"
+        className="rounded-2xl flex flex-col items-center text-center gap-2 transition-all duration-200 hover:scale-[1.03]"
         style={{
+          padding: compact ? "12px 10px" : "16px 12px",
           background: node.highlight
-            ? `linear-gradient(135deg, ${PANEL} 0%, ${INDIGO} 100%)`
-            : `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
-          border: `1px solid ${node.color}`,
-          boxShadow: `0 0 24px 4px ${node.glow}, inset 0 1px 0 rgba(255,255,255,0.08)`,
-          minWidth: 140,
+            ? `linear-gradient(145deg, ${PANEL} 0%, #3a1a72 100%)`
+            : `linear-gradient(145deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+          border: `1.5px solid ${node.color}`,
+          boxShadow: `0 0 20px 3px ${node.glow}, inset 0 1px 0 rgba(255,255,255,0.07)`,
         }}
       >
-        <div className="text-2xl">{node.icon}</div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white leading-tight">
+        <div
+          className="rounded-xl flex items-center justify-center"
+          style={{
+            width: compact ? 32 : 38,
+            height: compact ? 32 : 38,
+            background: `${node.color}22`,
+            border: `1px solid ${node.color}55`,
+          }}
+        >
+          <Icon size={compact ? 15 : 18} color={node.color} strokeWidth={1.8} />
+        </div>
+        <p
+          className="font-bold uppercase leading-tight"
+          style={{ fontSize: compact ? 9 : 10, letterSpacing: "0.1em", color: "white" }}
+        >
           {node.label}
         </p>
-        <p className="text-[9px] uppercase tracking-[0.1em]" style={{ color: node.color }}>
-          ({node.sub})
+        <p style={{ fontSize: 8, color: node.color, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          {node.sub}
         </p>
-        <p className="text-[10px] leading-snug mt-1" style={{ color: MUTED }}>
-          {node.desc}
-        </p>
+        {!compact && (
+          <p className="leading-snug" style={{ fontSize: 9, color: MUTED, marginTop: 2 }}>
+            {node.desc}
+          </p>
+        )}
       </div>
     );
     return node.href ? (
       <a href={node.href} target="_blank" rel="noreferrer" className="no-underline block">
         {inner}
       </a>
-    ) : (
-      inner
-    );
+    ) : inner;
   };
 
-  const Arrow = ({ dashed = false, dir = "down" }: { dashed?: boolean; dir?: "down" | "left" | "right" | "diag-left" | "diag-right" }) => {
-    const color = dashed ? CORAL : PURPLE_BRIGHT;
-    const base = `2px ${dashed ? "dashed" : "solid"} ${color}`;
-    if (dir === "down") return (
-      <div className="flex justify-center items-center py-1" aria-hidden>
-        <div className="flex flex-col items-center gap-0.5">
-          <div style={{ width: 2, height: 20, background: color, opacity: dashed ? 0.7 : 1 }} />
-          <div style={{ width: 0, height: 0, borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderTop: `8px solid ${color}` }} />
-        </div>
-      </div>
-    );
-    if (dir === "diag-left") return (
-      <div className="flex justify-start items-center py-2 pl-4" aria-hidden>
-        <svg width="60" height="36" viewBox="0 0 60 36">
-          <path d="M55 4 Q10 4 10 32" fill="none" stroke={color} strokeWidth="2" strokeDasharray={dashed ? "4 3" : "none"} />
-          <polygon points="6,32 14,32 10,40" fill={color} />
-        </svg>
-      </div>
-    );
-    if (dir === "diag-right") return (
-      <div className="flex justify-end items-center py-2 pr-4" aria-hidden>
-        <svg width="60" height="36" viewBox="0 0 60 36">
-          <path d="M5 4 Q50 4 50 32" fill="none" stroke={color} strokeWidth="2" strokeDasharray={dashed ? "4 3" : "none"} />
-          <polygon points="46,32 54,32 50,40" fill={color} />
-        </svg>
-      </div>
-    );
-    return null;
-  };
-
+  // SVG-based flow diagram for desktop
   return (
-    <div className="mt-6">
-      {/* Title */}
-      <div className="text-center mb-6">
+    <div className="mt-4 w-full">
+      <div className="text-center mb-5">
         <p
-          className="text-[clamp(1rem,3vw,1.4rem)] font-bold uppercase tracking-[0.18em] text-white"
-          style={{ fontFamily: "'Anton', sans-serif", textShadow: `0 0 20px ${PURPLE_BRIGHT}` }}
+          className="text-white font-bold uppercase"
+          style={{
+            fontFamily: "'Anton', sans-serif",
+            fontSize: "clamp(0.85rem, 2.5vw, 1.25rem)",
+            letterSpacing: "0.15em",
+            textShadow: `0 0 24px ${PURPLE_BRIGHT}`,
+          }}
         >
           BCHOG ECOSYSTEM WALLET FLOW
         </p>
       </div>
 
-      {/* Treasury at top center */}
-      <div className="flex justify-center">
-        <div className="max-w-[200px] w-full">
-          <NodeCard node={nodes[0]} />
+      {/* Desktop layout — centered hub + spokes */}
+      <div className="hidden sm:block">
+        <div className="relative w-full" style={{ maxWidth: 620, margin: "0 auto" }}>
+          {/* Treasury — top center */}
+          <div className="flex justify-center mb-1">
+            <div style={{ width: 170 }}>
+              <NodeCard node={nodes[0]} />
+            </div>
+          </div>
+
+          {/* Arrow row */}
+          <div className="grid grid-cols-3 items-start" style={{ maxWidth: 540, margin: "0 auto" }}>
+            {/* left arrow */}
+            <div className="flex justify-end pr-4 pt-0">
+              <svg width="56" height="40" viewBox="0 0 56 40" aria-hidden>
+                <path d="M40 4 Q12 4 12 36" fill="none" stroke={PURPLE_BRIGHT} strokeWidth="1.5" />
+                <polygon points="8,36 16,36 12,43" fill={PURPLE_BRIGHT} />
+              </svg>
+            </div>
+            {/* center arrow */}
+            <div className="flex justify-center">
+              <svg width="16" height="40" viewBox="0 0 16 40" aria-hidden>
+                <line x1="8" y1="0" x2="8" y2="30" stroke={PURPLE_BRIGHT} strokeWidth="1.5" />
+                <polygon points="4,30 12,30 8,40" fill={PURPLE_BRIGHT} />
+              </svg>
+            </div>
+            {/* right arrow */}
+            <div className="flex justify-start pl-4 pt-0">
+              <svg width="56" height="40" viewBox="0 0 56 40" aria-hidden>
+                <path d="M16 4 Q44 4 44 36" fill="none" stroke={PURPLE_BRIGHT} strokeWidth="1.5" />
+                <polygon points="40,36 48,36 44,43" fill={PURPLE_BRIGHT} />
+              </svg>
+            </div>
+          </div>
+
+          {/* Lock | Trading | Rewards */}
+          <div className="grid grid-cols-3 gap-3" style={{ maxWidth: 540, margin: "0 auto" }}>
+            <NodeCard node={nodes[1]} />
+            <NodeCard node={nodes[2]} />
+            <NodeCard node={nodes[3]} />
+          </div>
+
+          {/* Dashed arrow from Trading (center) down to Burn */}
+          <div className="flex justify-center mt-1">
+            <svg width="16" height="36" viewBox="0 0 16 36" aria-hidden>
+              <line x1="8" y1="0" x2="8" y2="26" stroke={CORAL} strokeWidth="1.5" strokeDasharray="4 3" />
+              <polygon points="4,26 12,26 8,36" fill={CORAL} />
+            </svg>
+          </div>
+
+          {/* Burn — bottom center */}
+          <div className="flex justify-center">
+            <div style={{ width: 170 }}>
+              <NodeCard node={nodes[4]} />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Arrows down to Lock + Rewards */}
-      <div className="grid grid-cols-3 items-end" style={{ maxWidth: 520, margin: "0 auto" }}>
-        <Arrow dir="diag-left" />
-        <Arrow dir="down" />
-        <Arrow dir="diag-right" />
-      </div>
-
-      {/* Lock | Trading | Rewards row */}
-      <div
-        className="grid grid-cols-3 gap-3"
-        style={{ maxWidth: 520, margin: "0 auto" }}
-      >
-        <NodeCard node={nodes[1]} />
-        <NodeCard node={nodes[3]} />
-        <NodeCard node={nodes[2]} />
-      </div>
-
-      {/* Arrow from Trading to Burn */}
-      <div className="flex justify-center mt-1">
-        <Arrow dir="down" dashed />
-      </div>
-
-      {/* Burn at bottom center */}
-      <div className="flex justify-center">
-        <div className="max-w-[200px] w-full">
-          <NodeCard node={nodes[4]} />
+      {/* Mobile layout — vertical stack with connector lines */}
+      <div className="sm:hidden flex flex-col items-center gap-0">
+        <div style={{ width: "min(100%, 260px)" }}>
+          <NodeCard node={nodes[0]} compact />
+        </div>
+        <div className="flex justify-center"><svg width="16" height="24" viewBox="0 0 16 24"><line x1="8" y1="0" x2="8" y2="18" stroke={PURPLE_BRIGHT} strokeWidth="1.5"/><polygon points="4,18 12,18 8,24" fill={PURPLE_BRIGHT}/></svg></div>
+        <div className="grid grid-cols-2 gap-2 w-full">
+          <NodeCard node={nodes[1]} compact />
+          <NodeCard node={nodes[3]} compact />
+        </div>
+        <div className="flex justify-center"><svg width="16" height="24" viewBox="0 0 16 24"><line x1="8" y1="0" x2="8" y2="18" stroke={PURPLE_BRIGHT} strokeWidth="1.5"/><polygon points="4,18 12,18 8,24" fill={PURPLE_BRIGHT}/></svg></div>
+        <div style={{ width: "min(100%, 260px)" }}>
+          <NodeCard node={nodes[2]} compact />
+        </div>
+        <div className="flex justify-center"><svg width="16" height="24" viewBox="0 0 16 24"><line x1="8" y1="0" x2="8" y2="18" stroke={CORAL} strokeWidth="1.5" strokeDasharray="4 3"/><polygon points="4,18 12,18 8,24" fill={CORAL}/></svg></div>
+        <div style={{ width: "min(100%, 260px)" }}>
+          <NodeCard node={nodes[4]} compact />
         </div>
       </div>
 
       {/* Legend */}
       <div className="flex items-center justify-center gap-8 mt-5 pt-4" style={{ borderTop: `1px solid ${BORDER}` }}>
         <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-          <span className="inline-block w-6 h-0.5" style={{ background: PURPLE_BRIGHT }} />
+          <span className="inline-block w-5 h-px" style={{ background: PURPLE_BRIGHT }} />
           Flow
         </span>
         <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-          <span className="inline-block w-6 h-0 border-t-2 border-dashed" style={{ borderColor: CORAL }} />
+          <span className="inline-block" style={{ width: 20, borderTop: `2px dashed ${CORAL}` }} />
           Buyback
         </span>
       </div>
@@ -1736,161 +1781,149 @@ function SectionMock({
     const memeTotal = portfolio.reduce((acc, t) => acc + t.valueUsd, 0);
     const roster = portfolio.slice(0, 30);
     const vault = [
-      { k: "Number of NFTs", v: veDust ? veDust.nfts.toString() : "---" },
+      { k: "NFTs", v: veDust ? veDust.nfts.toString() : "---" },
       {
-        k: "veDUST Balance",
+        k: "veDUST",
         v: veDust
-          ? veDust.veBalanceTokens.toLocaleString(undefined, { maximumFractionDigits: 2 })
+          ? veDust.veBalanceTokens.toLocaleString(undefined, { maximumFractionDigits: 0 })
           : "---",
       },
-      { k: "Current Value", v: veDust ? formatUsd(veDust.valueUsd) : "$---" },
-      { k: "Weekly USDC Yield", v: veDust ? formatUsd(veDust.weeklyUsd) : "$---" },
-      { k: "Lifetime USDC Yield", v: veDust ? formatUsd(veDust.lifetimeUsd) : "$---" },
+      { k: "Value", v: veDust ? formatUsd(veDust.valueUsd) : "$---" },
+      { k: "Weekly Yield", v: veDust ? formatUsd(veDust.weeklyUsd) : "$---" },
+      { k: "Lifetime Yield", v: veDust ? formatUsd(veDust.lifetimeUsd) : "$---" },
     ];
     return (
-      <div className="flex flex-col gap-6">
-        {/* Top stats row */}
+      <div className="flex flex-col gap-5">
+        {/* Stat cards */}
         <Reveal>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
-              { dot: STAT_DOTS.green, label: "Trading Wallet", value: formatToken(stats.balances.trading, stats.decimals), sub: "BCHOG balance" },
+              { dot: STAT_DOTS.green, label: "Trading Wallet", value: formatToken(stats.balances.trading, stats.decimals), sub: "BCHOG" },
               { dot: STAT_DOTS.purple, label: "Meme Portfolio", value: memeTotal > 0 ? formatUsd(memeTotal) : "$---", sub: undefined },
-              { dot: STAT_DOTS.cream, label: "veDUST Portfolio", value: veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---", sub: undefined },
+              { dot: STAT_DOTS.cream, label: "veDUST Value", value: veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---", sub: undefined },
               { dot: STAT_DOTS.pink, label: "Weekly Yield", value: veDust?.weeklyUsd ? formatUsd(veDust.weeklyUsd) : "$---", sub: "USDC" },
             ].map((s) => (
               <div
                 key={s.label}
-                className="rounded-xl p-4 sm:p-5 flex flex-col"
+                className="rounded-xl p-4 flex flex-col"
                 style={{
                   background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
                   border: `1px solid ${BORDER_STRONG}`,
-                  boxShadow: `0 0 16px 2px rgba(122,45,255,0.12)`,
+                  boxShadow: `0 0 14px 1px rgba(122,45,255,0.12)`,
                 }}
               >
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-2">
                   <span className="w-2 h-2 rounded-full shrink-0" style={{ background: s.dot }} />
-                  <span className="text-[10px] font-medium uppercase tracking-[0.12em]" style={{ color: MUTED }}>
-                    {s.label}
-                  </span>
+                  <span className="text-[10px] font-medium uppercase tracking-[0.1em]" style={{ color: MUTED }}>{s.label}</span>
                 </div>
-                <div className="bchog-stat-value text-[clamp(1.2rem,3.5vw,1.8rem)] font-bold text-white">{s.value}</div>
-                {s.sub && <div className="text-[10px] mt-1 uppercase tracking-[0.1em]" style={{ color: MUTED }}>{s.sub}</div>}
+                <div className="bchog-stat-value text-[clamp(1.1rem,3vw,1.6rem)] font-bold text-white">{s.value}</div>
+                {s.sub && <div className="text-[9px] mt-0.5 uppercase tracking-[0.1em]" style={{ color: MUTED }}>{s.sub}</div>}
               </div>
             ))}
           </div>
         </Reveal>
 
-        {/* Two-column on desktop: portfolio + vault/trades */}
+        {/* Two-column on desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {/* Left: Meme Portfolio */}
-          <Reveal>
-            <div
-              className="rounded-xl p-5 sm:p-6 h-full"
-              style={{ background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`, border: `1px solid ${BORDER_STRONG}` }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: PURPLE_BRIGHT }}>
-                  Meme Portfolio
-                </span>
-                {memeTotal > 0 && (
-                  <span className="text-xs font-semibold text-white">{formatUsd(memeTotal)}</span>
+          {/* Left: Meme Portfolio horizontal scroll + veDUST vault */}
+          <div className="flex flex-col gap-4">
+            <Reveal>
+              <div
+                className="rounded-xl p-4 sm:p-5"
+                style={{ background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`, border: `1px solid ${BORDER_STRONG}` }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>Meme Portfolio</span>
+                  {memeTotal > 0 && <span className="text-xs font-semibold text-white">{formatUsd(memeTotal)}</span>}
+                </div>
+                {roster.length === 0 ? (
+                  <div className="text-sm py-4" style={{ color: MUTED }}>Loading holdings…</div>
+                ) : (
+                  /* Horizontal scroll — shows ~5 cards, wraps to next line */
+                  <div
+                    className="no-scrollbar overflow-x-auto"
+                    style={{ scrollbarWidth: "none" }}
+                  >
+                    <div className="flex gap-2" style={{ width: "max-content" }}>
+                      {roster.map((t) => (
+                        <a
+                          key={t.address}
+                          href={explorerToken(t.address)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex-shrink-0 flex flex-col items-center rounded-xl p-3 no-underline text-white transition-all hover:scale-[1.03]"
+                          style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}`, width: 88 }}
+                        >
+                          <div className="w-9 h-9 rounded-full overflow-hidden mb-2" style={{ background: PANEL, border: `1px solid ${BORDER}` }}>
+                            {t.iconUrl && <img src={t.iconUrl} alt="" className="w-full h-full object-cover" draggable={false} />}
+                          </div>
+                          <div className="text-[10px] font-semibold uppercase truncate w-full text-center">{t.symbol}</div>
+                          <div className="text-[11px] font-bold mt-0.5" style={{ color: PURPLE_BRIGHT }}>{formatUsd(t.valueUsd)}</div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
-              {roster.length === 0 ? (
-                <div className="text-sm py-6" style={{ color: MUTED }}>Loading holdings…</div>
-              ) : (
-                <div
-                  className="no-scrollbar flex flex-wrap gap-2"
-                  style={{ maxHeight: 280, overflowY: "auto" }}
-                >
-                  {roster.map((t) => (
-                    <a
-                      key={t.address}
-                      href={explorerToken(t.address)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-2 rounded-lg px-3 py-2 no-underline text-white transition-all hover:scale-[1.02]"
-                      style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}`, minWidth: 130 }}
-                    >
-                      <div
-                        className="w-8 h-8 rounded-full overflow-hidden shrink-0"
-                        style={{ background: PANEL, border: `1px solid ${BORDER}` }}
-                      >
-                        {t.iconUrl && <img src={t.iconUrl} alt="" className="w-full h-full object-cover" draggable={false} />}
-                      </div>
-                      <div>
-                        <div className="text-[11px] font-semibold uppercase truncate" style={{ maxWidth: 80 }}>{t.symbol}</div>
-                        <div className="text-xs font-bold" style={{ color: PURPLE_BRIGHT }}>{formatUsd(t.valueUsd)}</div>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
-          </Reveal>
+            </Reveal>
 
-          {/* Right: veDUST Vault + Recent Trades */}
-          <div className="flex flex-col gap-5">
-            <Reveal delay={80}>
+            <Reveal delay={60}>
               <div
-                className="rounded-xl p-5 sm:p-6"
-                style={{ background: `linear-gradient(160deg, ${PANEL} 0%, ${INDIGO} 100%)`, border: `1px solid ${BORDER_STRONG}`, boxShadow: `0 0 20px 4px rgba(61,20,136,0.3)` }}
+                className="rounded-xl p-4 sm:p-5"
+                style={{ background: `linear-gradient(160deg, ${PANEL} 0%, ${INDIGO} 100%)`, border: `1px solid ${BORDER_STRONG}`, boxShadow: `0 0 18px 2px rgba(61,20,136,0.28)` }}
               >
-                <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: PURPLE_BRIGHT }}>
-                  Neverland veDUST Vault
-                </span>
-                <div className="grid grid-cols-2 gap-3 mt-4">
+                <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>Neverland veDUST Vault</span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
                   {vault.map((r) => (
-                    <div key={r.k} className="rounded-lg p-3" style={{ background: "rgba(0,0,0,0.2)" }}>
-                      <div className="text-[9px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>{r.k}</div>
-                      <div className="bchog-stat-value text-base font-bold text-white mt-1">{r.v}</div>
+                    <div key={r.k} className="rounded-lg p-2.5" style={{ background: "rgba(0,0,0,0.22)" }}>
+                      <div className="text-[9px] uppercase tracking-[0.08em]" style={{ color: MUTED }}>{r.k}</div>
+                      <div className="bchog-stat-value text-sm font-bold text-white mt-1">{r.v}</div>
                     </div>
                   ))}
                 </div>
               </div>
             </Reveal>
-
-            <Reveal delay={120}>
-              <div
-                className="rounded-xl p-5 sm:p-6"
-                style={{ background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`, border: `1px solid ${BORDER_STRONG}` }}
-              >
-                <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: PURPLE_BRIGHT }}>
-                  Recent Trades
-                </span>
-                <div className="mt-4 flex flex-col gap-1">
-                  {market.trades.length === 0 ? (
-                    <div className="text-sm py-4" style={{ color: MUTED }}>Loading recent trades…</div>
-                  ) : (
-                    market.trades.map((t) => (
-                      <a
-                        key={t.hash}
-                        href={explorerTx(t.hash)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-3 no-underline rounded-lg px-3 py-2.5 transition-colors hover:bg-white/[0.04]"
-                        style={{ color: "white", borderBottom: `1px solid ${BORDER}` }}
-                      >
-                        <span
-                          className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase shrink-0"
-                          style={{
-                            background: t.type === "BUY" ? "rgba(122,45,255,0.25)" : "rgba(255,92,138,0.18)",
-                            color: t.type === "BUY" ? PURPLE_BRIGHT : CORAL,
-                            border: `1px solid ${t.type === "BUY" ? PURPLE : CORAL}`,
-                          }}
-                        >
-                          {t.type}
-                        </span>
-                        <span className="flex-1 text-sm font-medium truncate">{compactAmount(t.tokenAmount)} BCHOG</span>
-                        <span className="text-sm font-mono shrink-0" style={{ color: CREAM }}>{formatUsd(t.valueUsd)}</span>
-                        <span className="text-[10px] w-7 text-right shrink-0" style={{ color: MUTED }}>{timeAgo(t.ts)}</span>
-                      </a>
-                    ))
-                  )}
-                </div>
-              </div>
-            </Reveal>
           </div>
+
+          {/* Right: Recent Trades */}
+          <Reveal delay={100}>
+            <div
+              className="rounded-xl p-4 sm:p-5 h-full"
+              style={{ background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`, border: `1px solid ${BORDER_STRONG}` }}
+            >
+              <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>Recent Trades</span>
+              <div className="mt-3 flex flex-col gap-0.5">
+                {market.trades.length === 0 ? (
+                  <div className="text-sm py-4" style={{ color: MUTED }}>Loading recent trades…</div>
+                ) : (
+                  market.trades.map((t) => (
+                    <a
+                      key={t.hash}
+                      href={explorerTx(t.hash)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-3 no-underline rounded-lg px-3 py-2.5 transition-colors hover:bg-white/[0.04]"
+                      style={{ color: "white", borderBottom: `1px solid ${BORDER}` }}
+                    >
+                      <span
+                        className="px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0"
+                        style={{
+                          background: t.type === "BUY" ? "rgba(122,45,255,0.25)" : "rgba(255,92,138,0.18)",
+                          color: t.type === "BUY" ? PURPLE_BRIGHT : CORAL,
+                          border: `1px solid ${t.type === "BUY" ? PURPLE : CORAL}`,
+                        }}
+                      >
+                        {t.type}
+                      </span>
+                      <span className="flex-1 text-sm font-medium truncate">{compactAmount(t.tokenAmount)} BCHOG</span>
+                      <span className="text-sm font-mono shrink-0" style={{ color: CREAM }}>{formatUsd(t.valueUsd)}</span>
+                      <span className="text-[10px] w-7 text-right shrink-0" style={{ color: MUTED }}>{timeAgo(t.ts)}</span>
+                    </a>
+                  ))
+                )}
+              </div>
+            </div>
+          </Reveal>
         </div>
       </div>
     );
@@ -1898,17 +1931,40 @@ function SectionMock({
   if (id === "contests") {
     const posts = ["https://x.com/BURNINGCHOG/status/2068770674475176411"];
     return (
-      <div className="flex flex-col gap-8">
-        <Stagger>
-          <Panel>
-            <SectionLabel>Active Contests · From X</SectionLabel>
-            <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="flex flex-col gap-6">
+        <Reveal>
+          <div
+            className="rounded-xl p-5 sm:p-6"
+            style={{ background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`, border: `1px solid ${BORDER_STRONG}` }}
+          >
+            <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: PURPLE_BRIGHT }}>
+              Active Contests · From X
+            </span>
+            <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
               {posts.map((p) => (
-                <TweetEmbed key={p} url={p} />
+                <div key={p} className="rounded-xl overflow-hidden" style={{ border: `1px solid ${BORDER_STRONG}` }}>
+                  <TweetEmbed url={p} />
+                </div>
               ))}
+              {/* Placeholder card on desktop so it doesn't look one-sided */}
+              <div
+                className="hidden lg:flex rounded-xl p-6 flex-col justify-center items-center gap-3"
+                style={{ background: SURFACE, border: `1px solid ${BORDER}`, minHeight: 200 }}
+              >
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{ background: PANEL, border: `1px solid ${BORDER_STRONG}` }}
+                >
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill={PURPLE_BRIGHT} aria-hidden>
+                    <path d="M18.244 2H21.5l-7.5 8.57L23 22h-6.875l-5.38-7.03L4.6 22H1.34l8.02-9.165L1 2h7.05l4.86 6.43L18.244 2Z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold text-white">More Contests Coming</p>
+                <p className="text-[11px] text-center" style={{ color: MUTED }}>Follow <a href={SOCIALS.x} target="_blank" rel="noreferrer" className="no-underline" style={{ color: PURPLE_BRIGHT }}>@BURNINGCHOG</a> on X for the latest</p>
+              </div>
             </div>
-          </Panel>
-        </Stagger>
+          </div>
+        </Reveal>
       </div>
     );
   }
@@ -1920,14 +1976,28 @@ function SectionMock({
 
 function ComingSoonBlock() {
   const items = [
-    { label: "NFT Collection", num: "01" },
-    { label: "BCHOG Gear", num: "02" },
-    { label: "Staking Program", num: "03" },
+    {
+      num: "01",
+      label: "NFT Collection",
+      detail: "Exclusive holder drops",
+      color: PURPLE_BRIGHT,
+    },
+    {
+      num: "02",
+      label: "BCHOG Gear",
+      detail: "Merch & community wear",
+      color: CREAM,
+    },
+    {
+      num: "03",
+      label: "Staking Program",
+      detail: "Earn by holding",
+      color: CORAL,
+    },
   ];
 
   const [activeIdx, setActiveIdx] = useState(0);
-  const [prevIdx, setPrevIdx] = useState<number | null>(null);
-  const [dir, setDir] = useState<"in" | "out">("in");
+  const [phase, setPhase] = useState<"idle" | "exit" | "enter">("idle");
   const blockRef = useRef<HTMLDivElement>(null);
   const cycleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const started = useRef(false);
@@ -1939,18 +2009,19 @@ function ComingSoonBlock() {
       ([entry]) => {
         if (entry.isIntersecting && !started.current) {
           started.current = true;
-          const cycle = (currentIdx: number) => {
-            const nextIdx = (currentIdx + 1) % items.length;
-            setPrevIdx(currentIdx);
-            setDir("out");
+          const cycle = (idx: number) => {
+            const next = (idx + 1) % items.length;
+            setPhase("exit");
             cycleRef.current = setTimeout(() => {
-              setActiveIdx(nextIdx);
-              setPrevIdx(null);
-              setDir("in");
-              cycleRef.current = setTimeout(() => cycle(nextIdx), 2400);
+              setActiveIdx(next);
+              setPhase("enter");
+              cycleRef.current = setTimeout(() => {
+                setPhase("idle");
+                cycleRef.current = setTimeout(() => cycle(next), 2000);
+              }, 600);
             }, 500);
           };
-          cycleRef.current = setTimeout(() => cycle(0), 2400);
+          cycleRef.current = setTimeout(() => cycle(0), 2200);
           io.disconnect();
         }
       },
@@ -1963,74 +2034,68 @@ function ComingSoonBlock() {
     };
   }, []);
 
-  return (
-    <div
-      ref={blockRef}
-      className="relative flex flex-col items-center justify-center overflow-hidden"
-      style={{ minHeight: 280 }}
-    >
-      {/* Counter */}
-      <div
-        className="text-[11px] tracking-[0.3em] font-medium uppercase mb-4"
-        style={{ color: MUTED }}
-      >
-        {String(activeIdx + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
-      </div>
+  const active = items[activeIdx];
 
-      {/* The cycling word — smaller than the "Coming Soon" section header */}
-      <div className="relative w-full flex items-center justify-center" style={{ height: 120 }}>
-        {/* Exiting item — flies up */}
-        {prevIdx !== null && (
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{ animation: "cs-exit-up 500ms cubic-bezier(0.4,0,1,1) forwards" }}
-          >
-            <span
-              className="uppercase text-white text-center leading-none"
-              style={{
-                fontFamily: "'Anton', sans-serif",
-                fontSize: "clamp(1.8rem, 6vw, 3.2rem)",
-                letterSpacing: "0.06em",
-                color: PURPLE_BRIGHT,
-              }}
-            >
-              {items[prevIdx].label}
-            </span>
-          </div>
-        )}
-        {/* Entering item — comes from bottom */}
+  const cardStyle: React.CSSProperties = {
+    opacity: phase === "exit" ? 0 : 1,
+    transform:
+      phase === "exit"
+        ? "translateY(-40px) scale(0.96)"
+        : phase === "enter"
+        ? "translateY(40px) scale(0.96)"
+        : "translateY(0) scale(1)",
+    transition:
+      phase === "exit"
+        ? "opacity 450ms ease, transform 450ms ease"
+        : phase === "enter"
+        ? "opacity 0ms, transform 0ms"
+        : "opacity 550ms cubic-bezier(0.22,1,0.36,1), transform 550ms cubic-bezier(0.22,1,0.36,1)",
+  };
+
+  return (
+    <div ref={blockRef} className="flex flex-col items-center" style={{ minHeight: 240 }}>
+      {/* Feature card */}
+      <div style={{ ...cardStyle, width: "100%", maxWidth: 420 }}>
         <div
-          key={activeIdx}
-          className="absolute inset-0 flex items-center justify-center"
+          className="rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center gap-3"
           style={{
-            animation: dir === "in" ? "cs-enter-up 600ms cubic-bezier(0.22,1,0.36,1) forwards" : "none",
+            background: `linear-gradient(145deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+            border: `1.5px solid ${active.color}44`,
+            boxShadow: `0 0 40px 8px ${active.color}18`,
           }}
         >
           <span
-            className="uppercase text-center leading-none"
+            className="text-[10px] font-bold uppercase tracking-[0.25em] px-3 py-1 rounded-full"
+            style={{ color: active.color, background: `${active.color}18`, border: `1px solid ${active.color}44` }}
+          >
+            {active.num}
+          </span>
+          <h3
+            className="text-white m-0"
             style={{
               fontFamily: "'Anton', sans-serif",
-              fontSize: "clamp(1.8rem, 6vw, 3.2rem)",
+              fontSize: "clamp(1.6rem, 5vw, 2.6rem)",
               letterSpacing: "0.06em",
-              color: PURPLE_BRIGHT,
+              lineHeight: 1.1,
             }}
           >
-            {items[activeIdx].label}
-          </span>
+            {active.label}
+          </h3>
+          <p className="text-sm" style={{ color: MUTED }}>{active.detail}</p>
         </div>
       </div>
 
-      {/* Dot bar */}
-      <div className="flex items-center gap-2 mt-4">
-        {items.map((_, i) => (
+      {/* Dot indicator */}
+      <div className="flex items-center gap-2 mt-5">
+        {items.map((it, i) => (
           <div
             key={i}
             style={{
-              width: activeIdx === i ? 24 : 7,
-              height: 7,
+              width: activeIdx === i ? 22 : 6,
+              height: 6,
               borderRadius: 99,
-              background: activeIdx === i ? PURPLE_BRIGHT : "rgba(181,76,255,0.25)",
-              transition: "width 400ms cubic-bezier(0.22,1,0.36,1), background 400ms ease",
+              background: activeIdx === i ? it.color : "rgba(255,255,255,0.15)",
+              transition: "width 350ms cubic-bezier(0.22,1,0.36,1), background 350ms ease",
             }}
           />
         ))}
