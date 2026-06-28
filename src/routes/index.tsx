@@ -459,7 +459,7 @@ function SiteHeader({
     <>
       <div className="fixed top-4 sm:top-5 inset-x-0 z-[100] flex justify-center px-4 pointer-events-none">
         <header
-          className="pointer-events-auto w-[70%] max-w-[880px] min-w-[260px] h-12 sm:h-[52px] rounded-full flex items-center justify-between px-4 sm:px-6"
+          className="pointer-events-auto w-[82%] max-w-[1080px] min-w-[300px] h-16 sm:h-[68px] rounded-full flex items-center justify-between px-5 sm:px-8"
           style={{
             background: "rgba(18, 5, 42, 0.55)",
             backdropFilter: "blur(20px)",
@@ -469,8 +469,8 @@ function SiteHeader({
           }}
         >
           <a href="#top" className="flex items-center gap-2 no-underline shrink-0" style={{ color: "white" }}>
-            <img src={TOKEN_LOGO} alt="BCHOG" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover" />
-            <span className="text-xs sm:text-sm font-semibold tracking-[0.16em] uppercase">BCHOG</span>
+            <img src={TOKEN_LOGO} alt="BCHOG" className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover" />
+            <span className="text-sm sm:text-base font-semibold tracking-[0.16em] uppercase">BCHOG</span>
           </a>
 
           <nav className="hidden lg:flex items-center gap-0.5">
@@ -479,7 +479,7 @@ function SiteHeader({
                 type="button"
                 key={s.id}
                 onClick={() => scrollToId(s.id)}
-                className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.1em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06]"
+                className="px-4 py-2 text-[13px] font-semibold uppercase tracking-[0.1em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06]"
                 style={{ color: MUTED }}
               >
                 {s.short}
@@ -553,6 +553,9 @@ function LandingHero() {
   const sectionRef = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  // Auto-show images 0→1→2 without scroll; only after 3rd image is shown does scroll activate
+  const [autoIndex, setAutoIndex] = useState(0);
+  const [scrollUnlocked, setScrollUnlocked] = useState(false);
 
   useEffect(() => {
     HERO_IMAGES.forEach(({ src }) => {
@@ -568,7 +571,28 @@ function LandingHero() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Auto-advance to next image every 1.4s; once last image shown, unlock scroll after pause
   useEffect(() => {
+    if (autoIndex >= HERO_IMAGES.length - 1) {
+      const t = setTimeout(() => setScrollUnlocked(true), 800);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(() => setAutoIndex((i) => i + 1), 1400);
+    return () => clearTimeout(t);
+  }, [autoIndex]);
+
+  // Block page scroll until all images have been shown
+  useEffect(() => {
+    if (!scrollUnlocked) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [scrollUnlocked]);
+
+  useEffect(() => {
+    if (!scrollUnlocked) return;
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
@@ -588,10 +612,13 @@ function LandingHero() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, []);
+  }, [scrollUnlocked]);
 
   const maxIndex = HERO_IMAGES.length - 1;
-  const activeIndex = Math.min(Math.floor(progress * HERO_IMAGES.length), maxIndex);
+  // Before scroll unlocked, use auto-advancing index; after unlock, use scroll progress
+  const activeIndex = scrollUnlocked
+    ? Math.min(Math.floor(progress * HERO_IMAGES.length), maxIndex)
+    : autoIndex;
 
   const carouselTransition = `transform ${CAROUSEL_MS} ${CAROUSEL_EASE}, filter ${CAROUSEL_MS} ${CAROUSEL_EASE}, opacity ${CAROUSEL_MS} ${CAROUSEL_EASE}, left ${CAROUSEL_MS} ${CAROUSEL_EASE}, height ${CAROUSEL_MS} ${CAROUSEL_EASE}, bottom ${CAROUSEL_MS} ${CAROUSEL_EASE}`;
 
@@ -633,7 +660,7 @@ function LandingHero() {
         opacity: 1,
         zIndex: 20,
         left: "50%",
-        height: isMobile ? "30%" : "46%",
+        height: isMobile ? "60%" : "92%",
         bottom: isMobile ? "22%" : 0,
       };
     }
@@ -646,7 +673,7 @@ function LandingHero() {
         opacity: 0.85,
         zIndex: 10,
         left: isMobile ? "20%" : "30%",
-        height: isMobile ? "8%" : "14%",
+        height: isMobile ? "16%" : "28%",
         bottom: isMobile ? "32%" : "12%",
       };
     }
@@ -658,12 +685,12 @@ function LandingHero() {
       opacity: 0.85,
       zIndex: 10,
       left: isMobile ? "80%" : "70%",
-      height: isMobile ? "8%" : "14%",
+      height: isMobile ? "16%" : "28%",
       bottom: isMobile ? "32%" : "12%",
     };
   }
 
-  const scrollTrackVh = maxIndex * 40;
+  const scrollTrackVh = 40; // one scroll step — images 0+1 auto-play, scroll only after 3rd shown
 
   return (
     <section
@@ -704,7 +731,7 @@ function LandingHero() {
             className="uppercase whitespace-nowrap text-white"
             style={{
               fontFamily: "'Anton', sans-serif",
-              fontSize: "clamp(90px, 28vw, 380px)",
+              fontSize: "clamp(76px, 23.8vw, 323px)",
               fontWeight: 900,
               lineHeight: 1,
               letterSpacing: "-0.02em",
@@ -837,7 +864,8 @@ function SectionBlock({
       >
         <div className="mb-10 sm:mb-12">
           <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="bchog-section-title text-[clamp(2rem,6vw,3.5rem)] text-white m-0">
+            <h2 className="bchog-section-title text-[clamp(2.8rem,8vw,5rem)] text-white m-0"
+            style={{ fontFamily: "'Anton', sans-serif", letterSpacing: "-0.01em" }}>
               {section.title}
             </h2>
             {section.soon && (
@@ -1712,29 +1740,125 @@ function ComingSoonBlock() {
     { title: "Staking Program", detail: "Earn by holding" },
   ];
 
+  const [visibleIndex, setVisibleIndex] = useState(-1);
+  const blockRef = useRef<HTMLDivElement>(null);
+  const cycleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const el = blockRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Start cycling items one by one, then loop
+          let idx = 0;
+          const showNext = () => {
+            setVisibleIndex(idx);
+            idx = (idx + 1) % items.length;
+            cycleRef.current = setTimeout(showNext, 2200);
+          };
+          showNext();
+          io.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      if (cycleRef.current) clearTimeout(cycleRef.current);
+    };
+  }, []);
+
   return (
-    <Reveal>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {items.map((item) => (
-          <div
-            key={item.title}
-            className="rounded-xl p-6 flex flex-col"
-            style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
-          >
-            <span
-              className="text-[10px] font-medium uppercase tracking-[0.12em] w-fit px-2 py-0.5 rounded-full"
-              style={{ color: CREAM, background: "rgba(61, 20, 136, 0.5)" }}
+    <div ref={blockRef} className="relative overflow-hidden" style={{ minHeight: 420 }}>
+      {/* Moon / planet backdrop like the reference image */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          left: "50%",
+          top: "-10%",
+          transform: "translateX(-50%)",
+          width: "clamp(320px, 70vw, 680px)",
+          aspectRatio: "1/1",
+          borderRadius: "50%",
+          background: "radial-gradient(ellipse at 50% 30%, #1a0a4a 0%, #0d0418 55%, transparent 75%)",
+          boxShadow: "0 0 120px 60px rgba(61, 20, 136, 0.22), inset 0 0 60px 20px rgba(100, 40, 220, 0.18)",
+          zIndex: 0,
+        }}
+      />
+      {/* Glow arc at the top of the moon */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          left: "50%",
+          top: "-10%",
+          transform: "translateX(-50%)",
+          width: "clamp(320px, 70vw, 680px)",
+          aspectRatio: "1/1",
+          borderRadius: "50%",
+          background: "transparent",
+          boxShadow: "0 -18px 60px 12px rgba(80, 30, 220, 0.38)",
+          zIndex: 1,
+        }}
+      />
+
+      {/* Items cycling in, one at a time */}
+      <div className="relative flex flex-col items-center justify-center gap-0 pt-16 pb-10" style={{ zIndex: 2 }}>
+        <div className="relative w-full" style={{ minHeight: 200 }}>
+          {items.map((item, i) => (
+            <div
+              key={item.title}
+              className="absolute inset-0 flex flex-col items-center justify-center text-center px-4"
+              style={{
+                opacity: visibleIndex === i ? 1 : 0,
+                transform: visibleIndex === i ? "translateY(0)" : "translateY(24px)",
+                transition: "opacity 600ms cubic-bezier(0.22,1,0.36,1), transform 700ms cubic-bezier(0.22,1,0.36,1)",
+                pointerEvents: visibleIndex === i ? "auto" : "none",
+              }}
             >
-              Soon
-            </span>
-            <h3 className="text-lg font-semibold text-white mt-4">{item.title}</h3>
-            <p className="text-sm mt-2" style={{ color: MUTED }}>
-              {item.detail}
-            </p>
-          </div>
-        ))}
+              <span
+                className="text-[10px] font-medium uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4 inline-block"
+                style={{ color: CREAM, background: "rgba(61, 20, 136, 0.55)", border: `1px solid ${BORDER_STRONG}` }}
+              >
+                Coming Soon
+              </span>
+              <h3
+                className="text-white m-0"
+                style={{
+                  fontFamily: "'Anton', sans-serif",
+                  fontSize: "clamp(2.2rem, 7vw, 4rem)",
+                  letterSpacing: "0.08em",
+                  lineHeight: 1.1,
+                }}
+              >
+                {item.title}
+              </h3>
+              <p className="mt-3 text-base" style={{ color: MUTED, maxWidth: 300 }}>
+                {item.detail}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Dot indicators */}
+        <div className="flex items-center gap-2 mt-8">
+          {items.map((_, i) => (
+            <div
+              key={i}
+              style={{
+                width: visibleIndex === i ? 22 : 6,
+                height: 6,
+                borderRadius: 99,
+                background: visibleIndex === i ? PURPLE_BRIGHT : BORDER_STRONG,
+                transition: "width 400ms cubic-bezier(0.22,1,0.36,1), background 400ms ease",
+              }}
+            />
+          ))}
+        </div>
       </div>
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+
+      <div className="relative mt-4 flex flex-wrap items-center justify-between gap-3 px-2" style={{ zIndex: 2 }}>
         <a
           href={NADFUN_TOKEN_URL}
           target="_blank"
@@ -1748,6 +1872,6 @@ function ComingSoonBlock() {
           Follow X & Telegram for updates
         </span>
       </div>
-    </Reveal>
+    </div>
   );
 }
