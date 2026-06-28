@@ -31,6 +31,21 @@ const FOOTER_BG = "#07040E";
 const TOKEN_LOGO = "/bchoglogo.png";
 const MASCOT_HERO = "/photo_2026-06-25_20-11-35-removebg-preview.png";
 
+const HERO_IMAGES = [
+  {
+    src: "https://www.image2url.com/r2/default/images/1782680314666-954b3ebf-5b98-427a-b773-5ca1a515e950.png",
+  },
+  {
+    src: "https://www.image2url.com/r2/default/images/1782680438614-e357bdfd-e2cb-4602-8f32-5c006e54df5b.png",
+  },
+  {
+    src: "https://www.image2url.com/r2/default/images/1782680595507-99146ec2-4bd7-477b-b276-4f7c9e476485.png",
+  },
+] as const;
+
+const CAROUSEL_EASE = "cubic-bezier(0.4,0,0.2,1)";
+const CAROUSEL_MS = "650ms";
+
 const STAT_DOTS = {
   purple: PURPLE_BRIGHT,
   cream: CREAM,
@@ -413,7 +428,7 @@ function Index() {
 
       <SiteHeader menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrollToId={scrollToId} />
 
-      <LandingHero stats={stats} market={market} />
+      <LandingHero />
 
       {SECTIONS.map((s) => (
         <SectionBlock
@@ -530,164 +545,216 @@ function SiteHeader({
   );
 }
 
-function LandingHero({ stats, market }: { stats: BchogStats; market: MarketExtras }) {
-  const lockedTotal = (stats.balances.lockHolding ?? 0n) + (stats.balances.atlantisLock ?? 0n);
-  const landingStats = [
-    {
-      dot: STAT_DOTS.purple,
-      label: "Total Burned",
-      value: formatToken(stats.balances.burn, stats.decimals),
-    },
-    {
-      dot: STAT_DOTS.cream,
-      label: "Total Locked",
-      value: formatToken(lockedTotal || undefined, stats.decimals),
-    },
-    {
-      dot: STAT_DOTS.green,
-      label: "Holders",
-      value: formatCount(market.holders),
-    },
-    {
-      dot: STAT_DOTS.pink,
-      label: "Market Cap",
-      value: formatUsd(market.marketCapUsd),
-    },
-  ];
+function LandingHero() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [progress, setProgress] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    HERO_IMAGES.forEach(({ src }) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 640);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const el = sectionRef.current;
+      if (!el) return;
+      const scrollable = Math.max(el.offsetHeight - window.innerHeight, 1);
+      const scrolled = Math.min(Math.max(-el.getBoundingClientRect().top, 0), scrollable);
+      setProgress(scrolled / scrollable);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  const maxIndex = HERO_IMAGES.length - 1;
+  const activeIndex = Math.min(Math.round(progress * maxIndex), maxIndex);
+
+  const carouselTransition = `transform ${CAROUSEL_MS} ${CAROUSEL_EASE}, filter ${CAROUSEL_MS} ${CAROUSEL_EASE}, opacity ${CAROUSEL_MS} ${CAROUSEL_EASE}, left ${CAROUSEL_MS} ${CAROUSEL_EASE}, height ${CAROUSEL_MS} ${CAROUSEL_EASE}, bottom ${CAROUSEL_MS} ${CAROUSEL_EASE}`;
+
+  function getRole(imageIndex: number): "center" | "left" | "right" | "hidden" {
+    const diff = (imageIndex - activeIndex + HERO_IMAGES.length) % HERO_IMAGES.length;
+    if (diff === 0) return "center";
+    if (diff === 1) return "right";
+    if (diff === 2) return "left";
+    return "hidden";
+  }
+
+  function roleStyle(role: "center" | "left" | "right" | "hidden"): CSSProperties {
+    const base: CSSProperties = {
+      position: "absolute",
+      aspectRatio: "0.6 / 1",
+      transition: carouselTransition,
+      willChange: "transform, filter, opacity",
+    };
+
+    if (role === "hidden") {
+      return {
+        ...base,
+        transform: "translateX(-50%) scale(0.6)",
+        filter: "blur(6px)",
+        opacity: 0,
+        zIndex: 1,
+        left: "50%",
+        height: isMobile ? "10%" : "18%",
+        bottom: isMobile ? "32%" : "12%",
+        pointerEvents: "none",
+      };
+    }
+
+    if (role === "center") {
+      return {
+        ...base,
+        transform: `translateX(-50%) scale(${isMobile ? 1.25 : 1.68})`,
+        filter: "none",
+        opacity: 1,
+        zIndex: 20,
+        left: "50%",
+        height: isMobile ? "60%" : "92%",
+        bottom: isMobile ? "22%" : 0,
+      };
+    }
+
+    if (role === "left") {
+      return {
+        ...base,
+        transform: "translateX(-50%) scale(1)",
+        filter: "blur(2px)",
+        opacity: 0.85,
+        zIndex: 10,
+        left: isMobile ? "20%" : "30%",
+        height: isMobile ? "16%" : "28%",
+        bottom: isMobile ? "32%" : "12%",
+      };
+    }
+
+    return {
+      ...base,
+      transform: "translateX(-50%) scale(1)",
+      filter: "blur(2px)",
+      opacity: 0.85,
+      zIndex: 10,
+      left: isMobile ? "80%" : "70%",
+      height: isMobile ? "16%" : "28%",
+      bottom: isMobile ? "32%" : "12%",
+    };
+  }
 
   return (
     <section
+      ref={sectionRef}
       id="top"
-      className="relative min-h-[100dvh] flex flex-col overflow-hidden"
-      style={{ backgroundColor: BG }}
+      className="relative w-full overflow-hidden"
+      style={{
+        height: `${100 + maxIndex * 85}vh`,
+        backgroundColor: BG,
+        fontFamily: "'Inter', sans-serif",
+        transition: `background-color ${CAROUSEL_MS} ${CAROUSEL_EASE}`,
+      }}
     >
-      <div className="absolute inset-0 bchog-grid-bg opacity-40 pointer-events-none" />
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url("${GRAIN_SVG}")`,
-          backgroundSize: "200px 200px",
-          opacity: 0.5,
-        }}
-      />
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <img
-          src={MASCOT_HERO}
-          alt=""
-          className="absolute right-[-8%] bottom-[-8%] w-[min(85vw,520px)] max-h-[70vh] object-contain opacity-[0.14] blur-[48px] saturate-[0.85]"
-          draggable={false}
+      <div className="sticky top-0 w-full overflow-hidden" style={{ height: "100vh" }}>
+        <div className="absolute inset-0 bchog-grid-bg opacity-40 pointer-events-none" />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url("${GRAIN_SVG}")`,
+            backgroundSize: "200px 200px",
+            opacity: 0.4,
+            zIndex: 50,
+          }}
         />
-      </div>
-
-      <div className="relative flex-1 flex flex-row pt-14 min-h-0">
-        <div className="w-1/2 flex flex-col justify-center px-4 sm:px-8 lg:px-14 py-8 min-w-0">
-          <p className="text-[10px] sm:text-xs font-medium uppercase tracking-[0.2em] mb-3" style={{ color: PURPLE_BRIGHT }}>
-            Burning Chog
-          </p>
-          <h2
-            className="bchog-section-title text-[clamp(2rem,7vw,4.5rem)] text-white"
-            style={{ fontWeight: 600 }}
-          >
-            BCHOG
-          </h2>
-          <p className="mt-3 sm:mt-4 text-[11px] sm:text-sm font-medium uppercase tracking-[0.14em] leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>
-            Deflationary. Rewarding. Unstoppable.
-          </p>
-          <p className="mt-2 text-[11px] sm:text-xs italic hidden sm:block" style={{ color: MUTED }}>
-            Always less. Always more, for those who get it.
-          </p>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <img
+            src={MASCOT_HERO}
+            alt=""
+            className="absolute right-[-8%] bottom-[-8%] w-[min(85vw,520px)] max-h-[70vh] object-contain opacity-[0.14] blur-[48px] saturate-[0.85]"
+            draggable={false}
+          />
         </div>
 
         <div
-          className="w-1/2 grid grid-cols-2 grid-rows-2 min-h-0"
-          style={{ borderLeft: `1px solid ${BORDER}` }}
+          className="absolute inset-x-0 flex items-center justify-center pointer-events-none select-none"
+          style={{ top: "18%", zIndex: 2 }}
         >
-          {landingStats.map((s, i) => (
-            <MetricCell
-              key={s.label}
-              dot={s.dot}
-              label={s.label}
-              value={s.value}
-              bordered={i % 2 === 0}
-              borderedTop={i >= 2}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="relative flex justify-center pb-6 pt-2" style={{ color: MUTED }}>
-        <button
-          type="button"
-          onClick={() => document.getElementById("dashboard")?.scrollIntoView({ behavior: "smooth" })}
-          className="flex flex-col items-center gap-1 bg-transparent border-0 cursor-pointer"
-          style={{ color: MUTED }}
-          aria-label="Scroll to dashboard"
-        >
-          <span className="text-[10px] uppercase tracking-[0.16em]">Scroll</span>
-          <ChevronDown size={18} strokeWidth={1.5} className="animate-bounce" />
-        </button>
-      </div>
-    </section>
-  );
-}
-
-// CA + copy + the single buy link (Nad.fun). Only place the CA is shown.
-function BuyBlock() {
-  const [copied, setCopied] = useState(false);
-  const copy = () => {
-    navigator.clipboard?.writeText(BCHOG_TOKEN);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
-  };
-  return (
-    <Reveal dir={1}>
-      <Panel>
-        <div className="flex justify-center mb-6">
-          <img src={TOKEN_LOGO} alt="BCHOG token" className="w-16 h-16 rounded-full object-cover" />
-        </div>
-        <SectionLabel>Contract Address</SectionLabel>
-        <div className="mt-4 flex flex-col sm:flex-row items-stretch gap-3">
-          <div
-            className="flex-1 rounded-lg px-4 py-3 font-mono text-xs sm:text-sm flex items-center justify-center text-center break-all"
-            style={{ background: SURFACE, border: `1px solid ${BORDER}`, color: "white" }}
+          <span
+            className="uppercase whitespace-nowrap text-white"
+            style={{
+              fontFamily: "'Anton', sans-serif",
+              fontSize: "clamp(90px, 28vw, 380px)",
+              fontWeight: 900,
+              lineHeight: 1,
+              letterSpacing: "-0.02em",
+              opacity: 1,
+            }}
           >
-            <span className="hidden sm:inline">{BCHOG_TOKEN}</span>
-            <span className="sm:hidden">{shortAddress(BCHOG_TOKEN)}</span>
-          </div>
+            BCHOG
+          </span>
+        </div>
+
+        <div className="absolute inset-0" style={{ zIndex: 3 }}>
+          {HERO_IMAGES.map((item, i) => {
+            const role = getRole(i);
+            return (
+              <div key={item.src} style={roleStyle(role)}>
+                <img
+                  src={item.src}
+                  alt=""
+                  draggable={false}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    objectPosition: "bottom center",
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          className="absolute bottom-6 left-4 sm:bottom-20 sm:left-24 max-w-[320px]"
+          style={{ zIndex: 60 }}
+        >
+          <p
+            className="font-bold uppercase tracking-widest mb-2 sm:mb-3 text-base sm:text-[22px] text-white"
+            style={{ opacity: 0.95, letterSpacing: "0.02em" }}
+          >
+            Burning Chog
+          </p>
+          <p
+            className="hidden sm:block text-xs sm:text-sm text-white mb-4 sm:mb-5"
+            style={{ opacity: 0.85, lineHeight: 1.6 }}
+          >
+            Deflationary. Rewarding. Unstoppable. Always less — always more for those who get it.
+          </p>
           <button
             type="button"
-            onClick={copy}
-            className="shrink-0 px-6 py-3 rounded-lg text-sm font-medium uppercase tracking-[0.08em] transition-colors hover:bg-white/10"
-            style={{ background: PURPLE, color: "white", border: "none" }}
+            onClick={() => document.getElementById("dashboard")?.scrollIntoView({ behavior: "smooth" })}
+            className="flex flex-col items-start gap-1 bg-transparent border-0 cursor-pointer p-0"
+            style={{ color: "rgba(255,255,255,0.55)" }}
+            aria-label="Scroll to dashboard"
           >
-            {copied ? "Copied" : "Copy CA"}
+            <span className="text-[10px] uppercase tracking-[0.16em]">Scroll</span>
+            <ChevronDown size={18} strokeWidth={1.5} className="animate-bounce" />
           </button>
         </div>
-        <div className="my-6" style={{ borderTop: `1px solid ${BORDER}` }} />
-        <div className="flex items-center justify-center gap-4">
-          <SectionLabel>Buy on</SectionLabel>
-          <a
-            href={NADFUN_TOKEN_URL}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Buy BCHOG on Nad.fun (opens in a new tab)"
-            className="inline-flex items-center justify-center w-12 h-12 rounded-full overflow-hidden transition-opacity hover:opacity-80"
-            style={{ border: `1px solid ${BORDER}` }}
-          >
-            <img src={nadfunLogo} alt="Nad.fun" className="w-full h-full object-cover" />
-          </a>
-        </div>
-        <a
-          href={explorerToken(BCHOG_TOKEN)}
-          target="_blank"
-          rel="noreferrer"
-          className="block text-center mt-4 text-[11px] font-medium uppercase tracking-[0.12em] no-underline"
-          style={{ color: MUTED }}
-        >
-          View on Explorer
-        </a>
-      </Panel>
-    </Reveal>
+      </div>
+    </section>
   );
 }
 
@@ -716,6 +783,9 @@ function Footer() {
               />
             </svg>
           </SocialButton>
+          <SocialButton href={NADFUN_TOKEN_URL} label="Buy on Nad.fun">
+            <img src={nadfunLogo} alt="" className="w-full h-full object-cover" draggable={false} />
+          </SocialButton>
         </div>
         <p className="text-[10px] uppercase tracking-[0.14em]" style={{ color: MUTED }}>
           Built on Monad
@@ -741,7 +811,7 @@ function SocialButton({
       rel="noreferrer"
       aria-label={label}
       title={label}
-      className="w-10 h-10 flex items-center justify-center no-underline transition-opacity hover:opacity-70"
+      className="w-10 h-10 flex items-center justify-center overflow-hidden no-underline transition-opacity hover:opacity-70"
       style={{
         background: SURFACE,
         color: "white",
@@ -780,7 +850,7 @@ function SectionBlock({
     >
       <div className="absolute inset-0 bchog-grid-bg opacity-20 pointer-events-none" />
       <div
-        className="relative px-4 sm:px-8 lg:px-14 pt-24 sm:pt-28 pb-20 w-full max-w-6xl mx-auto"
+        className="relative px-4 sm:px-8 lg:px-14 pt-24 sm:pt-28 pb-20 w-full max-w-7xl mx-auto"
         style={{ zIndex: 2 }}
       >
         <div className="mb-10 sm:mb-12">
@@ -791,9 +861,9 @@ function SectionBlock({
             {section.soon && (
               <span
                 className="text-[10px] font-medium uppercase px-2.5 py-1 tracking-[0.14em]"
-                style={{ color: CREAM, border: `1px solid ${BORDER_STRONG}` }}
+                style={{ color: MUTED, border: `1px solid ${BORDER}` }}
               >
-                Coming Soon
+                In Development
               </span>
             )}
           </div>
@@ -978,6 +1048,239 @@ function StatTile({
   );
 }
 
+// ---- dashboard charts (monochrome, reference-style) ----
+
+const CHART_STROKE = "rgba(255,255,255,0.85)";
+const CHART_FILL = "rgba(255,255,255,0.12)";
+const CHART_MUTED = "rgba(255,255,255,0.28)";
+
+function DashCard({
+  title,
+  value,
+  children,
+  className = "",
+}: {
+  title: string;
+  value: string;
+  children?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`rounded-xl p-4 sm:p-5 flex flex-col min-h-[132px] ${className}`}
+      style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
+    >
+      <p className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: MUTED }}>
+        {title}
+      </p>
+      <p className="bchog-stat-value text-[clamp(1.35rem,3.5vw,1.85rem)] font-semibold text-white mt-2">
+        {value}
+      </p>
+      {children && <div className="mt-auto pt-3">{children}</div>}
+    </div>
+  );
+}
+
+function SparkBars({ values, highlight }: { values: number[]; highlight?: number }) {
+  const max = Math.max(...values, 1);
+  return (
+    <svg viewBox="0 0 80 36" className="w-full h-9" aria-hidden>
+      {values.map((v, i) => {
+        const h = (v / max) * 28;
+        const active = highlight === i;
+        return (
+          <rect
+            key={i}
+            x={4 + i * 18}
+            y={32 - h}
+            width={12}
+            height={h}
+            rx={2}
+            fill={active ? CHART_STROKE : CHART_MUTED}
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+function SparkArea({ values }: { values: number[] }) {
+  const max = Math.max(...values, 1);
+  const pts = values
+    .map((v, i) => {
+      const x = (i / (values.length - 1)) * 78 + 1;
+      const y = 32 - (v / max) * 26;
+      return `${x},${y}`;
+    })
+    .join(" ");
+  const area = `M1,32 L${pts.split(" ").join(" L")} L79,32 Z`;
+  return (
+    <svg viewBox="0 0 80 36" className="w-full h-9" aria-hidden>
+      <path d={area} fill={CHART_FILL} />
+      <polyline points={pts} fill="none" stroke={CHART_STROKE} strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function DonutChart({ segments }: { segments: { value: number; label: string }[] }) {
+  const total = segments.reduce((a, s) => a + s.value, 0) || 1;
+  let offset = 0;
+  const r = 16;
+  const c = 2 * Math.PI * r;
+  return (
+    <div className="flex items-center gap-3">
+      <svg viewBox="0 0 40 40" className="w-10 h-10 shrink-0" aria-hidden>
+        <circle cx="20" cy="20" r={r} fill="none" stroke={CHART_MUTED} strokeWidth="5" />
+        {segments.map((s, i) => {
+          const len = (s.value / total) * c;
+          const dash = `${len} ${c - len}`;
+          const el = (
+            <circle
+              key={i}
+              cx="20"
+              cy="20"
+              r={r}
+              fill="none"
+              stroke={i === 0 ? CHART_STROKE : CHART_MUTED}
+              strokeWidth="5"
+              strokeDasharray={dash}
+              strokeDashoffset={-offset}
+              transform="rotate(-90 20 20)"
+            />
+          );
+          offset += len;
+          return el;
+        })}
+      </svg>
+      <div className="flex flex-col gap-0.5 text-[9px]" style={{ color: MUTED }}>
+        {segments.map((s) => (
+          <span key={s.label}>
+            {Math.round((s.value / total) * 100)}% {s.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RingProgress({ pct }: { pct: number }) {
+  const r = 16;
+  const c = 2 * Math.PI * r;
+  const len = (pct / 100) * c;
+  return (
+    <svg viewBox="0 0 40 40" className="w-10 h-10 ml-auto" aria-hidden>
+      <circle cx="20" cy="20" r={r} fill="none" stroke={CHART_MUTED} strokeWidth="4" />
+      <circle
+        cx="20"
+        cy="20"
+        r={r}
+        fill="none"
+        stroke={CHART_STROKE}
+        strokeWidth="4"
+        strokeDasharray={`${len} ${c - len}`}
+        strokeLinecap="round"
+        transform="rotate(-90 20 20)"
+      />
+    </svg>
+  );
+}
+
+function TargetCompare({ current, target }: { current: number; target: number }) {
+  const pct = Math.min((current / Math.max(target, 1)) * 100, 100);
+  return (
+    <div className="relative h-9 rounded-md overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
+      <div
+        className="absolute inset-y-0 left-0"
+        style={{ width: `${pct}%`, background: "rgba(255,255,255,0.18)" }}
+      />
+      <div
+        className="absolute inset-y-0 border-r border-dashed"
+        style={{ left: "100%", transform: "translateX(-1px)", borderColor: CHART_STROKE }}
+      />
+      <div className="absolute bottom-1 right-2 text-[9px]" style={{ color: MUTED }}>
+        {Math.round(pct)}%
+      </div>
+    </div>
+  );
+}
+
+function SupplyTimeline({
+  milestones,
+  progressPct,
+}: {
+  milestones: { label: string; value: string; pct: number }[];
+  progressPct: number;
+}) {
+  const bars = 72;
+  return (
+    <div className="mt-6">
+      <div className="relative h-16 flex items-end gap-[2px]">
+        {Array.from({ length: bars }).map((_, i) => {
+          const t = i / (bars - 1);
+          const lit = t <= progressPct / 100;
+          const intensity = lit ? 0.15 + t * 0.85 : 0.08;
+          return (
+            <div
+              key={i}
+              className="flex-1 rounded-sm"
+              style={{
+                height: `${28 + Math.sin(i * 0.35) * 8 + (lit ? 12 : 0)}px`,
+                background: `rgba(255,255,255,${intensity})`,
+              }}
+            />
+          );
+        })}
+        {milestones.map((m) => (
+          <div
+            key={m.label}
+            className="absolute bottom-full flex flex-col items-center"
+            style={{ left: `${m.pct}%`, transform: "translateX(-50%)" }}
+          >
+            <span className="text-[10px] font-medium text-white whitespace-nowrap">{m.value}</span>
+            <span className="text-[9px] mt-0.5 whitespace-nowrap" style={{ color: MUTED }}>
+              {m.label}
+            </span>
+            <div className="w-px h-3 mt-1" style={{ background: CHART_STROKE }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TypewriterText({ lines, speed = 42 }: { lines: string[]; speed?: number }) {
+  const full = lines.join("\n");
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) setStarted(true);
+    }, { threshold: 0.35 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!started || count >= full.length) return;
+    const t = window.setTimeout(() => setCount((c) => c + 1), speed);
+    return () => window.clearTimeout(t);
+  }, [started, count, full.length, speed]);
+
+  const shown = full.slice(0, count);
+  return (
+    <div ref={ref} className="font-mono text-sm sm:text-base leading-relaxed whitespace-pre-wrap" style={{ color: "rgba(255,255,255,0.88)" }}>
+      {shown}
+      {started && count < full.length && (
+        <span className="bchog-typewriter-cursor inline-block w-[2px] h-[1em] align-[-2px] ml-0.5 bg-white" />
+      )}
+    </div>
+  );
+}
+
 function FlowArrow({ direction = "down" }: { direction?: "down" | "right" }) {
   return (
     <div className="flex justify-center py-1" aria-hidden style={{ color: MUTED }}>
@@ -1053,13 +1356,13 @@ const WALLET_NODES = [
   },
 ] as const;
 
-// per-node comic accent colors (adds color to the flow diagram)
+// per-node accent — monochrome professional
 const NODE_COLOR: Record<string, string> = {
-  treasury: "#FFD23F",
-  lock: "#FFCF6B",
-  rewards: "#5EE6A8",
-  trading: "#C28BFF",
-  burn: "#FF5E5E",
+  treasury: "rgba(255,255,255,0.85)",
+  lock: "rgba(255,255,255,0.7)",
+  rewards: "rgba(255,255,255,0.7)",
+  trading: "rgba(255,255,255,0.7)",
+  burn: "rgba(255,255,255,0.55)",
 };
 
 function WalletIcon({
@@ -1115,7 +1418,7 @@ function WalletIcon({
           strokeWidth={s * 0.11}
           strokeLinecap="round"
         />
-        <circle cx={s * 0.5} cy={s * 0.68} r={s * 0.09} fill="#12052A" />
+        <circle cx={s * 0.5} cy={s * 0.68} r={s * 0.09} fill={BG} />
       </g>
     );
   if (id === "gift")
@@ -1142,7 +1445,7 @@ function WalletIcon({
           y1={s * 0.28}
           x2={s * 0.5}
           y2={s * 0.92}
-          stroke="#12052A"
+          stroke={BG}
           strokeWidth={s * 0.1}
         />
         <path
@@ -1265,7 +1568,7 @@ function EcosystemWalletFlowDiagram() {
             key={i}
             d={curvedPath(a, b, bend)}
             fill="none"
-            stroke={dashed ? "rgba(181,76,255,0.45)" : PURPLE_BRIGHT}
+            stroke={dashed ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.65)"}
             strokeWidth={dashed ? 1.2 : 1.5}
             strokeLinecap="round"
             strokeDasharray={dashed ? "5 4" : undefined}
@@ -1283,7 +1586,7 @@ function EcosystemWalletFlowDiagram() {
                 cy={n.cy}
                 r={n.r + 1}
                 fill={SURFACE}
-                stroke={NODE_COLOR[n.id] ?? PURPLE_BRIGHT}
+                stroke={NODE_COLOR[n.id] ?? "rgba(255,255,255,0.7)"}
                 strokeWidth="1.5"
               />
               <WalletIcon
@@ -1291,7 +1594,7 @@ function EcosystemWalletFlowDiagram() {
                 cx={n.cx}
                 cy={n.cy}
                 size={n.r * 1.0}
-                color={NODE_COLOR[n.id] ?? PURPLE_BRIGHT}
+                color={NODE_COLOR[n.id] ?? "rgba(255,255,255,0.7)"}
               />
             </g>
           );
@@ -1317,7 +1620,7 @@ function EcosystemWalletFlowDiagram() {
                   textAnchor="middle"
                   fontFamily="Inter, sans-serif"
                   fontSize={8}
-                  fill="rgba(200,180,255,0.65)"
+                  fill={MUTED}
                   letterSpacing="0.04em"
                 >
                   ({n.sub})
@@ -1332,7 +1635,7 @@ function EcosystemWalletFlowDiagram() {
                   textAnchor="middle"
                   fontFamily="Inter, sans-serif"
                   fontSize={7.5}
-                  fill="rgba(180,160,255,0.55)"
+                  fill={MUTED}
                 >
                   {line.trim()}
                 </text>
@@ -1355,8 +1658,8 @@ function EcosystemWalletFlowDiagram() {
 
         {/* ── Legend ── */}
         <g transform="translate(130, 450)">
-          <line x1="0" y1="6" x2="24" y2="6" stroke={PURPLE_BRIGHT} strokeWidth="1.2" strokeLinecap="round" />
-          <polygon points="21,3 28,6 21,9" fill={PURPLE_BRIGHT} />
+          <line x1="0" y1="6" x2="24" y2="6" stroke="rgba(255,255,255,0.65)" strokeWidth="1.2" strokeLinecap="round" />
+          <polygon points="21,3 28,6 21,9" fill="rgba(255,255,255,0.65)" />
           <text x="32" y="10" fontFamily="Inter, sans-serif" fontSize="8" fill={MUTED} letterSpacing="0.08em">
             FLOW
           </text>
@@ -1365,12 +1668,12 @@ function EcosystemWalletFlowDiagram() {
             y1="6"
             x2="114"
             y2="6"
-            stroke="rgba(181,76,255,0.45)"
+            stroke="rgba(255,255,255,0.35)"
             strokeWidth="1"
             strokeLinecap="round"
             strokeDasharray="4 3"
           />
-          <polygon points="111,3 118,6 111,9" fill="rgba(181,76,255,0.45)" />
+          <polygon points="111,3 118,6 111,9" fill="rgba(255,255,255,0.35)" />
           <text x="122" y="10" fontFamily="Inter, sans-serif" fontSize="8" fill={MUTED} letterSpacing="0.08em">
             BUYBACK PATH
           </text>
@@ -1393,20 +1696,17 @@ function DeflationaryFlywheelDiagram({
     {
       label: "+100k Bonus Burn",
       sub: "Extra supply torched forever",
-      accent: STAT_DOTS.pink,
       outcome: "Burned forever",
     },
     {
       label: "+50k → Lock Holding",
       sub: "Accumulates until 1M, then locked 1 yr with Atlantis",
-      accent: CREAM,
       outcome: "The Vault",
       progress: true,
     },
     {
       label: "+50k → Rewards",
       sub: "Fuels community contests & engagement",
-      accent: STAT_DOTS.green,
       outcome: "Rewards",
     },
   ];
@@ -1421,7 +1721,7 @@ function DeflationaryFlywheelDiagram({
       <div className="rounded-lg p-5 text-center" style={nodeCard}>
         <SectionLabel>Trigger</SectionLabel>
         <div className="flex items-center justify-center gap-2 mt-3">
-          <Flame size={28} strokeWidth={1.5} color={STAT_DOTS.pink} />
+          <Flame size={28} strokeWidth={1.5} color="rgba(255,255,255,0.85)" />
           <span className="bchog-section-title text-3xl sm:text-4xl text-white">Burn</span>
         </div>
         <p className="text-xs mt-3 max-w-md mx-auto leading-relaxed" style={{ color: MUTED }}>
@@ -1445,7 +1745,7 @@ function DeflationaryFlywheelDiagram({
         {branches.map((b) => (
           <div key={b.label} className="p-4 sm:p-5 flex flex-col" style={{ background: SURFACE }}>
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: b.accent }} />
+              <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-white" />
               <span className="text-xs font-medium uppercase tracking-[0.08em]">{b.label}</span>
             </div>
             <p className="text-[11px] leading-relaxed" style={{ color: MUTED }}>
@@ -1454,14 +1754,14 @@ function DeflationaryFlywheelDiagram({
             {b.progress ? (
               <div className="mt-4">
                 <div className="h-1 rounded-full overflow-hidden" style={{ background: BG }}>
-                  <div className="h-full rounded-full" style={{ width: `${lockProgress}%`, background: PURPLE }} />
+                  <div className="h-full rounded-full bg-white" style={{ width: `${lockProgress}%` }} />
                 </div>
                 <p className="text-[10px] mt-2 uppercase tracking-[0.08em]" style={{ color: MUTED }}>
                   {formatToken(lockBalance, decimals)} / 1M target
                 </p>
               </div>
             ) : null}
-            <p className="mt-auto pt-3 text-[10px] uppercase tracking-[0.1em]" style={{ color: b.accent, borderTop: `1px solid ${BORDER}` }}>
+            <p className="mt-auto pt-3 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED, borderTop: `1px solid ${BORDER}` }}>
               {b.outcome}
             </p>
           </div>
@@ -1552,128 +1852,146 @@ function SectionMock({
         lockedTotal;
 
   if (id === "dashboard") {
-    const supply = [
-      { label: "Atlantis Lock", value: stats.balances.atlantisLock, color: CREAM },
-      { label: "Lock Holding", value: stats.balances.lockHolding, color: "#FFCF6B" },
-      { label: "Treasury", value: stats.balances.treasury, color: STAT_DOTS.green },
-      { label: "Trading Desk", value: stats.balances.trading, color: PURPLE_BRIGHT },
-      { label: "Circulating", value: circulating, color: "#FFFFFF" },
-    ];
     const lockProgress = percentOf(
       stats.balances.lockHolding,
       LOCK_TARGET * scaledDivisor(stats.decimals),
     );
+    const burnedPct = percentOf(stats.balances.burn, stats.totalSupply);
+    const treasuryPct = percentOf(stats.balances.treasury, stats.totalSupply);
+    const tradingPct = percentOf(stats.balances.trading, stats.totalSupply);
+    const lockPct = percentOf(lockedTotal, stats.totalSupply);
+    const circPct = percentOf(circulating, stats.totalSupply);
+    const holderPct = market.holders ? Math.min((market.holders / 500) * 100, 100) : 0;
+
+    const burnBars = [42, 58, 48, 72, 65, 88, 76, 94];
+    const capArea = [22, 28, 25, 34, 31, 38, 42, 45];
+    const treasuryCurrent = Number(stats.balances.treasury ?? 0n) / Number(scaledDivisor(stats.decimals));
+    const lockTargetNum = Number(LOCK_TARGET);
+
     return (
-      <div className="flex flex-col gap-8">
-        <Stagger>
-          <StatGrid cols={2}>
-            <StatTile
-              dot={STAT_DOTS.purple}
-              label="Trading Desk"
-              value={formatToken(stats.balances.trading, stats.decimals)}
-              sub="BCHOG"
-            />
-            <StatTile
-              dot={STAT_DOTS.green}
-              label="Treasury"
-              value={formatToken(stats.balances.treasury, stats.decimals)}
-              sub="BCHOG"
-            />
-            <StatTile
-              dot={STAT_DOTS.cream}
-              label="Total Supply"
-              value={formatToken(stats.totalSupply, stats.decimals)}
-              sub="BCHOG"
-            />
-            <StatTile
-              dot={STAT_DOTS.blue}
-              label="Atlantis Lock"
-              value={formatToken(stats.balances.atlantisLock, stats.decimals)}
-              sub="BCHOG"
-            />
-          </StatGrid>
-
-          <Panel>
-            <SectionLabel>Lock Holding · 1M Target</SectionLabel>
-            <div className="bchog-stat-value text-[clamp(1.5rem,5vw,2.5rem)] font-semibold text-white mt-3">
-              {formatToken(stats.balances.lockHolding, stats.decimals)}
-            </div>
-            <div
-              className="h-1.5 rounded-full overflow-hidden mt-4"
-              style={{ background: SURFACE, border: `1px solid ${BORDER}` }}
-            >
-              <div
-                className="h-full rounded-full"
-                style={{ width: `${lockProgress}%`, background: PURPLE }}
+      <div className="flex flex-col gap-4 sm:gap-5">
+        <Reveal>
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+            <DashCard title="Total Burned" value={formatToken(stats.balances.burn, stats.decimals)}>
+              <SparkBars values={burnBars} highlight={6} />
+            </DashCard>
+            <DashCard title="Supply Locked" value={`${Math.round(lockPct)}%`}>
+              <DonutChart
+                segments={[
+                  { value: lockPct, label: "locked" },
+                  { value: Math.max(100 - lockPct, 1), label: "free" },
+                ]}
               />
-            </div>
-            <p className="text-[11px] mt-2 uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-              {formatToken(stats.balances.lockHolding, stats.decimals)} / 1M target · {Math.round(lockProgress)}%
-            </p>
-          </Panel>
+            </DashCard>
+            <DashCard title="Holders" value={formatCount(market.holders)}>
+              <RingProgress pct={holderPct} />
+            </DashCard>
+            <DashCard title="Market Cap" value={formatUsd(market.marketCapUsd)}>
+              <SparkArea values={capArea} />
+            </DashCard>
+            <DashCard
+              title="Treasury"
+              value={formatToken(stats.balances.treasury, stats.decimals)}
+              className="col-span-2 lg:col-span-1"
+            >
+              <TargetCompare current={treasuryCurrent} target={lockTargetNum * 0.25} />
+            </DashCard>
+          </div>
+        </Reveal>
 
-          <Panel>
-            <SectionLabel>Supply Breakdown</SectionLabel>
-            <div className="flex flex-col gap-4 mt-5">
-              {supply.map((s) => {
-                const pct = percentOf(s.value, stats.totalSupply);
-                return (
-                  <div key={s.label}>
-                    <div className="flex justify-between mb-1.5">
-                      <span className="text-xs font-medium uppercase tracking-[0.08em]">{s.label}</span>
-                      <span className="text-xs font-medium" style={{ color: MUTED }}>
-                        {pct}%
-                      </span>
-                    </div>
-                    <div className="h-1 rounded-full overflow-hidden" style={{ background: SURFACE }}>
-                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: s.color }} />
-                    </div>
-                  </div>
-                );
-              })}
+        <Reveal delay={80}>
+          <div
+            className="rounded-xl p-5 sm:p-8"
+            style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
+          >
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+              <div className="max-w-lg">
+                <p className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: MUTED }}>
+                  Lock holding target
+                </p>
+                <p className="bchog-stat-value text-[clamp(1.75rem,5vw,2.75rem)] font-semibold text-white mt-2">
+                  {formatToken(stats.balances.lockHolding, stats.decimals)}
+                </p>
+                <p className="text-sm mt-3 leading-relaxed" style={{ color: MUTED }}>
+                  Lock holding accumulates toward a 1M BCHOG target. Once reached, tokens are locked for one year
+                  with Atlantis — reducing circulating supply and strengthening the flywheel.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-6 lg:gap-10 shrink-0">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+                    Lock target
+                  </p>
+                  <p className="text-lg font-semibold text-white mt-1">1M BCHOG</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+                    Progress
+                  </p>
+                  <p className="text-lg font-semibold text-white mt-1">{Math.round(lockProgress)}%</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+                    Circulating
+                  </p>
+                  <p className="text-lg font-semibold text-white mt-1">
+                    {formatToken(circulating, stats.decimals)}
+                  </p>
+                </div>
+              </div>
             </div>
-          </Panel>
 
-          <Panel>
-            <SectionLabel>Ecosystem Wallets</SectionLabel>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-px mt-5" style={{ background: BORDER }}>
+            <SupplyTimeline
+              progressPct={lockProgress}
+              milestones={[
+                { label: "Burn milestone", value: `${Math.round(burnedPct)}%`, pct: 18 },
+                { label: "Treasury reserve", value: formatToken(stats.balances.treasury, stats.decimals), pct: 48 },
+                { label: "1M lock target", value: "1M", pct: 82 },
+              ]}
+            />
+          </div>
+        </Reveal>
+
+        <Reveal delay={120}>
+          <div
+            className="rounded-xl p-5 sm:p-6"
+            style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
+          >
+            <SectionLabel>Supply breakdown</SectionLabel>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-5">
               {[
-                ["Trading Wallet", WALLETS.trading, stats.balances.trading],
-                ["Lock Holding", WALLETS.lockHolding, stats.balances.lockHolding],
-                ["Treasury", WALLETS.treasury, stats.balances.treasury],
-                ["Atlantis Lock", WALLETS.atlantisLock, stats.balances.atlantisLock],
-              ].map(([k, address, value]) => (
-                <a
-                  key={k as string}
-                  href={explorerAddr(address as string)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block p-4 no-underline text-white transition-colors hover:bg-white/[0.02]"
-                  style={{ background: SURFACE }}
-                >
-                  <SectionLabel>{k as string}</SectionLabel>
-                  <div className="bchog-stat-value text-xl font-semibold mt-2">
-                    {formatToken(value as bigint | undefined, stats.decimals)}
+                { label: "Burned", pct: burnedPct },
+                { label: "Treasury", pct: treasuryPct },
+                { label: "Trading", pct: tradingPct },
+                { label: "Locked", pct: lockPct },
+                { label: "Circulating", pct: circPct },
+              ].map((s) => (
+                <div key={s.label}>
+                  <p className="text-[10px] uppercase tracking-[0.08em]" style={{ color: MUTED }}>
+                    {s.label}
+                  </p>
+                  <p className="text-xl font-semibold text-white mt-1">{Math.round(s.pct)}%</p>
+                  <div className="h-1 rounded-full mt-2 overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                    <div className="h-full bg-white rounded-full" style={{ width: `${s.pct}%` }} />
                   </div>
-                  <div className="text-[10px] mt-1 font-mono" style={{ color: MUTED }}>
-                    {shortAddress(address as string)}
-                  </div>
-                </a>
+                </div>
               ))}
             </div>
-          </Panel>
+          </div>
+        </Reveal>
 
+        <Reveal delay={160}>
           <div
-            className="flex items-center justify-between text-[10px] uppercase tracking-[0.12em] pt-2"
-            style={{ color: MUTED, borderTop: `1px solid ${BORDER}` }}
+            className="flex items-center justify-between text-[10px] uppercase tracking-[0.12em] pt-1"
+            style={{ color: MUTED }}
           >
-            <span>Deflationary. Rewarding. Unstoppable.</span>
+            <span>Live on-chain data · refreshes every 60s</span>
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: STAT_DOTS.green }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-white" />
               Live
             </span>
           </div>
-        </Stagger>
+        </Reveal>
       </div>
     );
   }
@@ -1859,40 +2177,61 @@ function SectionMock({
   }
   if (id === "coming-soon") {
     return (
-      <div className="flex flex-col gap-8">
-        <ComingSoonBlock
-          items={["NFT Collection", "BCHOG Gear", "Staking Program"]}
-          caption="Drops, fresh gear and staking rewards are on the way"
-        />
-        <BuyBlock />
-      </div>
+      <ComingSoonBlock
+        lines={[
+          "> Initializing BCHOG roadmap...",
+          "> NFT Collection — exclusive drops for holders",
+          "> BCHOG Gear — merch and community wear",
+          "> Staking Program — earn by holding",
+          "",
+          "Status: In development. Stay tuned.",
+        ]}
+      />
     );
   }
   return null;
 }
 
-function ComingSoonBlock({ items, caption }: { items: string[]; caption: string }) {
+function ComingSoonBlock({ lines }: { lines: string[] }) {
   return (
     <Reveal>
-      <Panel>
-        <div className="text-center py-10 sm:py-14">
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-            {items.map((it) => (
-              <span
-                key={it}
-                className="text-[10px] sm:text-[11px] font-medium uppercase px-3 py-1.5 tracking-[0.1em]"
-                style={{ border: `1px solid ${BORDER_STRONG}`, color: CREAM }}
-              >
-                {it}
-              </span>
-            ))}
-          </div>
-          <h3 className="bchog-section-title text-[clamp(2rem,6vw,3rem)] text-white mt-8">Stay Tuned</h3>
-          <p className="text-sm mt-3 max-w-md mx-auto" style={{ color: MUTED }}>
-            {caption}
-          </p>
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
+      >
+        <div
+          className="px-5 sm:px-8 py-4 flex items-center justify-between"
+          style={{ borderBottom: `1px solid ${BORDER}` }}
+        >
+          <span className="text-[11px] font-medium uppercase tracking-[0.12em]" style={{ color: MUTED }}>
+            Roadmap terminal
+          </span>
+          <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            Pending
+          </span>
         </div>
-      </Panel>
+        <div className="px-5 sm:px-8 py-8 sm:py-10 min-h-[220px]">
+          <TypewriterText lines={lines} speed={36} />
+        </div>
+        <div
+          className="px-5 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-3"
+          style={{ borderTop: `1px solid ${BORDER}` }}
+        >
+          <a
+            href={NADFUN_TOKEN_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="text-[11px] font-medium uppercase tracking-[0.1em] no-underline transition-opacity hover:opacity-70"
+            style={{ color: "white" }}
+          >
+            Buy on Nad.fun →
+          </a>
+          <span className="text-[10px]" style={{ color: MUTED }}>
+            Updates posted on X & Telegram
+          </span>
+        </div>
+      </div>
     </Reveal>
   );
 }
