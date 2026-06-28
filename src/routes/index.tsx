@@ -459,7 +459,7 @@ function SiteHeader({
     <>
       <div className="fixed top-4 sm:top-5 inset-x-0 z-[100] flex justify-center px-4 pointer-events-none">
         <header
-          className="pointer-events-auto w-[82%] max-w-[1080px] min-w-[300px] h-16 sm:h-[68px] rounded-full flex items-center justify-between px-5 sm:px-8"
+          className="pointer-events-auto w-[82%] max-w-[1080px] min-w-[300px] h-16 sm:h-[68px] rounded-full flex items-center justify-between px-5 sm:px-8 relative"
           style={{
             background: "rgba(18, 5, 42, 0.55)",
             backdropFilter: "blur(20px)",
@@ -473,7 +473,7 @@ function SiteHeader({
             <span className="text-sm sm:text-base font-semibold tracking-[0.16em] uppercase">BCHOG</span>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-0.5">
+          <nav className="hidden lg:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2">
             {SECTIONS.map((s) => (
               <button
                 type="button"
@@ -502,6 +502,8 @@ function SiteHeader({
           >
             <Menu size={20} strokeWidth={1.75} />
           </button>
+          {/* Spacer to keep nav centered on desktop */}
+          <div className="hidden lg:block w-[130px] shrink-0" aria-hidden />
         </header>
       </div>
 
@@ -690,7 +692,7 @@ function LandingHero() {
     };
   }
 
-  const scrollTrackVh = 40; // one scroll step — images 0+1 auto-play, scroll only after 3rd shown
+  const scrollTrackVh = 0; // images auto-play via timer, no scroll track needed
 
   return (
     <section
@@ -1077,16 +1079,16 @@ function DashCard({
 }) {
   return (
     <div
-      className={`rounded-xl p-4 sm:p-5 flex flex-col min-h-[132px] ${className}`}
+      className={`rounded-xl p-5 sm:p-6 flex flex-col min-h-[180px] ${className}`}
       style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
     >
       <p className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: MUTED }}>
         {title}
       </p>
-      <p className="bchog-stat-value text-[clamp(1.35rem,3.5vw,1.85rem)] font-semibold text-white mt-2">
+      <p className="bchog-stat-value text-[clamp(1.5rem,4vw,2.25rem)] font-semibold text-white mt-3">
         {value}
       </p>
-      {children && <div className="mt-auto pt-3">{children}</div>}
+      {children && <div className="mt-auto pt-4">{children}</div>}
     </div>
   );
 }
@@ -1094,18 +1096,18 @@ function DashCard({
 function SparkBars({ values, highlight }: { values: number[]; highlight?: number }) {
   const max = Math.max(...values, 1);
   return (
-    <svg viewBox="0 0 80 36" className="w-full h-9" aria-hidden>
+    <svg viewBox="0 0 80 48" className="w-full h-14" aria-hidden>
       {values.map((v, i) => {
-        const h = (v / max) * 28;
+        const h = (v / max) * 38;
         const active = highlight === i;
         return (
           <rect
             key={i}
-            x={4 + i * 18}
-            y={32 - h}
-            width={12}
+            x={4 + i * 9.5}
+            y={44 - h}
+            width={7}
             height={h}
-            rx={2}
+            rx={3}
             fill={active ? CHART_STROKE : CHART_MUTED}
           />
         );
@@ -1119,15 +1121,15 @@ function SparkArea({ values }: { values: number[] }) {
   const pts = values
     .map((v, i) => {
       const x = (i / (values.length - 1)) * 78 + 1;
-      const y = 32 - (v / max) * 26;
+      const y = 44 - (v / max) * 38;
       return `${x},${y}`;
     })
     .join(" ");
-  const area = `M1,32 L${pts.split(" ").join(" L")} L79,32 Z`;
+  const area = `M1,48 L${pts.split(" ").join(" L")} L79,48 Z`;
   return (
-    <svg viewBox="0 0 80 36" className="w-full h-9" aria-hidden>
+    <svg viewBox="0 0 80 48" className="w-full h-14" aria-hidden>
       <path d={area} fill={CHART_FILL} />
-      <polyline points={pts} fill="none" stroke={CHART_STROKE} strokeWidth="1.5" strokeLinejoin="round" />
+      <polyline points={pts} fill="none" stroke={CHART_STROKE} strokeWidth="2" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -1139,8 +1141,8 @@ function DonutChart({ segments }: { segments: { value: number; label: string }[]
   const c = 2 * Math.PI * r;
   return (
     <div className="flex items-center gap-3">
-      <svg viewBox="0 0 40 40" className="w-10 h-10 shrink-0" aria-hidden>
-        <circle cx="20" cy="20" r={r} fill="none" stroke={CHART_MUTED} strokeWidth="5" />
+      <svg viewBox="0 0 40 40" className="w-14 h-14 shrink-0" aria-hidden>
+        <circle cx="20" cy="20" r={r} fill="none" stroke={CHART_MUTED} strokeWidth="6" />
         {segments.map((s, i) => {
           const len = (s.value / total) * c;
           const dash = `${len} ${c - len}`;
@@ -1152,7 +1154,7 @@ function DonutChart({ segments }: { segments: { value: number; label: string }[]
               r={r}
               fill="none"
               stroke={i === 0 ? CHART_STROKE : CHART_MUTED}
-              strokeWidth="5"
+              strokeWidth="6"
               strokeDasharray={dash}
               strokeDashoffset={-offset}
               transform="rotate(-90 20 20)"
@@ -1162,7 +1164,7 @@ function DonutChart({ segments }: { segments: { value: number; label: string }[]
           return el;
         })}
       </svg>
-      <div className="flex flex-col gap-0.5 text-[9px]" style={{ color: MUTED }}>
+      <div className="flex flex-col gap-1 text-[10px]" style={{ color: MUTED }}>
         {segments.map((s) => (
           <span key={s.label}>
             {Math.round((s.value / total) * 100)}% {s.label}
@@ -1178,15 +1180,15 @@ function RingProgress({ pct }: { pct: number }) {
   const c = 2 * Math.PI * r;
   const len = (pct / 100) * c;
   return (
-    <svg viewBox="0 0 40 40" className="w-10 h-10 ml-auto" aria-hidden>
-      <circle cx="20" cy="20" r={r} fill="none" stroke={CHART_MUTED} strokeWidth="4" />
+    <svg viewBox="0 0 40 40" className="w-14 h-14 ml-auto" aria-hidden>
+      <circle cx="20" cy="20" r={r} fill="none" stroke={CHART_MUTED} strokeWidth="5" />
       <circle
         cx="20"
         cy="20"
         r={r}
         fill="none"
         stroke={CHART_STROKE}
-        strokeWidth="4"
+        strokeWidth="5"
         strokeDasharray={`${len} ${c - len}`}
         strokeLinecap="round"
         transform="rotate(-90 20 20)"
@@ -1198,10 +1200,10 @@ function RingProgress({ pct }: { pct: number }) {
 function TargetCompare({ current, target }: { current: number; target: number }) {
   const pct = Math.min((current / Math.max(target, 1)) * 100, 100);
   return (
-    <div className="relative h-9 rounded-md overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
+    <div className="relative h-9 rounded-md overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
       <div
-        className="absolute inset-y-0 left-0"
-        style={{ width: `${pct}%`, background: "rgba(255,255,255,0.18)" }}
+        className="absolute inset-y-0 left-0 rounded-md"
+        style={{ width: `${pct}%`, background: "rgba(181,76,255,0.35)" }}
       />
       <div
         className="absolute inset-y-0 border-r border-dashed"
@@ -1260,7 +1262,7 @@ function FlyOutcome({
       </p>
       {progress !== undefined && (
         <div className="mt-auto pt-3">
-          <div className="h-1 rounded-full overflow-hidden" style={{ background: INDIGO }}>
+          <div className="h-4 rounded-full overflow-hidden" style={{ background: INDIGO }}>
             <div className="h-full rounded-full" style={{ width: `${progress}%`, background: PURPLE_BRIGHT }} />
           </div>
         </div>
@@ -1498,7 +1500,7 @@ function SectionMock({
                 {formatToken(stats.balances.lockHolding, stats.decimals)}
               </p>
             </div>
-            <div className="h-1.5 rounded-full overflow-hidden mt-3" style={{ background: INDIGO }}>
+            <div className="h-4 rounded-full overflow-hidden mt-3" style={{ background: INDIGO }}>
               <div
                 className="h-full rounded-full"
                 style={{ width: `${lockProgress}%`, background: PURPLE_BRIGHT }}
@@ -1526,7 +1528,7 @@ function SectionMock({
                     {s.label}
                   </p>
                   <p className="text-xl font-semibold text-white mt-1">{Math.round(s.pct)}%</p>
-                  <div className="h-1 rounded-full mt-2 overflow-hidden" style={{ background: INDIGO }}>
+                  <div className="h-4 rounded-full mt-2 overflow-hidden" style={{ background: INDIGO }}>
                     <div className="h-full rounded-full" style={{ width: `${s.pct}%`, background: PURPLE_BRIGHT }} />
                   </div>
                 </div>
@@ -1735,33 +1737,41 @@ function SectionMock({
 
 function ComingSoonBlock() {
   const items = [
-    { title: "NFT Collection", detail: "Exclusive holder drops" },
-    { title: "BCHOG Gear", detail: "Merch & community wear" },
-    { title: "Staking Program", detail: "Earn by holding" },
+    { label: "NFT Collection", num: "01" },
+    { label: "BCHOG Gear", num: "02" },
+    { label: "Staking Program", num: "03" },
   ];
 
-  const [visibleIndex, setVisibleIndex] = useState(-1);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [prevIdx, setPrevIdx] = useState<number | null>(null);
+  const [dir, setDir] = useState<"in" | "out">("in");
   const blockRef = useRef<HTMLDivElement>(null);
   const cycleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const started = useRef(false);
 
   useEffect(() => {
     const el = blockRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          // Start cycling items one by one, then loop
-          let idx = 0;
-          const showNext = () => {
-            setVisibleIndex(idx);
-            idx = (idx + 1) % items.length;
-            cycleRef.current = setTimeout(showNext, 2200);
+        if (entry.isIntersecting && !started.current) {
+          started.current = true;
+          const cycle = (currentIdx: number) => {
+            const nextIdx = (currentIdx + 1) % items.length;
+            setPrevIdx(currentIdx);
+            setDir("out");
+            cycleRef.current = setTimeout(() => {
+              setActiveIdx(nextIdx);
+              setPrevIdx(null);
+              setDir("in");
+              cycleRef.current = setTimeout(() => cycle(nextIdx), 2400);
+            }, 500);
           };
-          showNext();
+          cycleRef.current = setTimeout(() => cycle(0), 2400);
           io.disconnect();
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.3 }
     );
     io.observe(el);
     return () => {
@@ -1771,94 +1781,81 @@ function ComingSoonBlock() {
   }, []);
 
   return (
-    <div ref={blockRef} className="relative overflow-hidden" style={{ minHeight: 420 }}>
-      {/* Moon / planet backdrop like the reference image */}
+    <div
+      ref={blockRef}
+      className="relative flex flex-col items-center justify-center overflow-hidden"
+      style={{ minHeight: 360 }}
+    >
+      {/* Counter */}
       <div
-        className="absolute pointer-events-none"
-        style={{
-          left: "50%",
-          top: "-10%",
-          transform: "translateX(-50%)",
-          width: "clamp(320px, 70vw, 680px)",
-          aspectRatio: "1/1",
-          borderRadius: "50%",
-          background: "radial-gradient(ellipse at 50% 30%, #1a0a4a 0%, #0d0418 55%, transparent 75%)",
-          boxShadow: "0 0 120px 60px rgba(61, 20, 136, 0.22), inset 0 0 60px 20px rgba(100, 40, 220, 0.18)",
-          zIndex: 0,
-        }}
-      />
-      {/* Glow arc at the top of the moon */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          left: "50%",
-          top: "-10%",
-          transform: "translateX(-50%)",
-          width: "clamp(320px, 70vw, 680px)",
-          aspectRatio: "1/1",
-          borderRadius: "50%",
-          background: "transparent",
-          boxShadow: "0 -18px 60px 12px rgba(80, 30, 220, 0.38)",
-          zIndex: 1,
-        }}
-      />
+        className="absolute top-0 left-1/2 -translate-x-1/2 text-[11px] tracking-[0.3em] font-medium uppercase"
+        style={{ color: MUTED }}
+      >
+        {String(activeIdx + 1).padStart(2, "0")}
+      </div>
 
-      {/* Items cycling in, one at a time */}
-      <div className="relative flex flex-col items-center justify-center gap-0 pt-16 pb-10" style={{ zIndex: 2 }}>
-        <div className="relative w-full" style={{ minHeight: 200 }}>
-          {items.map((item, i) => (
-            <div
-              key={item.title}
-              className="absolute inset-0 flex flex-col items-center justify-center text-center px-4"
+      {/* The big bold word */}
+      <div className="relative w-full flex items-center justify-center" style={{ height: 180 }}>
+        {/* Exiting item — flies up */}
+        {prevIdx !== null && (
+          <div
+            className="absolute inset-0 flex items-center justify-center"
+            style={{
+              animation: "cs-exit-up 500ms cubic-bezier(0.4,0,1,1) forwards",
+            }}
+          >
+            <span
+              className="uppercase text-white text-center leading-none"
               style={{
-                opacity: visibleIndex === i ? 1 : 0,
-                transform: visibleIndex === i ? "translateY(0)" : "translateY(24px)",
-                transition: "opacity 600ms cubic-bezier(0.22,1,0.36,1), transform 700ms cubic-bezier(0.22,1,0.36,1)",
-                pointerEvents: visibleIndex === i ? "auto" : "none",
+                fontFamily: "'Anton', sans-serif",
+                fontSize: "clamp(3rem, 14vw, 9rem)",
+                letterSpacing: "0.04em",
               }}
             >
-              <span
-                className="text-[10px] font-medium uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4 inline-block"
-                style={{ color: CREAM, background: "rgba(61, 20, 136, 0.55)", border: `1px solid ${BORDER_STRONG}` }}
-              >
-                Coming Soon
-              </span>
-              <h3
-                className="text-white m-0"
-                style={{
-                  fontFamily: "'Anton', sans-serif",
-                  fontSize: "clamp(2.2rem, 7vw, 4rem)",
-                  letterSpacing: "0.08em",
-                  lineHeight: 1.1,
-                }}
-              >
-                {item.title}
-              </h3>
-              <p className="mt-3 text-base" style={{ color: MUTED, maxWidth: 300 }}>
-                {item.detail}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Dot indicators */}
-        <div className="flex items-center gap-2 mt-8">
-          {items.map((_, i) => (
-            <div
-              key={i}
-              style={{
-                width: visibleIndex === i ? 22 : 6,
-                height: 6,
-                borderRadius: 99,
-                background: visibleIndex === i ? PURPLE_BRIGHT : BORDER_STRONG,
-                transition: "width 400ms cubic-bezier(0.22,1,0.36,1), background 400ms ease",
-              }}
-            />
-          ))}
+              {items[prevIdx].label}
+            </span>
+          </div>
+        )}
+        {/* Entering item — comes from bottom */}
+        <div
+          key={activeIdx}
+          className="absolute inset-0 flex items-center justify-center"
+          style={{
+            animation: dir === "in"
+              ? "cs-enter-up 600ms cubic-bezier(0.22,1,0.36,1) forwards"
+              : "none",
+          }}
+        >
+          <span
+            className="uppercase text-white text-center leading-none"
+            style={{
+              fontFamily: "'Anton', sans-serif",
+              fontSize: "clamp(3rem, 14vw, 9rem)",
+              letterSpacing: "0.04em",
+            }}
+          >
+            {items[activeIdx].label}
+          </span>
         </div>
       </div>
 
-      <div className="relative mt-4 flex flex-wrap items-center justify-between gap-3 px-2" style={{ zIndex: 2 }}>
+      {/* Dot bar */}
+      <div className="flex items-center gap-2 mt-6">
+        {items.map((_, i) => (
+          <div
+            key={i}
+            style={{
+              width: activeIdx === i ? 28 : 7,
+              height: 7,
+              borderRadius: 99,
+              background: activeIdx === i ? "white" : "rgba(255,255,255,0.2)",
+              transition: "width 400ms cubic-bezier(0.22,1,0.36,1), background 400ms ease",
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 w-full px-2">
         <a
           href={NADFUN_TOKEN_URL}
           target="_blank"
@@ -1869,7 +1866,7 @@ function ComingSoonBlock() {
           Buy on Nad.fun →
         </a>
         <span className="text-[10px]" style={{ color: MUTED }}>
-          Follow X & Telegram for updates
+          Follow X &amp; Telegram for updates
         </span>
       </div>
     </div>

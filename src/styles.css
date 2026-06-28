@@ -205,3 +205,26 @@
 .bchog-typewriter-cursor {
   animation: bchog-cursor-blink 1s step-end infinite;
 }
+
+/* Coming Soon slide animations */
+@keyframes cs-enter-up {
+  from {
+    opacity: 0;
+    transform: translateY(80px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cs-exit-up {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-80px);
+  }
+}
