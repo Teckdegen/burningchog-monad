@@ -872,11 +872,10 @@ function LandingHero() {
 
 function Footer() {
   return (
-    <footer className="relative w-full px-4 py-6" style={{ background: "transparent" }}>
+    <footer className="relative w-full px-4 sm:px-8 lg:px-16 py-6" style={{ background: "transparent" }}>
       <div
-        className="relative mx-auto flex items-center justify-between px-6 sm:px-8 py-4 rounded-full"
+        className="relative w-full max-w-6xl mx-auto flex items-center justify-between px-6 sm:px-8 py-4 rounded-full"
         style={{
-          maxWidth: 756,
           background: "rgba(18,5,42,0.55)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
