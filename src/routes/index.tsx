@@ -560,10 +560,6 @@ function LandingHero() {
       style={{
         height: "100dvh",
         backgroundColor: BG,
-        backgroundImage: "url('/backgroundimage.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
       }}
     >
       {/* Dark overlay so text pops */}
@@ -598,8 +594,8 @@ function LandingHero() {
         </h1>
 
         <p
-          className="mt-5 text-[12px] sm:text-[13px] uppercase tracking-[0.24em]"
-          style={{ color: "rgba(255,255,255,0.55)", fontStyle: "italic" }}
+          className="mt-5 uppercase tracking-[0.22em]"
+          style={{ color: "rgba(255,255,255,0.55)", fontStyle: "italic", fontSize: "clamp(1rem, 2.8vw, 1.5rem)" }}
         >
           For those who get it
         </p>
