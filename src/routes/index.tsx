@@ -1985,10 +1985,17 @@ function PhantomWallet({
                       key={s.label}
                       className="rounded-2xl p-3 sm:p-4 flex flex-col gap-0.5"
                       style={{
-                        background: "rgba(181,76,255,0.07)",
-                        border: "1px solid rgba(181,76,255,0.15)",
+                        position: "relative",
+                        overflow: "hidden",
+                        background: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.09)",
+                        backdropFilter: "blur(24px)",
+                        WebkitBackdropFilter: "blur(24px)",
+                        boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(255,255,255,0.03), 0 6px 20px rgba(0,0,0,0.4)",
                       }}
                     >
+                      {/* top sheen */}
+                      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "45%", borderRadius: "16px 16px 60% 60% / 10px 10px 24px 24px", background: "linear-gradient(to bottom, rgba(255,255,255,0.09), transparent)", pointerEvents: "none" }} />
                       <p className="text-[9px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.3)" }}>{s.label}</p>
                       <p className="text-sm sm:text-base font-bold text-white leading-tight">{s.value}</p>
                       <p className="text-[9px]" style={{ color: PURPLE_BRIGHT }}>{s.sub}</p>
@@ -2000,7 +2007,21 @@ function PhantomWallet({
 
             {/* Tokens tab — all wallet tokens */}
             {walletTab === "tokens" && (
-              <div className="flex flex-col pt-2" style={{ maxHeight: 420, overflowY: "auto", scrollbarWidth: "none" }}>
+              <div
+                className="flex flex-col pt-2 rounded-2xl mt-2"
+                style={{
+                  maxHeight: 420,
+                  overflowY: "auto",
+                  scrollbarWidth: "none",
+                  position: "relative",
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(24px)",
+                  WebkitBackdropFilter: "blur(24px)",
+                  boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(255,255,255,0.03), 0 8px 28px rgba(0,0,0,0.45)",
+                  padding: "0 12px",
+                }}
+              >
                 {/* BCHOG first */}
                 <div
                   className="flex items-center justify-between py-3.5"
@@ -2032,7 +2053,7 @@ function PhantomWallet({
                       href={explorerToken(t.address)}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between py-3.5 no-underline hover:bg-white/[0.03] transition-colors rounded-xl px-1"
+                      className="flex items-center justify-between py-3.5 no-underline hover:bg-white/[0.04] transition-colors rounded-xl px-1"
                       style={{ borderBottom: `1px solid rgba(255,255,255,0.04)`, color: "white" }}
                     >
                       <div className="flex items-center gap-3">
@@ -2068,14 +2089,21 @@ function PhantomWallet({
                 <div
                   className="rounded-2xl p-4 sm:p-5"
                   style={{
-                    background: "rgba(181,76,255,0.07)",
-                    border: "1px solid rgba(181,76,255,0.18)",
+                    position: "relative",
+                    overflow: "hidden",
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.09)",
+                    backdropFilter: "blur(24px)",
+                    WebkitBackdropFilter: "blur(24px)",
+                    boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(255,255,255,0.03), 0 8px 28px rgba(0,0,0,0.45)",
                   }}
                 >
+                  {/* top sheen */}
+                  <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", borderRadius: "16px 16px 60% 60% / 10px 10px 24px 24px", background: "linear-gradient(to bottom, rgba(255,255,255,0.09), transparent)", pointerEvents: "none" }} />
                   <div className="flex items-center gap-2 mb-4">
                     <div
                       className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center shrink-0"
-                      style={{ background: PANEL, border: `1px solid rgba(181,76,255,0.3)` }}
+                      style={{ background: "rgba(255,255,255,0.06)", border: `1px solid rgba(181,76,255,0.3)` }}
                     >
                       <img
                         src="https://pbs.twimg.com/profile_images/2066183456401338368/wZHKC1Nj_400x400.jpg"
@@ -2092,8 +2120,17 @@ function PhantomWallet({
                       <div
                         key={r.k}
                         className="rounded-xl p-3"
-                        style={{ background: "rgba(0,0,0,0.2)" }}
+                        style={{
+                          position: "relative",
+                          overflow: "hidden",
+                          background: "rgba(255,255,255,0.04)",
+                          border: "1px solid rgba(255,255,255,0.08)",
+                          backdropFilter: "blur(16px)",
+                          WebkitBackdropFilter: "blur(16px)",
+                          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.03), 0 4px 12px rgba(0,0,0,0.35)",
+                        }}
                       >
+                        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "45%", borderRadius: "12px 12px 50% 50% / 8px 8px 18px 18px", background: "linear-gradient(to bottom, rgba(255,255,255,0.10), transparent)", pointerEvents: "none" }} />
                         <p className="text-[9px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.3)" }}>{r.k}</p>
                         <p className="text-[13px] font-bold text-white mt-0.5 truncate">{r.v}</p>
                       </div>
@@ -2120,21 +2157,36 @@ function PhantomWallet({
                     Loading transactions…
                   </div>
                 ) : (
-                  <div className="flex flex-col" style={{ maxHeight: 400, overflowY: "auto", scrollbarWidth: "none" }}>
+                  <div
+                    className="flex flex-col rounded-2xl"
+                    style={{
+                      maxHeight: 400,
+                      overflowY: "auto",
+                      scrollbarWidth: "none",
+                      position: "relative",
+                      background: "rgba(255,255,255,0.03)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      backdropFilter: "blur(24px)",
+                      WebkitBackdropFilter: "blur(24px)",
+                      boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(255,255,255,0.03), 0 8px 28px rgba(0,0,0,0.45)",
+                      padding: "0 12px",
+                    }}
+                  >
                     {trades.map((t, idx) => (
                       <a
                         key={t.hash}
                         href={explorerTx(t.hash)}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-center gap-3 sm:gap-4 py-3.5 no-underline hover:bg-white/[0.03] transition-colors rounded-xl"
-                        style={{ borderBottom: idx < trades.length - 1 ? "1px solid rgba(255,255,255,0.04)" : undefined, color: "white" }}
+                        className="flex items-center gap-3 sm:gap-4 py-3.5 no-underline hover:bg-white/[0.04] transition-colors rounded-xl"
+                        style={{ borderBottom: idx < trades.length - 1 ? "1px solid rgba(255,255,255,0.05)" : undefined, color: "white" }}
                       >
                         <div
                           className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
                           style={{
-                            background: t.type === "BUY" ? "rgba(74,222,174,0.1)" : "rgba(181,76,255,0.1)",
-                            border: `1px solid ${t.type === "BUY" ? "rgba(74,222,174,0.25)" : "rgba(181,76,255,0.25)"}`,
+                            background: t.type === "BUY" ? "rgba(74,222,174,0.08)" : "rgba(181,76,255,0.08)",
+                            border: `1px solid ${t.type === "BUY" ? "rgba(74,222,174,0.22)" : "rgba(181,76,255,0.22)"}`,
+                            boxShadow: t.type === "BUY" ? "inset 0 1px 0 rgba(255,255,255,0.10)" : "inset 0 1px 0 rgba(255,255,255,0.10)",
                           }}
                         >
                           <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
