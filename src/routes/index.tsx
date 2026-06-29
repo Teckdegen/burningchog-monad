@@ -554,81 +554,71 @@ function LandingHero() {
     <section
       id="top"
       className="relative w-full flex flex-col items-center justify-center"
-      style={{ minHeight: "100dvh", backgroundColor: BG, padding: "80px 16px 40px" }}
+      style={{
+        height: "100dvh",
+        backgroundImage: "url('/hero-bg.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
     >
-      {/* ── Phantom-style rounded card with image inside ── */}
+      {/* Dark overlay so text pops */}
       <div
-        className="relative w-full overflow-hidden"
+        aria-hidden
         style={{
-          maxWidth: 1080,
-          borderRadius: 24,
-          background: "#12052A",
-          boxShadow: "0 32px 80px rgba(0,0,0,0.7)",
-          aspectRatio: "16/8",
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(to bottom, rgba(10,4,28,0.30) 0%, rgba(10,4,28,0.15) 40%, rgba(10,4,28,0.70) 100%)",
         }}
+      />
+
+      {/* Content */}
+      <div
+        className="relative flex flex-col items-center justify-center text-center w-full h-full px-6"
+        style={{ zIndex: 2 }}
       >
-        {/* Background image */}
-        <img
-          src="/hero-bg.jpg"
-          alt=""
-          draggable={false}
+        <h1
+          className="text-white m-0"
           style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "center",
-            opacity: 0.75,
+            fontFamily: "'Anton', sans-serif",
+            fontSize: "clamp(2.8rem, 10vw, 7rem)",
+            letterSpacing: "-0.02em",
+            lineHeight: 1.05,
+            maxWidth: "16ch",
+            textShadow: "0 2px 32px rgba(0,0,0,0.5)",
           }}
-        />
-
-        {/* Overlay gradient — readable text, darker at bottom */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(to bottom, rgba(10,4,28,0.20) 0%, rgba(10,4,28,0.10) 35%, rgba(10,4,28,0.65) 100%)",
-          }}
-        />
-
-        {/* Content */}
-        <div
-          className="relative flex flex-col items-center justify-center text-center h-full"
-          style={{ zIndex: 2, padding: "clamp(40px, 8vw, 80px) clamp(20px, 6vw, 80px)" }}
         >
-          {/* Main headline */}
-          <h1
-            className="text-white m-0"
-            style={{
-              fontFamily: "'Anton', sans-serif",
-              fontSize: "clamp(2.4rem, 7vw, 6rem)",
-              letterSpacing: "-0.02em",
-              lineHeight: 1.05,
-              maxWidth: "16ch",
-              textShadow: "0 2px 24px rgba(0,0,0,0.6)",
-            }}
-          >
-            Always less,{" "}
-            <span style={{ color: PURPLE_BRIGHT }}>always more</span>
-          </h1>
+          Always less,{" "}
+          <span style={{ color: PURPLE_BRIGHT }}>always more</span>
+        </h1>
 
-          {/* For those who get it */}
-          <p
-            className="mt-5 text-[12px] sm:text-[13px] uppercase tracking-[0.22em]"
-            style={{ color: "rgba(255,255,255,0.45)", fontStyle: "italic" }}
-          >
-            For those who get it
-          </p>
-        </div>
+        <p
+          className="mt-5 text-[12px] sm:text-[13px] uppercase tracking-[0.24em]"
+          style={{ color: "rgba(255,255,255,0.55)", fontStyle: "italic" }}
+        >
+          For those who get it
+        </p>
       </div>
 
       {/* Scroll cue */}
-      <div className="flex flex-col items-center gap-1.5 mt-8 pointer-events-none" aria-hidden>
-        <div className="w-px h-6 rounded-full" style={{ background: "linear-gradient(to bottom, transparent, rgba(181,76,255,0.4))" }} />
-        <div style={{ width: 0, height: 0, borderLeft: "3px solid transparent", borderRight: "3px solid transparent", borderTop: "4px solid rgba(181,76,255,0.35)" }} />
+      <div
+        className="absolute bottom-8 inset-x-0 flex flex-col items-center gap-1.5 pointer-events-none"
+        aria-hidden
+        style={{ zIndex: 3 }}
+      >
+        <div
+          className="w-px h-7 rounded-full"
+          style={{ background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.4))" }}
+        />
+        <div
+          style={{
+            width: 0, height: 0,
+            borderLeft: "3px solid transparent",
+            borderRight: "3px solid transparent",
+            borderTop: "4px solid rgba(255,255,255,0.35)",
+          }}
+        />
       </div>
     </section>
   );
