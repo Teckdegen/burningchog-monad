@@ -455,33 +455,36 @@ function SiteHeader({
     <>
       <div className="fixed top-4 sm:top-5 inset-x-0 z-[100] flex justify-center px-4 pointer-events-none">
         <header
-          className="pointer-events-auto w-[82%] max-w-[756px] min-w-[300px] h-[70px] sm:h-[75px] rounded-full flex items-center justify-between px-5 sm:px-7 relative"
+          className="pointer-events-auto w-[82%] max-w-[756px] min-w-[300px] h-[70px] sm:h-[75px] rounded-full flex items-center justify-between px-5 sm:px-7 relative overflow-hidden"
           style={{
-            background: "rgba(18, 5, 42, 0.55)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
             border: `1px solid ${BORDER_STRONG}`,
             boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
           }}
         >
-          <a href="#top" className="flex items-center gap-2 no-underline shrink-0" style={{ color: "white" }}>
+          {/* flames background */}
+          <img src="/flames.jpg" alt="" aria-hidden draggable={false}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: 0.28 }} />
+          <div aria-hidden style={{ position: "absolute", inset: 0, background: "rgba(8,2,20,0.72)" }} />
+          <a href="#top" className="flex items-center gap-2 no-underline shrink-0" style={{ color: "white", position: "relative", zIndex: 1 }}>
             <img src={TOKEN_LOGO} alt="BCHOG" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover" />
             <span className="text-sm font-semibold tracking-[0.16em] uppercase">BCHOG</span>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2">
+          <nav className="hidden lg:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2" style={{ zIndex: 1 }}>
             {SECTIONS.map((s) => (
               <button
                 type="button"
                 key={s.id}
                 onClick={() => scrollToId(s.id)}
-                className="px-3.5 py-1.5 text-[12px] font-semibold uppercase tracking-[0.1em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06]"
+                className="flex items-center px-3.5 py-1.5 text-[12px] font-semibold uppercase tracking-[0.1em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06]"
                 style={{ color: MUTED }}
               >
-                {s.short}
+                <span>{s.short}</span>
                 {s.soon && (
                   <span
-                    className="ml-1.5 text-[9px] font-bold uppercase tracking-[0.1em] align-middle"
+                    className="ml-2 text-[9px] font-bold uppercase tracking-[0.1em] align-middle"
                     style={{ color: CORAL }}
                   >
                     soon
@@ -496,12 +499,12 @@ function SiteHeader({
             aria-label="Open menu"
             onClick={() => setMenuOpen(true)}
             className="lg:hidden w-9 h-9 flex items-center justify-center rounded-full transition-colors hover:bg-white/[0.06]"
-            style={{ color: "white" }}
+            style={{ color: "white", position: "relative", zIndex: 1 }}
           >
             <Menu size={20} strokeWidth={1.75} />
           </button>
           {/* Spacer mirrors logo+text width to keep nav perfectly centered */}
-          <div className="hidden lg:block w-[100px] shrink-0" aria-hidden />
+          <div className="hidden lg:block w-[100px] shrink-0" style={{ position: "relative", zIndex: 1 }} aria-hidden />
         </header>
       </div>
 
@@ -1752,13 +1755,17 @@ function PhantomWallet({
         <div
           className="w-full rounded-3xl overflow-hidden"
           style={{
-            background: "linear-gradient(180deg, #1a0636 0%, #110426 100%)",
+            position: "relative",
             border: `1px solid rgba(181,76,255,0.25)`,
             boxShadow: "0 24px 64px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03)",
           }}
         >
+          {/* flames background */}
+          <img src="/flames.jpg" alt="" aria-hidden draggable={false}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: 0.25 }} />
+          <div aria-hidden style={{ position: "absolute", inset: 0, background: "rgba(8,2,20,0.76)" }} />
           {/* Top bar: network badge */}
-          <div className="flex items-center justify-between px-5 sm:px-7 pt-5 pb-1">
+          <div className="flex items-center justify-between px-5 sm:px-7 pt-5 pb-1" style={{ position: "relative", zIndex: 1 }}>
             <div
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
               style={{
@@ -1783,7 +1790,7 @@ function PhantomWallet({
           </div>
 
           {/* Balance */}
-          <div className="px-5 sm:px-7 pt-3 pb-5">
+          <div className="px-5 sm:px-7 pt-3 pb-5" style={{ position: "relative", zIndex: 1 }}>
             <p
               className="font-black text-white leading-none"
               style={{
@@ -1802,6 +1809,7 @@ function PhantomWallet({
           {/* Tabs */}
           <div className="flex mx-4 sm:mx-6 mb-0 gap-1.5 p-1 rounded-2xl"
             style={{
+              position: "relative", zIndex: 1,
               background: "rgba(255,255,255,0.03)",
               border: "1px solid rgba(255,255,255,0.07)",
               backdropFilter: "blur(20px)",
@@ -1845,7 +1853,7 @@ function PhantomWallet({
           </div>
 
           {/* Tab content */}
-          <div className="px-4 sm:px-6 pb-5 pt-1">
+          <div className="px-4 sm:px-6 pb-5 pt-1" style={{ position: "relative", zIndex: 1 }}>
 
             {/* Tokens tab — all wallet tokens */}
             {walletTab === "tokens" && (
@@ -2103,15 +2111,23 @@ function SectionMock({
     const glassCard: React.CSSProperties = {
       position: "relative",
       overflow: "hidden",
-      background: "rgba(255,255,255,0.035)",
-      border: "1px solid rgba(255,255,255,0.08)",
+      background: "rgba(8,2,20,0.70)",
+      border: "1px solid rgba(181,76,255,0.18)",
       backdropFilter: "blur(20px)",
       WebkitBackdropFilter: "blur(20px)",
       boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.03), 0 8px 24px rgba(0,0,0,0.4)",
     };
 
+    const FlamesBg = () => (
+      <>
+        <img src="/flames.jpg" alt="" aria-hidden draggable={false}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: 0.22 }} />
+        <div aria-hidden style={{ position: "absolute", inset: 0, background: "rgba(8,2,20,0.70)" }} />
+      </>
+    );
+
     const GlassSheen = () => (
-      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", borderRadius: "16px 16px 60% 60% / 10px 10px 24px 24px", background: "linear-gradient(to bottom, rgba(255,255,255,0.08), transparent)", pointerEvents: "none" }} />
+      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", borderRadius: "16px 16px 60% 60% / 10px 10px 24px 24px", background: "linear-gradient(to bottom, rgba(255,255,255,0.08), transparent)", pointerEvents: "none", zIndex: 1 }} />
     );
 
     return (
@@ -2127,13 +2143,15 @@ function SectionMock({
               { label: "Supply Locked", value: `${Math.round(lockPct)}%`,                        accent: PURPLE_BRIGHT },
             ].map((s) => (
               <div key={s.label} className="rounded-2xl p-4 sm:p-5 flex flex-col gap-1" style={glassCard}>
+                <FlamesBg />
                 <GlassSheen />
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.30)" }}>{s.label}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.30)", position: "relative", zIndex: 1 }}>{s.label}</p>
                 <p className="font-black text-white leading-none" style={{
                   fontSize: "clamp(1.5rem,5.5vw,2.4rem)",
                   fontVariantNumeric: "tabular-nums",
                   letterSpacing: "-0.02em",
                   textShadow: `0 0 24px ${s.accent}66`,
+                  position: "relative", zIndex: 1,
                 }}>{s.value}</p>
               </div>
             ))}
@@ -2143,8 +2161,9 @@ function SectionMock({
         {/* ── Row 2: Lock to 1M progress — full width ── */}
         <Reveal delay={60}>
           <div className="rounded-2xl p-5" style={glassCard}>
+            <FlamesBg />
             <GlassSheen />
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-start justify-between mb-3" style={{ position: "relative", zIndex: 1 }}>
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.30)" }}>Lock Target</p>
                 <p className="font-black text-white mt-1 leading-none" style={{ fontSize: "clamp(1.2rem,3.5vw,1.8rem)", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
@@ -2155,7 +2174,7 @@ function SectionMock({
                 {Math.round(lockProgress)}%
               </span>
             </div>
-            <div className="relative h-4 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", boxShadow: "inset 0 2px 5px rgba(0,0,0,0.55)" }}>
+            <div className="relative h-4 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", boxShadow: "inset 0 2px 5px rgba(0,0,0,0.55)", position: "relative", zIndex: 1 }}>
               <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-700" style={{
                 width: `${lockProgress}%`,
                 background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 60%, rgba(255,255,255,0.6) 100%)`,
@@ -2163,7 +2182,7 @@ function SectionMock({
               }} />
               <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.18), transparent)" }} />
             </div>
-            <div className="flex justify-between mt-2 text-[10px]" style={{ color: "rgba(255,255,255,0.28)" }}>
+            <div className="flex justify-between mt-2 text-[10px]" style={{ color: "rgba(255,255,255,0.28)", position: "relative", zIndex: 1 }}>
               <span>{Math.round(lockProgress)}% of 1M target</span>
               <span>1,000,000</span>
             </div>
@@ -2738,7 +2757,6 @@ function ComingSoonBlock() {
       className="rounded-3xl overflow-hidden"
       style={{
         position: "relative",
-        background: "linear-gradient(180deg, #1a0636 0%, #110426 100%)",
         border: "1px solid rgba(181,76,255,0.22)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
@@ -2747,16 +2765,18 @@ function ComingSoonBlock() {
         minHeight: 0,
       }}
     >
-      {/* top glass sheen */}
-      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "35%", borderRadius: "24px 24px 60% 60% / 12px 12px 32px 32px", background: "linear-gradient(to bottom, rgba(255,255,255,0.07), transparent)", pointerEvents: "none" }} />
+      {/* flames background */}
+      <img src="/flames.jpg" alt="" aria-hidden draggable={false}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: 0.28 }} />
+      <div aria-hidden style={{ position: "absolute", inset: 0, background: "rgba(8,2,20,0.74)" }} />
 
       {/* label */}
-      <p className="text-center text-[10px] font-bold uppercase tracking-[0.22em] mb-6" style={{ color: "rgba(181,76,255,0.55)" }}>
+      <p className="text-center text-[10px] font-bold uppercase tracking-[0.22em] mb-6" style={{ color: "rgba(181,76,255,0.55)", position: "relative", zIndex: 1 }}>
         What's Next
       </p>
 
       {/* Animated feature */}
-      <div style={{ ...cardStyle, width: "100%", maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
+      <div style={{ ...cardStyle, width: "100%", maxWidth: 420, margin: "0 auto", textAlign: "center", position: "relative", zIndex: 1 }}>
         <span className="text-[10px] font-bold uppercase tracking-[0.25em] block mb-2" style={{ color: "rgba(255,255,255,0.28)" }}>
           {active.num}
         </span>
@@ -2775,7 +2795,7 @@ function ComingSoonBlock() {
       </div>
 
       {/* Dot indicator */}
-      <div className="flex items-center justify-center gap-2 mt-6">
+      <div className="flex items-center justify-center gap-2 mt-6" style={{ position: "relative", zIndex: 1 }}>
         {items.map((_, i) => (
           <div
             key={i}
