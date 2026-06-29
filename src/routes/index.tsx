@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useRef, Children, type CSSProperties, type ReactNode } from "react";
-import { Menu, X, Cog, Lock, Gift, Briefcase, Flame, Trophy, Medal, Users2, Plus } from "lucide-react";
+import { Menu, X, Cog, Lock, Gift, Briefcase, Flame, Trophy, Users2, Plus } from "lucide-react";
 import nadfunLogo from "@/assets/nadfun.jpg";
 import { getPortfolio, type PortfolioToken } from "@/lib/portfolio";
 import { getVeDust, type VeDustData } from "@/lib/vedust";
@@ -872,37 +872,101 @@ function LandingHero() {
 
 function Footer() {
   return (
-    <footer
-      className="relative w-full"
-      style={{ background: FOOTER_BG, color: "white", borderTop: `1px solid ${BORDER}` }}
-    >
-      <div className="px-4 py-10 flex flex-col items-center justify-center gap-5">
-        <img src={TOKEN_LOGO} alt="BCHOG" className="w-12 h-12 rounded-full object-cover" />
-        <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: MUTED }}>
+    <footer className="relative w-full px-4 py-6" style={{ background: "transparent" }}>
+      <div
+        className="relative mx-auto flex items-center justify-between px-6 sm:px-8 py-4 rounded-full"
+        style={{
+          maxWidth: 756,
+          background: "rgba(18,5,42,0.55)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: `1px solid ${BORDER_STRONG}`,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
+        }}
+      >
+        {/* Left — logo + name */}
+        <a href="#top" className="flex items-center gap-2 no-underline shrink-0" style={{ color: "white" }}>
+          <img src={TOKEN_LOGO} alt="BCHOG" className="w-7 h-7 rounded-full object-cover" />
+          <span className="text-sm font-semibold tracking-[0.16em] uppercase">BCHOG</span>
+        </a>
+
+        {/* Centre — tagline */}
+        <p
+          className="absolute left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.16em] hidden sm:block whitespace-nowrap"
+          style={{ color: "rgba(255,232,180,0.35)" }}
+        >
           Rewarding. Unstoppable.
         </p>
-        <div className="flex items-center justify-center gap-3">
-          <SocialButton href={SOCIALS.x} label="X">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden>
+
+        {/* Right — social icons with deliberate spacing */}
+        <div className="flex items-center" style={{ gap: 10 }}>
+          {/* X */}
+          <a
+            href={SOCIALS.x}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="X (Twitter)"
+            className="no-underline flex items-center justify-center transition-all hover:scale-110"
+            style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+            }}
+          >
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="#fff" aria-hidden>
               <path d="M18.244 2H21.5l-7.5 8.57L23 22h-6.875l-5.38-7.03L4.6 22H1.34l8.02-9.165L1 2h7.05l4.86 6.43L18.244 2Zm-1.205 18h1.9L7.05 3.9H5.01L17.04 20Z" />
             </svg>
-          </SocialButton>
-          <SocialButton href={SOCIALS.telegram} label="Telegram">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden>
-              <path
-                d="M21.95 4.27 18.6 20.06c-.25 1.1-.91 1.38-1.84.86l-5.1-3.76-2.46 2.37c-.27.27-.5.5-1.02.5l.36-5.18 9.42-8.51c.41-.36-.09-.56-.64-.2L5.05 13.18l-5.01-1.57c-1.09-.34-1.11-1.09.23-1.61l19.59-7.55c.91-.34 1.7.2 1.41 1.82Z"
-                transform="translate(1 0)"
-              />
+          </a>
+
+          {/* Telegram */}
+          <a
+            href={SOCIALS.telegram}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Telegram"
+            className="no-underline flex items-center justify-center transition-all hover:scale-110"
+            style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+            }}
+          >
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="#fff" aria-hidden>
+              <path d="M21.95 4.27 18.6 20.06c-.25 1.1-.91 1.38-1.84.86l-5.1-3.76-2.46 2.37c-.27.27-.5.5-1.02.5l.36-5.18 9.42-8.51c.41-.36-.09-.56-.64-.2L5.05 13.18l-5.01-1.57c-1.09-.34-1.11-1.09.23-1.61l19.59-7.55c.91-.34 1.7.2 1.41 1.82Z" transform="translate(1 0)" />
             </svg>
-          </SocialButton>
-          <SocialButton href={NADFUN_TOKEN_URL} label="Buy on Nad.fun">
-            <img src={nadfunLogo} alt="" className="w-full h-full object-cover" draggable={false} />
-          </SocialButton>
+          </a>
+
+          {/* Nad.fun — wider gap to feel intentional */}
+          <a
+            href={NADFUN_TOKEN_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Buy on Nad.fun"
+            className="no-underline flex items-center justify-center overflow-hidden transition-all hover:scale-110"
+            style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+            }}
+          >
+            <img src={nadfunLogo} alt="Nad.fun" className="w-full h-full object-cover" draggable={false} />
+          </a>
         </div>
-        <p className="text-[10px] uppercase tracking-[0.14em]" style={{ color: MUTED }}>
-          Built on Monad
-        </p>
       </div>
+
+      {/* Built on Monad — below the bar */}
+      <p className="text-center text-[9px] uppercase tracking-[0.18em] mt-3" style={{ color: "rgba(255,255,255,0.15)" }}>
+        Built on Monad
+      </p>
     </footer>
   );
 }
@@ -2804,23 +2868,16 @@ function SectionMock({
 }
 
 function ContestsCollabs() {
-  const [tab, setTab] = useState<"contests" | "winners" | "collabs">("contests");
+  const [tab, setTab] = useState<"contests" | "collabs">("contests");
 
-  type ContestTab = { id: "contests" | "winners" | "collabs"; label: string; Icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }> };
+  type ContestTab = { id: "contests" | "collabs"; label: string; Icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }> };
   const contestTabs: ContestTab[] = [
     { id: "contests", label: "Active Contests", Icon: Trophy },
-    { id: "winners",  label: "Winners",         Icon: Medal  },
     { id: "collabs",  label: "Collabs",          Icon: Users2 },
   ];
 
   const contestPosts = [
     "https://x.com/BURNINGCHOG/status/2068770674475176411",
-  ];
-
-  const winners = [
-    { place: "1st", name: "Coming Soon", prize: "TBA", detail: "First contest winners will be announced here" },
-    { place: "2nd", name: "Coming Soon", prize: "TBA", detail: "Stay tuned for results" },
-    { place: "3rd", name: "Coming Soon", prize: "TBA", detail: "Follow @BURNINGCHOG on X" },
   ];
 
   const glassCard: React.CSSProperties = {
@@ -2836,19 +2893,6 @@ function ContestsCollabs() {
   const Sheen = () => (
     <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", borderRadius: "16px 16px 60% 60% / 10px 10px 24px 24px", background: "linear-gradient(to bottom, rgba(255,255,255,0.09), transparent)", pointerEvents: "none" }} />
   );
-
-  // Medal icon per rank
-  const RankIcon = ({ i }: { i: number }) => {
-    const colors = ["#FFD700", "#C0C0C0", PURPLE_BRIGHT] as const;
-    const bg     = ["rgba(255,215,0,0.12)", "rgba(192,192,192,0.10)", "rgba(181,76,255,0.10)"] as const;
-    const border = ["rgba(255,215,0,0.30)",  "rgba(192,192,192,0.25)", "rgba(181,76,255,0.25)"] as const;
-    return (
-      <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-        style={{ background: bg[i], border: `1px solid ${border[i]}` }}>
-        <Medal size={18} color={colors[i]} strokeWidth={1.75} />
-      </div>
-    );
-  };
 
   return (
     <Reveal>
@@ -2947,33 +2991,6 @@ function ContestsCollabs() {
                   </svg>
                   Follow for more
                 </a>
-              </div>
-            </div>
-          )}
-
-          {/* ── Winners ── */}
-          {tab === "winners" && (
-            <div className="flex flex-col gap-3">
-              {winners.map((w, i) => (
-                <div key={w.place} className="rounded-2xl p-4 sm:p-5 flex items-center gap-4" style={{ ...glassCard }}>
-                  <Sheen />
-                  <RankIcon i={i} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-bold text-white">{w.name}</p>
-                    <p className="text-[11px] leading-relaxed mt-0.5" style={{ color: "rgba(255,255,255,0.38)" }}>{w.detail}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-[12px] font-bold" style={{ color: PURPLE_BRIGHT }}>{w.prize}</p>
-                    <p className="text-[10px] uppercase tracking-[0.08em]" style={{ color: "rgba(255,255,255,0.25)" }}>{w.place} Place</p>
-                  </div>
-                </div>
-              ))}
-              <div className="rounded-2xl p-4 flex items-center justify-center gap-2"
-                style={{ ...glassCard, border: "1px dashed rgba(181,76,255,0.20)" }}>
-                <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.28)" }}>
-                  Results posted on{" "}
-                  <a href={SOCIALS.x} target="_blank" rel="noreferrer" className="no-underline font-semibold" style={{ color: PURPLE_BRIGHT }}>@BURNINGCHOG</a>
-                </p>
               </div>
             </div>
           )}
@@ -3090,13 +3107,31 @@ function ComingSoonBlock() {
   };
 
   return (
-    <div ref={blockRef} className="flex flex-col items-center" style={{ minHeight: 0, paddingBottom: 8 }}>
-      {/* Feature — bare text only, no card/box */}
-      <div style={{ ...cardStyle, width: "100%", maxWidth: 420, textAlign: "center" }}>
-        <span
-          className="text-[10px] font-bold uppercase tracking-[0.25em] block mb-2"
-          style={{ color: "rgba(255,255,255,0.35)" }}
-        >
+    <div
+      ref={blockRef}
+      className="rounded-3xl overflow-hidden"
+      style={{
+        position: "relative",
+        background: "linear-gradient(180deg, #1a0636 0%, #110426 100%)",
+        border: "1px solid rgba(181,76,255,0.22)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(255,255,255,0.03), 0 24px 64px rgba(0,0,0,0.55)",
+        padding: "48px 24px 40px",
+        minHeight: 0,
+      }}
+    >
+      {/* top glass sheen */}
+      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "35%", borderRadius: "24px 24px 60% 60% / 12px 12px 32px 32px", background: "linear-gradient(to bottom, rgba(255,255,255,0.07), transparent)", pointerEvents: "none" }} />
+
+      {/* label */}
+      <p className="text-center text-[10px] font-bold uppercase tracking-[0.22em] mb-6" style={{ color: "rgba(181,76,255,0.55)" }}>
+        What's Next
+      </p>
+
+      {/* Animated feature */}
+      <div style={{ ...cardStyle, width: "100%", maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
+        <span className="text-[10px] font-bold uppercase tracking-[0.25em] block mb-2" style={{ color: "rgba(255,255,255,0.28)" }}>
           {active.num}
         </span>
         <h3
@@ -3110,11 +3145,11 @@ function ComingSoonBlock() {
         >
           {active.label}
         </h3>
-        <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.4)" }}>{active.detail}</p>
+        <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.38)" }}>{active.detail}</p>
       </div>
 
       {/* Dot indicator */}
-      <div className="flex items-center gap-2 mt-4">
+      <div className="flex items-center justify-center gap-2 mt-6">
         {items.map((_, i) => (
           <div
             key={i}
@@ -3122,7 +3157,7 @@ function ComingSoonBlock() {
               width: activeIdx === i ? 22 : 6,
               height: 6,
               borderRadius: 99,
-              background: activeIdx === i ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.15)",
+              background: activeIdx === i ? "rgba(181,76,255,0.7)" : "rgba(255,255,255,0.12)",
               transition: "width 350ms cubic-bezier(0.22,1,0.36,1), background 350ms ease",
             }}
           />
