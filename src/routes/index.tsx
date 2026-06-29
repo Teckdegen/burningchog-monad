@@ -2431,11 +2431,20 @@ function SectionMock({
         {/* ── Ecosystem Architecture ── */}
         <Reveal delay={120}>
           <div className="rounded-2xl p-5 sm:p-7" style={{
-            background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+            position: "relative",
+            overflow: "hidden",
             border: `1px solid ${BORDER_STRONG}`,
           }}>
-            <SectionLabel>Ecosystem Architecture</SectionLabel>
-            <EcosystemArchitecture />
+            {/* flames background */}
+            <img src="/flames.jpg" alt="" aria-hidden draggable={false}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: 0.30 }} />
+            {/* dark overlay */}
+            <div aria-hidden style={{ position: "absolute", inset: 0, background: "rgba(8,2,20,0.78)" }} />
+            {/* content above */}
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <SectionLabel>Ecosystem Architecture</SectionLabel>
+              <EcosystemArchitecture />
+            </div>
           </div>
         </Reveal>
       </div>
@@ -2510,11 +2519,16 @@ function ContestsCollabs() {
     <Reveal>
       <div className="rounded-3xl overflow-hidden"
         style={{
-          background: "linear-gradient(180deg, #1a0636 0%, #110426 100%)",
+          position: "relative",
           border: "1px solid rgba(181,76,255,0.25)",
           boxShadow: "0 24px 64px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03)",
         }}
       >
+        {/* flames background */}
+        <img src="/flames.jpg" alt="" aria-hidden draggable={false}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: 0.35, zIndex: 0 }} />
+        {/* dark overlay */}
+        <div aria-hidden style={{ position: "absolute", inset: 0, background: "rgba(10,3,24,0.72)", zIndex: 0 }} />
         {/* Header */}
         <div className="px-5 sm:px-7 pt-6 pb-4">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-1" style={{ color: PURPLE_BRIGHT }}>Community</p>
