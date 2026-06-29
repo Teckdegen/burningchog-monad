@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useRef, Children, type CSSProperties, type ReactNode } from "react";
+import Hls from "hls.js";
 import { Menu, X, Cog, Lock, Gift, Briefcase, Flame, Trophy, Users2, Plus } from "lucide-react";
 import nadfunLogo from "@/assets/nadfun.jpg";
 import { getPortfolio, type PortfolioToken } from "@/lib/portfolio";
@@ -553,96 +554,71 @@ function LandingHero() {
     <section
       id="top"
       className="relative w-full flex flex-col items-center justify-center"
-      style={{ minHeight: "100dvh", backgroundColor: "#08060F", padding: "80px 16px 40px" }}
+      style={{ minHeight: "100dvh", backgroundColor: BG, padding: "80px 16px 40px" }}
     >
-      {/* ── Phantom-style rounded card with video inside ── */}
+      {/* ── Phantom-style rounded card with image inside ── */}
       <div
         className="relative w-full overflow-hidden"
         style={{
           maxWidth: 1080,
           borderRadius: 24,
-          background: "#120a2e",
+          background: "#12052A",
           boxShadow: "0 32px 80px rgba(0,0,0,0.7)",
+          aspectRatio: "16/8",
         }}
       >
-        {/* Video background */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
+        {/* Background image */}
+        <img
+          src="/hero-bg.jpg"
+          alt=""
+          draggable={false}
           style={{
             position: "absolute",
             inset: 0,
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            opacity: 0.55,
+            objectPosition: "center",
+            opacity: 0.75,
           }}
-        >
-          <source src="https://stream.mux.com/8wrHPCX2dC3msyYU9ObwqNdm00u3ViXvOSHUMRYSEe5Q.m3u8" type="application/x-mpegURL" />
-        </video>
+        />
 
-        {/* Overlay gradient so text stays readable */}
+        {/* Overlay gradient — readable text, darker at bottom */}
         <div
           aria-hidden
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to bottom, rgba(10,4,28,0.35) 0%, rgba(10,4,28,0.15) 40%, rgba(10,4,28,0.55) 100%)",
+              "linear-gradient(to bottom, rgba(10,4,28,0.20) 0%, rgba(10,4,28,0.10) 35%, rgba(10,4,28,0.65) 100%)",
           }}
         />
 
         {/* Content */}
         <div
-          className="relative flex flex-col items-center justify-center text-center"
-          style={{ zIndex: 2, padding: "clamp(64px, 12vw, 120px) clamp(20px, 6vw, 80px)" }}
+          className="relative flex flex-col items-center justify-center text-center h-full"
+          style={{ zIndex: 2, padding: "clamp(40px, 8vw, 80px) clamp(20px, 6vw, 80px)" }}
         >
-          {/* Small eyebrow */}
-          <div className="flex items-center gap-2 mb-5">
-            <img src={TOKEN_LOGO} alt="BCHOG" className="w-5 h-5 rounded-full object-cover" style={{ opacity: 0.65 }} />
-            <span
-              className="text-[11px] font-semibold uppercase tracking-[0.22em]"
-              style={{ color: "rgba(255,255,255,0.40)" }}
-            >
-              Burning Chog
-            </span>
-          </div>
-
           {/* Main headline */}
           <h1
             className="text-white m-0"
             style={{
               fontFamily: "'Anton', sans-serif",
-              fontSize: "clamp(2.4rem, 8vw, 6.5rem)",
+              fontSize: "clamp(2.4rem, 7vw, 6rem)",
               letterSpacing: "-0.02em",
               lineHeight: 1.05,
               maxWidth: "16ch",
+              textShadow: "0 2px 24px rgba(0,0,0,0.6)",
             }}
           >
             Always less,{" "}
             <span style={{ color: PURPLE_BRIGHT }}>always more</span>
           </h1>
 
-          {/* Sub copy */}
-          <p
-            className="mt-5"
-            style={{
-              maxWidth: 520,
-              fontSize: "clamp(0.88rem, 1.8vw, 1.05rem)",
-              color: "rgba(255,255,255,0.40)",
-              lineHeight: 1.65,
-            }}
-          >
-            Infrastructure for regulated digital assets that need privacy,
-            auditability, and deterministic settlement.
-          </p>
-
           {/* For those who get it */}
           <p
-            className="mt-4 text-[11px] uppercase tracking-[0.22em]"
-            style={{ color: "rgba(181,76,255,0.45)", fontStyle: "italic" }}
+            className="mt-5 text-[12px] sm:text-[13px] uppercase tracking-[0.22em]"
+            style={{ color: "rgba(255,255,255,0.45)", fontStyle: "italic" }}
           >
             For those who get it
           </p>
