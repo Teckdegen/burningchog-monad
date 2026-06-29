@@ -1884,7 +1884,7 @@ function PhantomWallet({
   const [walletTab, setWalletTab] = useState<"network" | "tokens" | "defi" | "activity">("network");
 
   const walletTabs: { id: "network" | "tokens" | "defi" | "activity"; label: string }[] = [
-    { id: "network", label: "Networth" },
+    { id: "network", label: "Wallet" },
     { id: "tokens", label: "Tokens" },
     { id: "defi", label: "DeFi" },
     { id: "activity", label: "Activity" },
@@ -1944,28 +1944,48 @@ function PhantomWallet({
           </div>
 
           {/* Tabs */}
-          <div
-            className="flex mx-4 sm:mx-6 mb-0 rounded-xl overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+          <div className="flex mx-4 sm:mx-6 mb-0 gap-1.5 p-1 rounded-2xl"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(255,255,255,0.02)",
+            }}
           >
-            {walletTabs.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setWalletTab(t.id)}
-                className="flex-1 py-2.5 text-[11px] sm:text-[12px] font-semibold transition-all"
-                style={{
-                  background: walletTab === t.id
-                    ? "rgba(181,76,255,0.2)"
-                    : "transparent",
-                  color: walletTab === t.id ? "white" : "rgba(255,255,255,0.35)",
-                  borderBottom: walletTab === t.id ? `2px solid ${PURPLE_BRIGHT}` : "2px solid transparent",
-                  letterSpacing: "0.02em",
-                }}
-              >
-                {t.label}
-              </button>
-            ))}
+            {walletTabs.map((t) => {
+              const active = walletTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setWalletTab(t.id)}
+                  className="flex-1 py-2 text-[11px] sm:text-[12px] font-semibold transition-all duration-200 rounded-xl"
+                  style={{
+                    position: "relative",
+                    overflow: "hidden",
+                    background: active
+                      ? "rgba(181,76,255,0.18)"
+                      : "transparent",
+                    border: active
+                      ? "1px solid rgba(181,76,255,0.35)"
+                      : "1px solid transparent",
+                    backdropFilter: active ? "blur(16px)" : "none",
+                    WebkitBackdropFilter: active ? "blur(16px)" : "none",
+                    boxShadow: active
+                      ? "inset 0 1.5px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.04), 0 0 14px rgba(181,76,255,0.20)"
+                      : "none",
+                    color: active ? "white" : "rgba(255,255,255,0.32)",
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  {active && (
+                    <span aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "50%", borderRadius: "12px 12px 50% 50% / 8px 8px 16px 16px", background: "linear-gradient(to bottom, rgba(255,255,255,0.11), transparent)", pointerEvents: "none" }} />
+                  )}
+                  {t.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Tab content */}
@@ -2184,13 +2204,13 @@ function PhantomWallet({
                         <div
                           className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
                           style={{
-                            background: t.type === "BUY" ? "rgba(74,222,174,0.08)" : "rgba(181,76,255,0.08)",
-                            border: `1px solid ${t.type === "BUY" ? "rgba(74,222,174,0.22)" : "rgba(181,76,255,0.22)"}`,
+                            background: t.type === "BUY" ? "rgba(74,222,174,0.08)" : "rgba(255,92,138,0.08)",
+                            border: `1px solid ${t.type === "BUY" ? "rgba(74,222,174,0.22)" : "rgba(255,92,138,0.22)"}`,
                             boxShadow: t.type === "BUY" ? "inset 0 1px 0 rgba(255,255,255,0.10)" : "inset 0 1px 0 rgba(255,255,255,0.10)",
                           }}
                         >
                           <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
-                            stroke={t.type === "BUY" ? DB_GREEN : PURPLE_BRIGHT} strokeWidth="2.2" aria-hidden>
+                            stroke={t.type === "BUY" ? DB_GREEN : DB_RED} strokeWidth="2.2" aria-hidden>
                             {t.type === "BUY"
                               ? <path d="M12 19V5M5 12l7-7 7 7" />
                               : <path d="M12 5v14M5 12l7 7 7-7" />
@@ -2207,7 +2227,7 @@ function PhantomWallet({
                         </div>
                         <div className="text-right shrink-0">
                           <p className="text-[13px] font-semibold"
-                            style={{ color: t.type === "BUY" ? DB_GREEN : PURPLE_BRIGHT }}>
+                            style={{ color: t.type === "BUY" ? DB_GREEN : DB_RED }}>
                             {t.type === "BUY" ? "+" : "-"}{formatUsd(t.valueUsd)}
                           </p>
                           <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.28)" }}>
