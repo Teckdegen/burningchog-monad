@@ -560,6 +560,10 @@ function LandingHero() {
       style={{
         height: "100dvh",
         backgroundColor: BG,
+        backgroundImage: "url('/flames.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }}
     >
       {/* Dark overlay so text pops */}
@@ -569,7 +573,7 @@ function LandingHero() {
           position: "absolute",
           inset: 0,
           background:
-            "linear-gradient(to bottom, rgba(10,4,28,0.30) 0%, rgba(10,4,28,0.15) 40%, rgba(10,4,28,0.70) 100%)",
+            "linear-gradient(to bottom, rgba(10,4,28,0.50) 0%, rgba(10,4,28,0.40) 40%, rgba(10,4,28,0.75) 100%)",
         }}
       />
 
