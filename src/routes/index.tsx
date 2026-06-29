@@ -1818,32 +1818,28 @@ function PhantomWallet({
   veDust: VeDustData | undefined;
   trades: Trade[];
 }) {
-  const [walletTab, setWalletTab] = useState<"network" | "tokens" | "defi">("network");
-  const [activityTab] = useState<"activity">("activity");
+  const [walletTab, setWalletTab] = useState<"network" | "tokens" | "defi" | "activity">("network");
 
-  const walletTabs: { id: "network" | "tokens" | "defi"; label: string }[] = [
+  const walletTabs: { id: "network" | "tokens" | "defi" | "activity"; label: string }[] = [
     { id: "network", label: "Network" },
     { id: "tokens", label: "Tokens" },
     { id: "defi", label: "DeFi" },
+    { id: "activity", label: "Activity" },
   ];
 
   return (
-    <div className="flex flex-col gap-4 items-center">
-
-      {/* ── Wallet card ── */}
+    <div className="w-full">
       <Reveal>
         <div
           className="w-full rounded-3xl overflow-hidden"
           style={{
             background: "linear-gradient(180deg, #1a0636 0%, #110426 100%)",
             border: `1px solid rgba(181,76,255,0.25)`,
-            boxShadow: "0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03) inset",
-            maxWidth: 420,
-            margin: "0 auto",
+            boxShadow: "0 24px 64px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03)",
           }}
         >
           {/* Top bar: network badge */}
-          <div className="flex items-center justify-between px-5 pt-4 pb-1">
+          <div className="flex items-center justify-between px-5 sm:px-7 pt-5 pb-1">
             <div
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
               style={{
@@ -1864,21 +1860,25 @@ function PhantomWallet({
           </div>
 
           {/* Balance */}
-          <div className="px-5 pt-3 pb-5">
+          <div className="px-5 sm:px-7 pt-3 pb-5">
             <p
-              className="font-bold text-white leading-none"
-              style={{ fontSize: "clamp(2rem,8vw,3rem)", letterSpacing: "-0.02em" }}
+              className="font-black text-white leading-none"
+              style={{
+                fontSize: "clamp(2.2rem,6vw,3.5rem)",
+                letterSpacing: "-0.03em",
+                fontVariantNumeric: "tabular-nums",
+              }}
             >
               {totalNetworkValue > 0 ? formatUsd(totalNetworkValue) : "$0.00"}
             </p>
-            <p className="text-[12px] mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <p className="text-[12px] mt-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
               Trading Desk Portfolio
             </p>
           </div>
 
           {/* Tabs */}
           <div
-            className="flex mx-4 mb-1 rounded-xl overflow-hidden"
+            className="flex mx-4 sm:mx-6 mb-0 rounded-xl overflow-hidden"
             style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
           >
             {walletTabs.map((t) => (
@@ -1886,7 +1886,7 @@ function PhantomWallet({
                 key={t.id}
                 type="button"
                 onClick={() => setWalletTab(t.id)}
-                className="flex-1 py-2.5 text-[12px] font-semibold transition-all"
+                className="flex-1 py-2.5 text-[11px] sm:text-[12px] font-semibold transition-all"
                 style={{
                   background: walletTab === t.id
                     ? "rgba(181,76,255,0.2)"
@@ -1902,29 +1902,29 @@ function PhantomWallet({
           </div>
 
           {/* Tab content */}
-          <div className="px-4 pb-4 min-h-[200px]">
+          <div className="px-4 sm:px-6 pb-5 pt-1">
 
             {/* Network tab — total network summary */}
             {walletTab === "network" && (
               <div className="flex flex-col gap-3 pt-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
-                    { label: "BCHOG Balance", value: bchogBalance, sub: "BCHOG", color: PURPLE_BRIGHT },
-                    { label: "Meme Tokens", value: memeTotal > 0 ? formatUsd(memeTotal) : "$---", sub: `${roster.length} tokens`, color: CORAL },
-                    { label: "Neverland veDUST", value: veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---", sub: veDust ? `${veDust.nfts} NFTs` : "---", color: CREAM },
-                    { label: "Weekly Yield", value: veDust?.weeklyUsd ? formatUsd(veDust.weeklyUsd) : "$---", sub: "USDC", color: PURPLE },
+                    { label: "BCHOG Balance", value: bchogBalance, sub: "BCHOG" },
+                    { label: "Meme Tokens", value: memeTotal > 0 ? formatUsd(memeTotal) : "$---", sub: `${roster.length} tokens` },
+                    { label: "Neverland veDUST", value: veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---", sub: veDust ? `${veDust.nfts} NFTs` : "---" },
+                    { label: "Weekly Yield", value: veDust?.weeklyUsd ? formatUsd(veDust.weeklyUsd) : "$---", sub: "USDC" },
                   ].map((s) => (
                     <div
                       key={s.label}
-                      className="rounded-2xl p-3 flex flex-col gap-0.5"
+                      className="rounded-2xl p-3 sm:p-4 flex flex-col gap-0.5"
                       style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: `1px solid ${s.color}22`,
+                        background: "rgba(181,76,255,0.07)",
+                        border: "1px solid rgba(181,76,255,0.15)",
                       }}
                     >
                       <p className="text-[9px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.3)" }}>{s.label}</p>
-                      <p className="text-sm font-bold text-white leading-tight">{s.value}</p>
-                      <p className="text-[9px]" style={{ color: s.color }}>{s.sub}</p>
+                      <p className="text-sm sm:text-base font-bold text-white leading-tight">{s.value}</p>
+                      <p className="text-[9px]" style={{ color: PURPLE_BRIGHT }}>{s.sub}</p>
                     </div>
                   ))}
                 </div>
@@ -1933,26 +1933,26 @@ function PhantomWallet({
 
             {/* Tokens tab — all wallet tokens */}
             {walletTab === "tokens" && (
-              <div className="flex flex-col pt-2" style={{ maxHeight: 320, overflowY: "auto", scrollbarWidth: "none" }}>
+              <div className="flex flex-col pt-2" style={{ maxHeight: 420, overflowY: "auto", scrollbarWidth: "none" }}>
                 {/* BCHOG first */}
                 <div
-                  className="flex items-center justify-between py-3"
+                  className="flex items-center justify-between py-3.5"
                   style={{ borderBottom: `1px solid rgba(255,255,255,0.05)` }}
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0"
-                      style={{ background: PANEL, border: `1.5px solid ${BORDER_STRONG}` }}
+                      style={{ background: PANEL, border: `1.5px solid rgba(181,76,255,0.3)` }}
                     >
                       <img src={TOKEN_LOGO} alt="BCHOG" className="w-full h-full object-cover" draggable={false} />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-white">BCHOG</p>
+                      <p className="text-[13px] font-semibold text-white">BCHOG</p>
                       <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>Burning Chog</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-semibold text-white">{bchogBalance}</p>
+                    <p className="text-[13px] font-semibold text-white">{bchogBalance}</p>
                     <p className="text-[10px]" style={{ color: PURPLE_BRIGHT }}>BCHOG</p>
                   </div>
                 </div>
@@ -1965,13 +1965,13 @@ function PhantomWallet({
                       href={explorerToken(t.address)}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between py-3 no-underline hover:bg-white/[0.03] transition-colors rounded-xl px-1"
+                      className="flex items-center justify-between py-3.5 no-underline hover:bg-white/[0.03] transition-colors rounded-xl px-1"
                       style={{ borderBottom: `1px solid rgba(255,255,255,0.04)`, color: "white" }}
                     >
                       <div className="flex items-center gap-3">
                         <div
                           className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0"
-                          style={{ background: PANEL, border: `1.5px solid ${BORDER_STRONG}` }}
+                          style={{ background: PANEL, border: `1.5px solid rgba(181,76,255,0.2)` }}
                         >
                           {t.iconUrl
                             ? <img src={t.iconUrl} alt="" className="w-full h-full object-cover" draggable={false} />
@@ -1979,14 +1979,12 @@ function PhantomWallet({
                           }
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-white">{t.symbol}</p>
-                          <p className="text-[10px] truncate max-w-[100px]" style={{ color: "rgba(255,255,255,0.3)" }}>{t.name}</p>
+                          <p className="text-[13px] font-semibold text-white">{t.symbol}</p>
+                          <p className="text-[10px] truncate max-w-[120px]" style={{ color: "rgba(255,255,255,0.3)" }}>{t.name}</p>
                         </div>
                       </div>
                       <div className="text-right shrink-0 ml-2">
-                        <p className="text-sm font-semibold" style={{ color: t.valueUsd > 100 ? "white" : "rgba(255,255,255,0.6)" }}>
-                          {formatUsd(t.valueUsd)}
-                        </p>
+                        <p className="text-[13px] font-semibold text-white">{formatUsd(t.valueUsd)}</p>
                         <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
                           {t.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </p>
@@ -2001,122 +1999,105 @@ function PhantomWallet({
             {walletTab === "defi" && (
               <div className="flex flex-col gap-3 pt-3">
                 <div
-                  className="rounded-2xl p-4"
+                  className="rounded-2xl p-4 sm:p-5"
                   style={{
-                    background: `linear-gradient(140deg, rgba(122,45,255,0.15) 0%, rgba(181,76,255,0.08) 100%)`,
-                    border: `1px solid rgba(181,76,255,0.2)`,
+                    background: "rgba(181,76,255,0.07)",
+                    border: "1px solid rgba(181,76,255,0.18)",
                   }}
                 >
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-4">
                     <div
                       className="w-7 h-7 rounded-lg flex items-center justify-center"
-                      style={{ background: PANEL, border: `1px solid ${BORDER_STRONG}` }}
+                      style={{ background: PANEL, border: `1px solid rgba(181,76,255,0.3)` }}
                     >
                       <Lock size={13} color={PURPLE_BRIGHT} strokeWidth={1.8} />
                     </div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: PURPLE_BRIGHT }}>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>
                       Neverland veDUST
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
                     {neverslandItems.map((r) => (
                       <div
                         key={r.k}
-                        className="rounded-xl p-2.5"
+                        className="rounded-xl p-3"
                         style={{ background: "rgba(0,0,0,0.2)" }}
                       >
                         <p className="text-[9px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.3)" }}>{r.k}</p>
-                        <p className="text-sm font-bold text-white mt-0.5 truncate">{r.v}</p>
+                        <p className="text-[13px] font-bold text-white mt-0.5 truncate">{r.v}</p>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      </Reveal>
 
-      {/* ── Activity / Transactions ── */}
-      <Reveal delay={60}>
-        <div
-          className="w-full rounded-3xl overflow-hidden"
-          style={{
-            background: "linear-gradient(180deg, #1a0636 0%, #110426 100%)",
-            border: `1px solid rgba(181,76,255,0.2)`,
-            boxShadow: "0 16px 48px rgba(0,0,0,0.5)",
-            maxWidth: 420,
-            margin: "0 auto",
-          }}
-        >
-          {/* Activity header */}
-          <div
-            className="flex items-center justify-between px-5 py-4"
-            style={{ borderBottom: `1px solid rgba(255,255,255,0.05)` }}
-          >
-            <p className="text-sm font-bold text-white">Activity</p>
-            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.3)" }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: DB_GREEN }} />
-              Live
-            </span>
+            {/* ─ Activity ─ */}
+            {walletTab === "activity" && (
+              <div className="flex flex-col pt-2">
+                <div className="flex items-center justify-between py-2.5 mb-1">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    Recent Transactions
+                  </p>
+                  <span className="flex items-center gap-1.5 text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: DB_GREEN }} />
+                    Live
+                  </span>
+                </div>
+                {trades.length === 0 ? (
+                  <div className="py-8 text-sm text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
+                    Loading transactions…
+                  </div>
+                ) : (
+                  <div className="flex flex-col" style={{ maxHeight: 400, overflowY: "auto", scrollbarWidth: "none" }}>
+                    {trades.map((t, idx) => (
+                      <a
+                        key={t.hash}
+                        href={explorerTx(t.hash)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-3 sm:gap-4 py-3.5 no-underline hover:bg-white/[0.03] transition-colors rounded-xl"
+                        style={{ borderBottom: idx < trades.length - 1 ? "1px solid rgba(255,255,255,0.04)" : undefined, color: "white" }}
+                      >
+                        <div
+                          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                          style={{
+                            background: t.type === "BUY" ? "rgba(74,222,174,0.1)" : "rgba(181,76,255,0.1)",
+                            border: `1px solid ${t.type === "BUY" ? "rgba(74,222,174,0.25)" : "rgba(181,76,255,0.25)"}`,
+                          }}
+                        >
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+                            stroke={t.type === "BUY" ? DB_GREEN : PURPLE_BRIGHT} strokeWidth="2.2" aria-hidden>
+                            {t.type === "BUY"
+                              ? <path d="M12 19V5M5 12l7-7 7 7" />
+                              : <path d="M12 5v14M5 12l7 7 7-7" />
+                            }
+                          </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-semibold text-white">
+                            {t.type === "BUY" ? "Bought" : "Sold"} BCHOG
+                          </p>
+                          <p className="text-[10px] font-mono truncate" style={{ color: "rgba(255,255,255,0.28)" }}>
+                            {t.account ? `${t.account.slice(0, 6)}…${t.account.slice(-4)}` : "—"} · {timeAgo(t.ts)}
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-[13px] font-semibold"
+                            style={{ color: t.type === "BUY" ? DB_GREEN : PURPLE_BRIGHT }}>
+                            {t.type === "BUY" ? "+" : "-"}{formatUsd(t.valueUsd)}
+                          </p>
+                          <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.28)" }}>
+                            {compactAmount(t.tokenAmount)} BCHOG
+                          </p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-
-          {/* Transactions list */}
-          {trades.length === 0 ? (
-            <div className="px-5 py-8 text-sm text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
-              Loading transactions…
-            </div>
-          ) : (
-            <div className="flex flex-col">
-              {trades.map((t, idx) => (
-                <a
-                  key={t.hash}
-                  href={explorerTx(t.hash)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-3 px-5 py-3.5 no-underline hover:bg-white/[0.03] transition-colors"
-                  style={{
-                    borderBottom: idx < trades.length - 1 ? `1px solid rgba(255,255,255,0.04)` : undefined,
-                    color: "white",
-                  }}
-                >
-                  {/* Icon */}
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                    style={{
-                      background: t.type === "BUY"
-                        ? "rgba(74,222,174,0.12)"
-                        : "rgba(255,92,138,0.12)",
-                      border: `1px solid ${t.type === "BUY" ? "rgba(74,222,174,0.3)" : "rgba(255,92,138,0.3)"}`,
-                    }}
-                  >
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={t.type === "BUY" ? DB_GREEN : DB_RED} strokeWidth="2.2" aria-hidden>
-                      {t.type === "BUY"
-                        ? <path d="M12 19V5M5 12l7-7 7 7" />
-                        : <path d="M12 5v14M5 12l7 7 7-7" />
-                      }
-                    </svg>
-                  </div>
-                  {/* Description */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-semibold text-white">{t.type === "BUY" ? "Bought" : "Sold"} BCHOG</p>
-                    <p className="text-[10px] font-mono truncate" style={{ color: "rgba(255,255,255,0.3)" }}>
-                      {t.account ? `${t.account.slice(0, 6)}…${t.account.slice(-4)}` : "—"} · {timeAgo(t.ts)}
-                    </p>
-                  </div>
-                  {/* Amount */}
-                  <div className="text-right shrink-0">
-                    <p className="text-[12px] font-semibold" style={{ color: t.type === "BUY" ? DB_GREEN : DB_RED }}>
-                      {t.type === "BUY" ? "+" : "-"}{formatUsd(t.valueUsd)}
-                    </p>
-                    <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-                      {compactAmount(t.tokenAmount)} BCHOG
-                    </p>
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
         </div>
       </Reveal>
     </div>
@@ -2381,113 +2362,216 @@ function SectionMock({
       LOCK_TARGET * scaledDivisor(stats.decimals),
     );
 
-    const journeySteps = [
+    // Zigzag timeline steps — purple & white only, like the image
+    const timelineSteps = [
       {
-        num: "01",
-        label: "Search",
-        detail: "Find BCHOG on Nad.fun or any Monad DEX — the deflationary chog that keeps burning.",
-        color: PURPLE_BRIGHT,
-        icon: (
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-            <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
-          </svg>
-        ),
+        num: "Phase 01",
+        title: "100k Burn",
+        bullets: [
+          "Treasury initiates 100,000 BCHOG burn",
+          "Tokens permanently removed from supply",
+          "Deflationary pressure builds",
+        ],
+        side: "left" as const,
+        accent: PURPLE_BRIGHT,
       },
       {
-        num: "02",
-        label: "Scroll",
-        detail: "Explore the dashboard — watch live burns, lock progress, and the Trading Desk at work.",
-        color: CORAL,
-        icon: (
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-            <path d="M12 5v14M5 12l7 7 7-7" />
-          </svg>
-        ),
+        num: "Phase 02",
+        title: "200% Match",
+        bullets: [
+          "Treasury matches with 200% contribution",
+          "200,000 BCHOG redirected to flywheel",
+          "Multiplied deflationary impact",
+        ],
+        side: "right" as const,
+        accent: "rgba(181,76,255,0.7)",
       },
       {
-        num: "03",
-        label: "Review",
-        detail: "Understand the flywheel: 100k burned, 200% matched, locked and rewarded every cycle.",
-        color: CREAM,
-        icon: (
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-            <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 0 0 1.946-.806 3.42 3.42 0 0 1 4.438 0 3.42 3.42 0 0 0 1.946.806 3.42 3.42 0 0 1 3.138 3.138 3.42 3.42 0 0 0 .806 1.946 3.42 3.42 0 0 1 0 4.438 3.42 3.42 0 0 0-.806 1.946 3.42 3.42 0 0 1-3.138 3.138 3.42 3.42 0 0 0-1.946.806 3.42 3.42 0 0 1-4.438 0 3.42 3.42 0 0 0-1.946-.806 3.42 3.42 0 0 1-3.138-3.138 3.42 3.42 0 0 0-.806-1.946 3.42 3.42 0 0 1 0-4.438 3.42 3.42 0 0 0 .806-1.946 3.42 3.42 0 0 1 3.138-3.138z" />
-          </svg>
-        ),
+        num: "Phase 03",
+        title: "Burn + Lock",
+        bullets: [
+          "+100k burned permanently",
+          "+50k locked — reducing circulating supply",
+          "Lock progress tracked on-chain",
+        ],
+        side: "left" as const,
+        accent: PURPLE,
       },
       {
-        num: "04",
-        label: "Join",
-        detail: "Grab your bag, hold tight, and become part of the BCHOG burning movement.",
-        color: PURPLE,
-        icon: (
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-        ),
+        num: "Phase 04",
+        title: "Rewards",
+        bullets: [
+          "+50k distributed to community",
+          "Rewarding holders and participants",
+          "Cycle repeats — flywheel spins",
+        ],
+        side: "right" as const,
+        accent: "rgba(122,45,255,0.9)",
       },
     ];
 
     return (
       <div className="flex flex-col gap-8">
 
-        {/* ── Journey steps ── */}
+        {/* ── Zigzag timeline ── */}
         <Reveal>
           <p
-            className="text-center font-bold uppercase mb-6"
+            className="text-center font-bold uppercase mb-8"
             style={{
               fontFamily: "'Anton', sans-serif",
-              fontSize: "clamp(1.1rem,3.5vw,1.8rem)",
-              letterSpacing: "0.12em",
-              color: "rgba(255,255,255,0.85)",
+              fontSize: "clamp(1.4rem,4vw,2.2rem)",
+              letterSpacing: "0.1em",
+              color: "white",
             }}
           >
-            Your Journey Ahead
+            Explore the Flywheel
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {journeySteps.map((s, i) => (
-              <Reveal key={s.num} delay={i * 80} dir={i % 2 === 0 ? -1 : 1}>
-                <div
-                  className="rounded-2xl p-4 flex flex-col gap-3 h-full"
-                  style={{
-                    background: `linear-gradient(140deg, ${SURFACE} 0%, ${PANEL} 100%)`,
-                    border: `1.5px solid ${s.color}44`,
-                    boxShadow: `0 0 24px 0 ${s.color}18, inset 0 1px 0 rgba(255,255,255,0.06)`,
-                    backdropFilter: "blur(10px)",
-                    WebkitBackdropFilter: "blur(10px)",
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: s.color }}>
-                      {s.num}
-                    </span>
-                    <span style={{ color: s.color }}>{s.icon}</span>
-                  </div>
-                  <p className="text-base font-bold text-white">{s.label}</p>
-                  <p className="text-[11px] leading-relaxed" style={{ color: MUTED }}>{s.detail}</p>
-                  {/* Accent line */}
-                  <div className="mt-auto pt-2">
+
+          {/* Desktop zigzag */}
+          <div className="hidden sm:block relative">
+            {/* Spine */}
+            <div
+              className="absolute left-1/2 -translate-x-1/2"
+              style={{
+                top: 24,
+                bottom: 24,
+                width: 1,
+                background: `linear-gradient(to bottom, transparent, ${PURPLE_BRIGHT}88, ${PURPLE}88, transparent)`,
+              }}
+              aria-hidden
+            />
+
+            <div className="flex flex-col" style={{ gap: 0 }}>
+              {timelineSteps.map((step, i) => {
+                const isLeft = step.side === "left";
+                return (
+                  <Reveal key={step.num} delay={i * 110} dir={isLeft ? -1 : 1}>
                     <div
-                      className="h-px w-full rounded-full"
-                      style={{ background: `linear-gradient(90deg, ${s.color}66, transparent)` }}
+                      className="relative grid"
+                      style={{ gridTemplateColumns: "1fr 80px 1fr", marginBottom: i < timelineSteps.length - 1 ? 48 : 0 }}
+                    >
+                      {/* Left column */}
+                      <div className={`flex ${isLeft ? "justify-end pr-6" : "justify-start pl-6"}`}
+                        style={{ gridColumn: isLeft ? 1 : 3 }}>
+                        <div
+                          className="rounded-2xl p-5 max-w-[340px]"
+                          style={{
+                            background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+                            border: `1.5px solid ${step.accent}55`,
+                            boxShadow: `0 0 32px 0 ${step.accent}1a, inset 0 1px 0 rgba(255,255,255,0.07)`,
+                          }}
+                        >
+                          <p
+                            className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1.5"
+                            style={{ color: step.accent }}
+                          >
+                            {step.num}
+                          </p>
+                          <p className="text-[15px] font-bold text-white mb-3">{step.title}</p>
+                          <ul className="flex flex-col gap-1.5">
+                            {step.bullets.map((b) => (
+                              <li key={b} className="flex items-start gap-2">
+                                <span className="text-[10px] mt-0.5" style={{ color: step.accent }}>+</span>
+                                <span className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>{b}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          {/* Lock progress bar on phase 03 */}
+                          {i === 2 && (
+                            <div className="mt-4">
+                              <div className="flex justify-between text-[9px] mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                                <span>Lock progress</span>
+                                <span>{Math.round(lockProgress)}%</span>
+                              </div>
+                              <div className="relative h-2.5 rounded-full overflow-hidden"
+                                style={{ background: "rgba(255,255,255,0.07)", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4)" }}>
+                                <div className="absolute inset-y-0 left-0 rounded-full"
+                                  style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 70%, rgba(255,255,255,0.55) 100%)`, boxShadow: `0 0 10px 2px ${PURPLE_BRIGHT}77` }} />
+                                <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none"
+                                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.16), transparent)" }} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Centre node */}
+                      <div
+                        className="flex flex-col items-center justify-start pt-4"
+                        style={{ gridColumn: 2, zIndex: 2 }}
+                      >
+                        {/* Dot */}
+                        <div
+                          className="w-3.5 h-3.5 rounded-full shrink-0"
+                          style={{
+                            background: step.accent,
+                            boxShadow: `0 0 14px 4px ${step.accent}77`,
+                          }}
+                        />
+                        {/* Speed-line streaks */}
+                        <div className="flex gap-[3px] mt-1" aria-hidden>
+                          {[10, 16, 12, 8, 6].map((h, j) => (
+                            <div
+                              key={j}
+                              className="rounded-full"
+                              style={{
+                                width: 1,
+                                height: h,
+                                background: `${step.accent}${["cc","99","77","55","33"][j]}`,
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Right spacer */}
+                      <div style={{ gridColumn: isLeft ? 3 : 1 }} />
+                    </div>
+                  </Reveal>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Mobile — vertical list with dots */}
+          <div className="sm:hidden flex flex-col gap-5 relative">
+            <div
+              className="absolute left-3 top-2 bottom-2 w-px"
+              style={{ background: `linear-gradient(to bottom, transparent, ${PURPLE_BRIGHT}66, transparent)` }}
+              aria-hidden
+            />
+            {timelineSteps.map((step, i) => (
+              <Reveal key={step.num} delay={i * 80}>
+                <div className="flex items-start gap-4 pl-2">
+                  {/* dot */}
+                  <div className="relative shrink-0" style={{ marginTop: 14 }}>
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ background: step.accent, boxShadow: `0 0 10px 3px ${step.accent}66` }}
                     />
+                  </div>
+                  {/* card */}
+                  <div
+                    className="flex-1 rounded-2xl p-4"
+                    style={{
+                      background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+                      border: `1.5px solid ${step.accent}44`,
+                    }}
+                  >
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-1" style={{ color: step.accent }}>{step.num}</p>
+                    <p className="text-[14px] font-bold text-white mb-2">{step.title}</p>
+                    <ul className="flex flex-col gap-1">
+                      {step.bullets.map((b) => (
+                        <li key={b} className="flex items-start gap-1.5">
+                          <span className="text-[10px] mt-0.5 shrink-0" style={{ color: step.accent }}>+</span>
+                          <span className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </Reveal>
             ))}
-          </div>
-        </Reveal>
-
-        {/* ── Deflationary Flywheel ── */}
-        <Reveal delay={80}>
-          <div className="rounded-2xl p-5 sm:p-7" style={{
-            background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`,
-            border: `1px solid ${BORDER_STRONG}`,
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-          }}>
-            <SectionLabel>Deflationary Flywheel</SectionLabel>
-            <DeflationaryFlywheelDiagram lockProgress={lockProgress} />
           </div>
         </Reveal>
 
@@ -2496,8 +2580,6 @@ function SectionMock({
           <div className="rounded-2xl p-5 sm:p-7" style={{
             background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`,
             border: `1px solid ${BORDER_STRONG}`,
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
           }}>
             <SectionLabel>Ecosystem Architecture</SectionLabel>
             <EcosystemArchitecture />
