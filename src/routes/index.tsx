@@ -560,12 +560,23 @@ function LandingHero() {
       style={{
         height: "100dvh",
         backgroundColor: BG,
-        backgroundImage: "url('/flames.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
       }}
     >
+      {/* blurred flames background */}
+      <img
+        src="/flames.jpg"
+        alt=""
+        aria-hidden
+        draggable={false}
+        style={{
+          position: "absolute", inset: 0,
+          width: "100%", height: "100%",
+          objectFit: "cover", objectPosition: "center",
+          filter: "blur(12px)",
+          transform: "scale(1.08)",
+          opacity: 0.5,
+        }}
+      />
       {/* Dark overlay so text pops */}
       <div
         aria-hidden
