@@ -1560,16 +1560,9 @@ function DeflationaryFlywheelDiagram({ lockProgress }: { lockProgress: number })
 
 function EcosystemArchitecture() {
   // iPhone glass — purple / white / black only
-  const G_BG        = "rgba(255,255,255,0.035)";
-  const G_BDR       = "rgba(255,255,255,0.08)";
-  const G_SHINE_TOP = "rgba(255,255,255,0.14)";
-  const G_SHINE_BOT = "rgba(255,255,255,0.03)";
-  const HL_BG       = "rgba(181,76,255,0.10)";
-  const HL_BDR      = "rgba(181,76,255,0.32)";
-  const HL_GLOW     = "rgba(181,76,255,0.22)";
-  const PUB         = PURPLE_BRIGHT;            // #B54CFF
-  const ARW         = PUB;
-  const DASH_CLR    = "rgba(181,76,255,0.55)";
+  const PUB      = PURPLE_BRIGHT; // #B54CFF
+  const ARW      = PUB;
+  const DASH_CLR = "rgba(181,76,255,0.60)";
 
   type NodeDef = {
     id: string;
@@ -1623,269 +1616,193 @@ function EcosystemArchitecture() {
     },
   ];
 
-  const NodeCard = ({ node, compact = false }: { node: NodeDef; compact?: boolean }) => {
+  // ── Pure SVG diagram — same viewBox on all screen sizes ──
+  // Node centres (in SVG units, viewBox 0 0 560 520):
+  //   Treasury  T  = (280, 72)   — top centre
+  //   Lock      LK = (82,  240)  — mid left
+  //   Rewards   RW = (478, 240)  — mid right
+  //   Trading   TR = (280, 390)  — bottom centre
+  //   Burn      BN = (82,  500)  — bottom left  (small)
+  // Node radii: Treasury=62, Lock/Rewards=58, Trading=58, Burn=46
+  //
+  // Connections (matching reference image):
+  //   Treasury ──solid──► Lock    (curve left)
+  //   Treasury ──solid──► Rewards (curve right)
+  //   Treasury ──solid──► Trading (straight down)
+  //   Trading  ──dashed──► Burn   (curve bottom-left)
+  //   Burn     ──dashed──► Lock   (straight up, closes cycle)
+
+  const VW = 560, VH = 540;
+  const T  = { x: 280, y:  72, r: 62 };
+  const LK = { x:  82, y: 240, r: 56 };
+  const RW = { x: 478, y: 240, r: 56 };
+  const TR = { x: 280, y: 392, r: 58 };
+  const BN = { x:  82, y: 502, r: 44 };
+
+  // Arrowhead: tip at (tx,ty), pointing in direction of (dx,dy)
+  function Arrow({ tx, ty, dx, dy, fill }: { tx: number; ty: number; dx: number; dy: number; fill: string }) {
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const ux = dx / len, uy = dy / len;
+    const size = 9;
+    const spread = 0.42;
+    const p1 = `${tx},${ty}`;
+    const p2 = `${tx - size * (ux - spread * uy)},${ty - size * (uy + spread * ux)}`;
+    const p3 = `${tx - size * (ux + spread * uy)},${ty - size * (uy - spread * ux)}`;
+    return <polygon points={`${p1} ${p2} ${p3}`} fill={fill} />;
+  }
+
+  // A point on the surface of a circle at angle θ (radians)
+  function edge(cx: number, cy: number, r: number, angle: number) {
+    return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+  }
+
+  // Glass circle node rendered entirely in SVG via foreignObject
+  function NodeCircle({
+    node, cx, cy, r,
+  }: {
+    node: (typeof nodes)[number];
+    cx: number; cy: number; r: number;
+  }) {
     const { Icon } = node;
     const isHL = !!node.highlight;
+    const iconSize = r < 50 ? 16 : 20;
+    const labelSize = r < 50 ? 7 : 8.5;
+    const subSize = r < 50 ? 6 : 7;
+    const descSize = r < 50 ? 5.5 : 6.5;
+    const d = r * 2;
+
     const inner = (
       <div
-        className="rounded-2xl flex flex-col items-center text-center transition-all duration-200 hover:scale-[1.03]"
         style={{
-          padding: compact ? "10px 8px" : "16px 12px",
-          gap: compact ? 5 : 7,
+          width: d, height: d,
+          borderRadius: "50%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 3,
+          padding: "10px 6px",
+          boxSizing: "border-box",
           position: "relative",
           overflow: "hidden",
-          background: isHL ? HL_BG : G_BG,
-          border: `1px solid ${isHL ? HL_BDR : G_BDR}`,
+          background: isHL ? "rgba(181,76,255,0.12)" : "rgba(255,255,255,0.04)",
+          border: `1.5px solid ${isHL ? "rgba(181,76,255,0.45)" : "rgba(255,255,255,0.10)"}`,
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           boxShadow: isHL
-            ? `inset 0 1.5px 0 ${G_SHINE_TOP}, inset 0 -1px 0 ${G_SHINE_BOT}, 0 0 28px ${HL_GLOW}, 0 12px 32px rgba(0,0,0,0.45)`
-            : `inset 0 1.5px 0 ${G_SHINE_TOP}, inset 0 -1px 0 ${G_SHINE_BOT}, 0 8px 24px rgba(0,0,0,0.4)`,
+            ? "inset 0 1.5px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.03), 0 0 32px rgba(181,76,255,0.28), 0 8px 24px rgba(0,0,0,0.5)"
+            : "inset 0 1.5px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(255,255,255,0.03), 0 6px 20px rgba(0,0,0,0.45)",
+          textAlign: "center",
         }}
       >
-        {/* top glass sheen stripe */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            top: 0, left: 0, right: 0,
-            height: "38%",
-            borderRadius: "16px 16px 60% 60% / 12px 12px 32px 32px",
-            background: "linear-gradient(to bottom, rgba(255,255,255,0.10), transparent)",
-            pointerEvents: "none",
-          }}
-        />
-        {/* icon pill */}
-        <div
-          className="rounded-xl flex items-center justify-center shrink-0"
-          style={{
-            width: compact ? 28 : 38,
-            height: compact ? 28 : 38,
-            background: isHL ? "rgba(181,76,255,0.18)" : "rgba(255,255,255,0.06)",
-            border: `1px solid ${isHL ? "rgba(181,76,255,0.30)" : "rgba(255,255,255,0.10)"}`,
-            boxShadow: isHL ? `0 0 14px rgba(181,76,255,0.30)` : "none",
-          }}
-        >
-          <Icon size={compact ? 13 : 18} color={isHL ? PUB : "rgba(255,255,255,0.65)"} strokeWidth={1.75} />
+        {/* top sheen */}
+        <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "45%", borderRadius: "50% 50% 40% 40% / 30% 30% 20% 20%", background: "linear-gradient(to bottom, rgba(255,255,255,0.13), transparent)", pointerEvents: "none" }} />
+        {/* icon */}
+        <div style={{ width: iconSize + 12, height: iconSize + 12, borderRadius: "50%", background: isHL ? "rgba(181,76,255,0.20)" : "rgba(255,255,255,0.07)", border: `1px solid ${isHL ? "rgba(181,76,255,0.35)" : "rgba(255,255,255,0.12)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: isHL ? "0 0 12px rgba(181,76,255,0.35)" : "none" }}>
+          <Icon size={iconSize} color={isHL ? PUB : "rgba(255,255,255,0.7)"} strokeWidth={1.7} />
         </div>
-        <p
-          className="font-bold uppercase leading-tight text-white"
-          style={{ fontSize: compact ? 8 : 9.5, letterSpacing: "0.13em" }}
-        >
-          {node.label}
-        </p>
-        <p
-          style={{
-            fontSize: compact ? 7 : 8,
-            color: isHL ? PUB : "rgba(255,255,255,0.32)",
-            letterSpacing: "0.09em",
-            textTransform: "uppercase",
-          }}
-        >
-          {node.sub}
-        </p>
-        {!compact && (
-          <p
-            className="leading-snug"
-            style={{ fontSize: 9, color: "rgba(255,255,255,0.36)", marginTop: 1 }}
-          >
-            {node.desc}
-          </p>
-        )}
+        <p style={{ fontSize: labelSize, fontWeight: 800, letterSpacing: "0.10em", textTransform: "uppercase", color: "white", lineHeight: 1.2, margin: 0 }}>{node.label}</p>
+        <p style={{ fontSize: subSize, letterSpacing: "0.08em", textTransform: "uppercase", color: isHL ? PUB : "rgba(255,255,255,0.38)", margin: 0 }}>{node.sub}</p>
+        {r >= 56 && <p style={{ fontSize: descSize, color: "rgba(255,255,255,0.32)", lineHeight: 1.3, margin: 0, padding: "0 4px" }}>{node.desc}</p>}
       </div>
     );
-    return node.href ? (
-      <a href={node.href} target="_blank" rel="noreferrer" className="no-underline block">
-        {inner}
-      </a>
+
+    const content = node.href ? (
+      <a href={node.href} target="_blank" rel="noreferrer" style={{ display: "block", textDecoration: "none" }}>{inner}</a>
     ) : inner;
-  };
 
-  // ── Flywheel flow (matching the reference image) ──
-  // Treasury  ──solid──►  Lock    (top-centre → mid-left)
-  // Treasury  ──solid──►  Rewards (top-centre → mid-right)
-  // Treasury  ──solid──►  Trading (top-centre → bottom-centre)
-  // Trading   ──dashed──► Burn    (bottom-centre → bottom-left)
-  // Burn      ──dashed──► Lock    (bottom-left  → mid-left)   [cycle closes]
-
-  // We render a 3-row layout with an SVG overlay for arrows:
-  // Row 0  (centre):        Treasury
-  // Row 1  (3-col):         Lock | [space] | Rewards
-  // Row 2  (centre):        Trading
-  // Row 3  (left-of-centre): Burn
-
-  // SVG coordinate assumptions (maxWidth 600):
-  // Treasury centre  ≈ (300, 70)
-  // Lock centre      ≈ (80, 210)
-  // Rewards centre   ≈ (520, 210)
-  // Trading centre   ≈ (300, 340)
-  // Burn centre      ≈ (80, 460)
-
-  const SVG_W = 600;
-  const T  = { x: 300, y:  70 };
-  const LK = { x:  80, y: 210 };
-  const RW = { x: 520, y: 210 };
-  const TR = { x: 300, y: 340 };
-  const BN = { x:  80, y: 460 };
-
-  function arrowHead(x: number, y: number, angle: number, fill: string) {
-    const size = 7;
-    const rad = (angle * Math.PI) / 180;
-    const tip = { x, y };
-    const left  = { x: x - size * Math.cos(rad - 0.5), y: y - size * Math.sin(rad - 0.5) };
-    const right = { x: x - size * Math.cos(rad + 0.5), y: y - size * Math.sin(rad + 0.5) };
-    return <polygon points={`${tip.x},${tip.y} ${left.x},${left.y} ${right.x},${right.y}`} fill={fill} />;
+    return (
+      <foreignObject x={cx - r} y={cy - r} width={d} height={d} style={{ overflow: "visible" }}>
+        {content}
+      </foreignObject>
+    );
   }
+
+  // Pre-compute arrow endpoints on circle edges
+  // Treasury → Lock: exit bottom-left of T, enter top of LK
+  const tToLk_start = edge(T.x, T.y, T.r, Math.atan2(LK.y - T.y, LK.x - T.x));
+  const tToLk_end   = edge(LK.x, LK.y, LK.r, Math.atan2(T.y - LK.y, T.x - LK.x));
+  // Treasury → Rewards: exit bottom-right of T, enter top of RW
+  const tToRw_start = edge(T.x, T.y, T.r, Math.atan2(RW.y - T.y, RW.x - T.x));
+  const tToRw_end   = edge(RW.x, RW.y, RW.r, Math.atan2(T.y - RW.y, T.x - RW.x));
+  // Treasury → Trading: straight down
+  const tToTr_start = edge(T.x, T.y, T.r, Math.PI / 2);
+  const tToTr_end   = edge(TR.x, TR.y, TR.r, -Math.PI / 2);
+  // Trading → Burn: exit bottom-left of TR, enter right of BN
+  const trToBn_start = edge(TR.x, TR.y, TR.r, Math.atan2(BN.y - TR.y, BN.x - TR.x));
+  const trToBn_end   = edge(BN.x, BN.y, BN.r, Math.atan2(TR.y - BN.y, TR.x - BN.x));
+  // Burn → Lock: exit top of BN, enter bottom of LK
+  const bnToLk_start = edge(BN.x, BN.y, BN.r, -Math.PI / 2);
+  const bnToLk_end   = edge(LK.x, LK.y, LK.r, Math.PI / 2);
 
   return (
     <div className="mt-4 w-full">
       <div className="text-center mb-6">
-        <p
-          className="text-white font-bold uppercase"
-          style={{
-            fontFamily: "'Anton', sans-serif",
-            fontSize: "clamp(0.85rem,2.5vw,1.2rem)",
-            letterSpacing: "0.15em",
-            color: "rgba(255,255,255,0.92)",
-          }}
-        >
+        <p className="text-white font-bold uppercase" style={{ fontFamily: "'Anton', sans-serif", fontSize: "clamp(0.85rem,2.5vw,1.2rem)", letterSpacing: "0.15em", color: "rgba(255,255,255,0.92)" }}>
           BCHOG ECOSYSTEM WALLET FLOW
         </p>
       </div>
 
-      {/* ── Desktop ── */}
-      <div className="hidden sm:block">
-        <div className="relative" style={{ maxWidth: SVG_W, margin: "0 auto" }}>
+      {/* ── Single responsive SVG — same layout on all screen sizes ── */}
+      <svg
+        viewBox={`0 0 ${VW} ${VH}`}
+        style={{ width: "100%", maxWidth: 600, display: "block", margin: "0 auto", overflow: "visible" }}
+        aria-label="BCHOG ecosystem wallet flow diagram"
+      >
+        <defs>
+          <marker id="arr-solid" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill={ARW} />
+          </marker>
+          <marker id="arr-dash" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill={DASH_CLR} />
+          </marker>
+        </defs>
 
-          {/* Absolute SVG arrow layer — covers full diagram height */}
-          <svg
-            aria-hidden
-            viewBox={`0 0 ${SVG_W} 530`}
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              pointerEvents: "none",
-              zIndex: 1,
-            }}
-          >
-            {/* Treasury → Lock (solid) */}
-            <path d={`M${T.x},${T.y} Q${T.x},${LK.y} ${LK.x+8},${LK.y}`} fill="none" stroke={ARW} strokeWidth="1.6" />
-            {arrowHead(LK.x + 8, LK.y, 180, ARW)}
+        {/* ── Arrows (drawn under nodes) ── */}
 
-            {/* Treasury → Rewards (solid) */}
-            <path d={`M${T.x},${T.y} Q${T.x},${RW.y} ${RW.x-8},${RW.y}`} fill="none" stroke={ARW} strokeWidth="1.6" />
-            {arrowHead(RW.x - 8, RW.y, 0, ARW)}
+        {/* Treasury → Lock */}
+        <path
+          d={`M${tToLk_start.x},${tToLk_start.y} C${T.x - 80},${(T.y + LK.y) / 2} ${LK.x + 60},${(T.y + LK.y) / 2} ${tToLk_end.x},${tToLk_end.y}`}
+          fill="none" stroke={ARW} strokeWidth="1.8" markerEnd="url(#arr-solid)"
+        />
+        {/* Treasury → Rewards */}
+        <path
+          d={`M${tToRw_start.x},${tToRw_start.y} C${T.x + 80},${(T.y + RW.y) / 2} ${RW.x - 60},${(T.y + RW.y) / 2} ${tToRw_end.x},${tToRw_end.y}`}
+          fill="none" stroke={ARW} strokeWidth="1.8" markerEnd="url(#arr-solid)"
+        />
+        {/* Treasury → Trading (straight down) */}
+        <line
+          x1={tToTr_start.x} y1={tToTr_start.y}
+          x2={tToTr_end.x}   y2={tToTr_end.y}
+          stroke={ARW} strokeWidth="1.8" markerEnd="url(#arr-solid)"
+        />
+        {/* Trading → Burn (dashed curve) */}
+        <path
+          d={`M${trToBn_start.x},${trToBn_start.y} C${TR.x - 60},${(TR.y + BN.y) / 2} ${BN.x + 80},${(TR.y + BN.y) / 2} ${trToBn_end.x},${trToBn_end.y}`}
+          fill="none" stroke={DASH_CLR} strokeWidth="1.8" strokeDasharray="6 4" markerEnd="url(#arr-dash)"
+        />
+        {/* Burn → Lock (dashed straight up, cycle closes) */}
+        <line
+          x1={bnToLk_start.x} y1={bnToLk_start.y}
+          x2={bnToLk_end.x}   y2={bnToLk_end.y}
+          stroke={DASH_CLR} strokeWidth="1.6" strokeDasharray="5 4" markerEnd="url(#arr-dash)"
+        />
 
-            {/* Treasury → Trading (solid) */}
-            <line x1={T.x} y1={T.y} x2={TR.x} y2={TR.y - 10} stroke={ARW} strokeWidth="1.6" />
-            {arrowHead(TR.x, TR.y - 10, 90, ARW)}
-
-            {/* Trading → Burn (dashed) */}
-            <path d={`M${TR.x},${TR.y} Q${TR.x},${BN.y} ${BN.x+8},${BN.y}`} fill="none" stroke={DASH_CLR} strokeWidth="1.6" strokeDasharray="5 4" />
-            {arrowHead(BN.x + 8, BN.y, 180, DASH_CLR)}
-
-            {/* Burn → Lock (dashed — cycle closes) */}
-            <line x1={BN.x} y1={BN.y - 8} x2={LK.x} y2={LK.y + 8} stroke={DASH_CLR} strokeWidth="1.4" strokeDasharray="4 4" />
-            {arrowHead(LK.x, LK.y + 8, 270, DASH_CLR)}
-          </svg>
-
-          {/* Row 0 — Treasury (centred) */}
-          <div className="flex justify-center" style={{ position: "relative", zIndex: 2 }}>
-            <div style={{ width: 160 }}>
-              <NodeCard node={nodes[0]} />
-            </div>
-          </div>
-
-          {/* Row 1 — Lock | gap | Rewards */}
-          <div
-            className="grid"
-            style={{
-              gridTemplateColumns: "1fr 1fr 1fr",
-              maxWidth: SVG_W,
-              margin: "80px auto 0",
-              position: "relative",
-              zIndex: 2,
-            }}
-          >
-            <div className="flex justify-start">
-              <div style={{ width: 150 }}><NodeCard node={nodes[1]} /></div>
-            </div>
-            <div />
-            <div className="flex justify-end">
-              <div style={{ width: 150 }}><NodeCard node={nodes[3]} /></div>
-            </div>
-          </div>
-
-          {/* Row 2 — Trading (centred) */}
-          <div className="flex justify-center" style={{ marginTop: 80, position: "relative", zIndex: 2 }}>
-            <div style={{ width: 160 }}>
-              <NodeCard node={nodes[2]} />
-            </div>
-          </div>
-
-          {/* Row 3 — Burn (left) */}
-          <div className="flex justify-start" style={{ marginTop: 80, paddingLeft: 5, position: "relative", zIndex: 2 }}>
-            <div style={{ width: 150 }}>
-              <NodeCard node={nodes[4]} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Mobile ── */}
-      <div className="sm:hidden flex flex-col items-center gap-3">
-        {/* Treasury */}
-        <div style={{ width: "min(100%,220px)" }}><NodeCard node={nodes[0]} compact /></div>
-
-        {/* Arrow */}
-        <svg width="16" height="20" viewBox="0 0 16 20" aria-hidden>
-          <line x1="8" y1="0" x2="8" y2="12" stroke={ARW} strokeWidth="1.5" />
-          <polygon points="4,12 12,12 8,20" fill={ARW} />
-        </svg>
-
-        {/* Lock + Rewards side by side */}
-        <div className="grid grid-cols-2 gap-2 w-full">
-          <NodeCard node={nodes[1]} compact />
-          <NodeCard node={nodes[3]} compact />
-        </div>
-
-        {/* Arrow */}
-        <svg width="16" height="20" viewBox="0 0 16 20" aria-hidden>
-          <line x1="8" y1="0" x2="8" y2="12" stroke={ARW} strokeWidth="1.5" />
-          <polygon points="4,12 12,12 8,20" fill={ARW} />
-        </svg>
-
-        {/* Trading */}
-        <div style={{ width: "min(100%,220px)" }}><NodeCard node={nodes[2]} compact /></div>
-
-        {/* Dashed arrow */}
-        <svg width="16" height="20" viewBox="0 0 16 20" aria-hidden>
-          <line x1="8" y1="0" x2="8" y2="12" stroke={DASH_CLR} strokeWidth="1.5" strokeDasharray="4 3" />
-          <polygon points="4,12 12,12 8,20" fill={DASH_CLR} />
-        </svg>
-
-        {/* Burn */}
-        <div style={{ width: "min(100%,220px)" }}><NodeCard node={nodes[4]} compact /></div>
-      </div>
+        {/* ── Circular glass nodes ── */}
+        <NodeCircle node={nodes[0]} cx={T.x}  cy={T.y}  r={T.r}  />
+        <NodeCircle node={nodes[1]} cx={LK.x} cy={LK.y} r={LK.r} />
+        <NodeCircle node={nodes[3]} cx={RW.x} cy={RW.y} r={RW.r} />
+        <NodeCircle node={nodes[2]} cx={TR.x} cy={TR.y} r={TR.r} />
+        <NodeCircle node={nodes[4]} cx={BN.x} cy={BN.y} r={BN.r} />
+      </svg>
 
       {/* Legend */}
-      <div
-        className="flex items-center justify-center gap-8 mt-6 pt-4"
-        style={{ borderTop: "1px solid rgba(181,76,255,0.10)" }}
-      >
-        <span
-          className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]"
-          style={{ color: "rgba(255,255,255,0.28)" }}
-        >
+      <div className="flex items-center justify-center gap-8 mt-5 pt-4" style={{ borderTop: "1px solid rgba(181,76,255,0.10)" }}>
+        <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.28)" }}>
           <span className="inline-block w-5 h-px" style={{ background: PUB }} />
           Wallet Flow
         </span>
-        <span
-          className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]"
-          style={{ color: "rgba(255,255,255,0.28)" }}
-        >
+        <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.28)" }}>
           <span className="inline-block" style={{ width: 20, borderTop: `2px dashed ${DASH_CLR}` }} />
           Buyback / Burn
         </span>
