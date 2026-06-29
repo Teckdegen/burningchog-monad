@@ -879,7 +879,7 @@ function Footer() {
       <div className="px-4 py-10 flex flex-col items-center justify-center gap-5">
         <img src={TOKEN_LOGO} alt="BCHOG" className="w-12 h-12 rounded-full object-cover" />
         <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: MUTED }}>
-          Deflationary. Rewarding. Unstoppable.
+          Rewarding. Unstoppable.
         </p>
         <div className="flex items-center justify-center gap-3">
           <SocialButton href={SOCIALS.x} label="X">
@@ -2169,7 +2169,6 @@ function PhantomWallet({
                   </p>
                   <span className="flex items-center gap-1.5 text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
                     <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: DB_GREEN }} />
-                    Live
                   </span>
                 </div>
                 {trades.length === 0 ? (
@@ -2310,7 +2309,7 @@ function SectionMock({
                 letterSpacing: "-0.02em",
                 textShadow: `0 0 24px rgba(181,76,255,0.5)`,
               }}>{formatUsd(market.marketCapUsd)}</p>
-              <p className="text-[11px] font-medium" style={{ color: "rgba(181,76,255,0.9)" }}>Live</p>
+              <p className="text-[11px] font-medium" style={{ color: "rgba(181,76,255,0.9)" }}>Market Cap</p>
             </div>
 
             {/* Holders */}
@@ -2328,7 +2327,7 @@ function SectionMock({
                 letterSpacing: "-0.02em",
                 textShadow: `0 0 24px rgba(181,76,255,0.5)`,
               }}>{formatCount(market.holders)}</p>
-              <p className="text-[11px] font-medium" style={{ color: "rgba(181,76,255,0.9)" }}>Boblievers</p>
+              <p className="text-[11px] font-medium" style={{ color: "rgba(181,76,255,0.9)" }}>Holders</p>
             </div>
 
             {/* Total Burned */}
@@ -2346,7 +2345,7 @@ function SectionMock({
                 letterSpacing: "-0.02em",
                 textShadow: `0 0 24px rgba(255,92,138,0.5)`,
               }}>{formatToken(stats.balances.burn, stats.decimals)}</p>
-              <p className="text-[11px] font-medium" style={{ color: "rgba(255,92,138,0.9)" }}>Deflationary</p>
+              <p className="text-[11px] font-medium" style={{ color: "rgba(255,92,138,0.9)" }}>Burned</p>
             </div>
 
             {/* Supply Locked */}
@@ -2513,7 +2512,7 @@ function SectionMock({
         bullets: [
           "Treasury initiates 100,000 BCHOG burn",
           "Tokens permanently removed from supply",
-          "Deflationary pressure builds",
+          "Supply pressure builds",
         ],
         side: "left" as const,
         accent: PURPLE_BRIGHT,
@@ -2524,7 +2523,7 @@ function SectionMock({
         bullets: [
           "Treasury matches with 200% contribution",
           "200,000 BCHOG redirected to flywheel",
-          "Multiplied deflationary impact",
+          "Multiplied burn impact",
         ],
         side: "right" as const,
         accent: PURPLE_BRIGHT,
@@ -2796,49 +2795,268 @@ function SectionMock({
     />;
   }
   if (id === "contests") {
-    const posts = ["https://x.com/BURNINGCHOG/status/2068770674475176411"];
-    return (
-      <div className="flex flex-col gap-6">
-        <Reveal>
-          <div
-            className="rounded-xl p-5 sm:p-6"
-            style={{ background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`, border: `1px solid ${BORDER_STRONG}` }}
-          >
-            <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: PURPLE_BRIGHT }}>
-              Active Contests · From X
-            </span>
-            <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
-              {posts.map((p) => (
-                <div key={p} className="rounded-xl overflow-hidden" style={{ border: `1px solid ${BORDER_STRONG}` }}>
-                  <TweetEmbed url={p} />
-                </div>
-              ))}
-              {/* Placeholder card on desktop so it doesn't look one-sided */}
-              <div
-                className="hidden lg:flex rounded-xl p-6 flex-col justify-center items-center gap-3"
-                style={{ background: SURFACE, border: `1px solid ${BORDER}`, minHeight: 200 }}
-              >
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center"
-                  style={{ background: PANEL, border: `1px solid ${BORDER_STRONG}` }}
-                >
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill={PURPLE_BRIGHT} aria-hidden>
-                    <path d="M18.244 2H21.5l-7.5 8.57L23 22h-6.875l-5.38-7.03L4.6 22H1.34l8.02-9.165L1 2h7.05l4.86 6.43L18.244 2Z" />
-                  </svg>
-                </div>
-                <p className="text-sm font-semibold text-white">More Contests Coming</p>
-                <p className="text-[11px] text-center" style={{ color: MUTED }}>Follow <a href={SOCIALS.x} target="_blank" rel="noreferrer" className="no-underline" style={{ color: PURPLE_BRIGHT }}>@BURNINGCHOG</a> on X for the latest</p>
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      </div>
-    );
+    return <ContestsCollabs />;
   }
   if (id === "coming-soon") {
     return <ComingSoonBlock />;
   }
   return null;
+}
+
+function ContestsCollabs() {
+  const [tab, setTab] = useState<"contests" | "winners" | "collabs">("contests");
+
+  const contestTabs: { id: "contests" | "winners" | "collabs"; label: string; icon: string }[] = [
+    { id: "contests", label: "Active Contests", icon: "🏆" },
+    { id: "winners", label: "Winners", icon: "🥇" },
+    { id: "collabs", label: "Collabs", icon: "🤝" },
+  ];
+
+  // Active contest posts from X
+  const contestPosts = [
+    "https://x.com/BURNINGCHOG/status/2068770674475176411",
+  ];
+
+  // Past winners — can be updated as contests complete
+  const winners = [
+    { place: "1st", name: "Coming Soon", prize: "TBA", detail: "First contest winners will be announced here" },
+    { place: "2nd", name: "Coming Soon", prize: "TBA", detail: "Stay tuned for results" },
+    { place: "3rd", name: "Coming Soon", prize: "TBA", detail: "Follow @BURNINGCHOG on X" },
+  ];
+
+  // Collab partners
+  const collabs = [
+    { name: "Nad.fun", role: "Launch Platform", desc: "BCHOG launched and trades on Nad.fun", href: NADFUN_TOKEN_URL },
+    { name: "Atlantis", role: "Lock Protocol", desc: "1M BCHOG lock target via Atlantis", href: explorerAddr(WALLETS.atlantisLock) },
+    { name: "More Coming", role: "Partnerships", desc: "New collabs announced on X", href: SOCIALS.x },
+  ];
+
+  const glassCard: React.CSSProperties = {
+    position: "relative",
+    overflow: "hidden",
+    background: "rgba(255,255,255,0.035)",
+    border: "1px solid rgba(255,255,255,0.09)",
+    backdropFilter: "blur(24px)",
+    WebkitBackdropFilter: "blur(24px)",
+    boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(255,255,255,0.03), 0 8px 28px rgba(0,0,0,0.45)",
+  };
+
+  const Sheen = () => (
+    <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", borderRadius: "16px 16px 60% 60% / 10px 10px 24px 24px", background: "linear-gradient(to bottom, rgba(255,255,255,0.09), transparent)", pointerEvents: "none" }} />
+  );
+
+  return (
+    <Reveal>
+      <div
+        className="rounded-3xl overflow-hidden"
+        style={{
+          background: "linear-gradient(180deg, #1a0636 0%, #110426 100%)",
+          border: "1px solid rgba(181,76,255,0.25)",
+          boxShadow: "0 24px 64px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03)",
+        }}
+      >
+        {/* Header */}
+        <div className="px-5 sm:px-7 pt-6 pb-4">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-1" style={{ color: PURPLE_BRIGHT }}>
+            Community
+          </p>
+          <p className="text-white font-black leading-none" style={{ fontSize: "clamp(1.4rem,4vw,2rem)", letterSpacing: "-0.02em" }}>
+            Contests & Collabs
+          </p>
+          <p className="text-[12px] mt-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+            Compete, win, and build with BCHOG
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex mx-4 sm:mx-6 mb-0 gap-1.5 p-1 rounded-2xl"
+          style={{
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.07)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(255,255,255,0.02)",
+          }}
+        >
+          {contestTabs.map((t) => {
+            const active = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className="flex-1 py-2 text-[11px] sm:text-[12px] font-semibold transition-all duration-200 rounded-xl flex items-center justify-center gap-1.5"
+                style={{
+                  position: "relative",
+                  overflow: "hidden",
+                  background: active ? "rgba(181,76,255,0.18)" : "transparent",
+                  border: active ? "1px solid rgba(181,76,255,0.35)" : "1px solid transparent",
+                  backdropFilter: active ? "blur(16px)" : "none",
+                  WebkitBackdropFilter: active ? "blur(16px)" : "none",
+                  boxShadow: active ? "inset 0 1.5px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.04), 0 0 14px rgba(181,76,255,0.20)" : "none",
+                  color: active ? "white" : "rgba(255,255,255,0.32)",
+                  letterSpacing: "0.04em",
+                }}
+              >
+                {active && <span aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "50%", borderRadius: "12px 12px 50% 50% / 8px 8px 16px 16px", background: "linear-gradient(to bottom, rgba(255,255,255,0.11), transparent)", pointerEvents: "none" }} />}
+                <span>{t.icon}</span>
+                <span>{t.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tab content */}
+        <div className="px-4 sm:px-6 pb-6 pt-4">
+
+          {/* ── Active Contests ── */}
+          {tab === "contests" && (
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {contestPosts.map((p) => (
+                  <div
+                    key={p}
+                    className="rounded-2xl overflow-hidden"
+                    style={{ ...glassCard }}
+                  >
+                    <Sheen />
+                    <div className="p-1">
+                      <TweetEmbed url={p} />
+                    </div>
+                  </div>
+                ))}
+                {/* "More coming" placeholder — fills second col on desktop */}
+                <div
+                  className="hidden lg:flex rounded-2xl p-6 flex-col justify-center items-center gap-4"
+                  style={{ ...glassCard, minHeight: 220 }}
+                >
+                  <Sheen />
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "rgba(181,76,255,0.12)", border: "1px solid rgba(181,76,255,0.25)" }}>
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill={PURPLE_BRIGHT} aria-hidden>
+                      <path d="M18.244 2H21.5l-7.5 8.57L23 22h-6.875l-5.38-7.03L4.6 22H1.34l8.02-9.165L1 2h7.05l4.86 6.43L18.244 2Z" />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[14px] font-bold text-white mb-1">More Contests Dropping</p>
+                    <p className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.38)" }}>
+                      Follow{" "}
+                      <a href={SOCIALS.x} target="_blank" rel="noreferrer" className="no-underline font-semibold" style={{ color: PURPLE_BRIGHT }}>
+                        @BURNINGCHOG
+                      </a>{" "}
+                      on X for live announcements
+                    </p>
+                  </div>
+                  <a
+                    href={SOCIALS.x}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="no-underline px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-[0.1em] transition-all"
+                    style={{ background: "rgba(181,76,255,0.18)", border: "1px solid rgba(181,76,255,0.30)", color: "white" }}
+                  >
+                    Follow on X
+                  </a>
+                </div>
+              </div>
+              {/* Mobile follow CTA */}
+              <div className="flex lg:hidden justify-center">
+                <a
+                  href={SOCIALS.x}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="no-underline flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12px] font-bold uppercase tracking-[0.1em]"
+                  style={{ ...glassCard, color: "white" }}
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill={PURPLE_BRIGHT} aria-hidden>
+                    <path d="M18.244 2H21.5l-7.5 8.57L23 22h-6.875l-5.38-7.03L4.6 22H1.34l8.02-9.165L1 2h7.05l4.86 6.43L18.244 2Z" />
+                  </svg>
+                  Follow for more
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* ── Winners ── */}
+          {tab === "winners" && (
+            <div className="flex flex-col gap-3">
+              {winners.map((w, i) => (
+                <div
+                  key={w.place}
+                  className="rounded-2xl p-4 sm:p-5 flex items-center gap-4"
+                  style={{ ...glassCard }}
+                >
+                  <Sheen />
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-black text-[15px]"
+                    style={{
+                      background: i === 0 ? "rgba(255,215,0,0.12)" : i === 1 ? "rgba(192,192,192,0.10)" : "rgba(181,76,255,0.10)",
+                      border: `1px solid ${i === 0 ? "rgba(255,215,0,0.30)" : i === 1 ? "rgba(192,192,192,0.25)" : "rgba(181,76,255,0.25)"}`,
+                      color: i === 0 ? "#FFD700" : i === 1 ? "#C0C0C0" : PURPLE_BRIGHT,
+                    }}
+                  >
+                    {i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-bold text-white">{w.name}</p>
+                    <p className="text-[11px] leading-relaxed mt-0.5" style={{ color: "rgba(255,255,255,0.38)" }}>{w.detail}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[12px] font-bold" style={{ color: PURPLE_BRIGHT }}>{w.prize}</p>
+                    <p className="text-[10px] uppercase tracking-[0.08em]" style={{ color: "rgba(255,255,255,0.25)" }}>{w.place} Place</p>
+                  </div>
+                </div>
+              ))}
+              <div
+                className="rounded-2xl p-4 flex items-center justify-center gap-2"
+                style={{ ...glassCard, border: "1px dashed rgba(181,76,255,0.20)" }}
+              >
+                <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.28)" }}>
+                  Contest results posted on{" "}
+                  <a href={SOCIALS.x} target="_blank" rel="noreferrer" className="no-underline font-semibold" style={{ color: PURPLE_BRIGHT }}>
+                    @BURNINGCHOG
+                  </a>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Collabs ── */}
+          {tab === "collabs" && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {collabs.map((c) => (
+                <a
+                  key={c.name}
+                  href={c.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="no-underline rounded-2xl p-5 flex flex-col gap-3 transition-all duration-200 hover:scale-[1.02]"
+                  style={{ ...glassCard }}
+                >
+                  <Sheen />
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "rgba(181,76,255,0.12)", border: "1px solid rgba(181,76,255,0.25)" }}>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke={PURPLE_BRIGHT} strokeWidth="1.8" aria-hidden>
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-bold text-white">{c.name}</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mt-0.5" style={{ color: PURPLE_BRIGHT }}>{c.role}</p>
+                    <p className="text-[11px] leading-relaxed mt-1.5" style={{ color: "rgba(255,255,255,0.40)" }}>{c.desc}</p>
+                  </div>
+                  <div className="flex items-center gap-1 mt-auto">
+                    <span className="text-[10px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.25)" }}>View</span>
+                    <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" aria-hidden>
+                      <path d="M3 8h10M9 4l4 4-4 4" />
+                    </svg>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+
+        </div>
+      </div>
+    </Reveal>
+  );
 }
 
 function ComingSoonBlock() {
