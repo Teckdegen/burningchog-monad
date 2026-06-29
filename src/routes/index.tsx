@@ -549,76 +549,110 @@ function SiteHeader({
 }
 
 function LandingHero() {
-  // Particle star positions — stable (generated once)
-  const stars = Array.from({ length: 140 }, (_, i) => ({
-    x: ((i * 137.508) % 100),
-    y: ((i * 97.3) % 100),
-    r: i % 5 === 0 ? 1.4 : i % 3 === 0 ? 1.0 : 0.6,
-    o: 0.10 + (i % 7) * 0.06,
-  }));
-
   return (
     <section
       id="top"
-      className="relative w-full overflow-hidden flex flex-col"
-      style={{ height: "100dvh", backgroundColor: "#060310" }}
+      className="relative w-full flex flex-col items-center justify-center"
+      style={{ minHeight: "100dvh", backgroundColor: "#08060F", padding: "80px 16px 40px" }}
     >
-      {/* ── Horizontal scan lines (Dusk-style) ── */}
-      <div aria-hidden style={{
-        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
-        backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.018) 3px, rgba(255,255,255,0.018) 4px)",
-      }} />
+      {/* ── Phantom-style rounded card with video inside ── */}
+      <div
+        className="relative w-full overflow-hidden"
+        style={{
+          maxWidth: 1080,
+          borderRadius: 24,
+          background: "#120a2e",
+          boxShadow: "0 32px 80px rgba(0,0,0,0.7)",
+        }}
+      >
+        {/* Video background */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            opacity: 0.55,
+          }}
+        >
+          <source src="https://stream.mux.com/8wrHPCX2dC3msyYU9ObwqNdm00u3ViXvOSHUMRYSEe5Q.m3u8" type="application/x-mpegURL" />
+        </video>
 
-      {/* ── Star particle field ── */}
-      <svg aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 1 }}
-        viewBox="0 0 100 100" preserveAspectRatio="none">
-        {stars.map((s, i) => (
-          <circle key={i} cx={s.x} cy={s.y} r={s.r * 0.38} fill="white" fillOpacity={s.o} />
-        ))}
-      </svg>
+        {/* Overlay gradient so text stays readable */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to bottom, rgba(10,4,28,0.35) 0%, rgba(10,4,28,0.15) 40%, rgba(10,4,28,0.55) 100%)",
+          }}
+        />
 
-      {/* ── Purple glow — bottom centre, like a rising sun ── */}
-      <div aria-hidden style={{
-        position: "absolute", bottom: 0, left: 0, right: 0, height: "55%", zIndex: 1, pointerEvents: "none",
-        background: "radial-gradient(ellipse 80% 60% at 50% 110%, rgba(122,45,255,0.30) 0%, rgba(181,76,255,0.08) 50%, transparent 75%)",
-      }} />
+        {/* Content */}
+        <div
+          className="relative flex flex-col items-center justify-center text-center"
+          style={{ zIndex: 2, padding: "clamp(64px, 12vw, 120px) clamp(20px, 6vw, 80px)" }}
+        >
+          {/* Small eyebrow */}
+          <div className="flex items-center gap-2 mb-5">
+            <img src={TOKEN_LOGO} alt="BCHOG" className="w-5 h-5 rounded-full object-cover" style={{ opacity: 0.65 }} />
+            <span
+              className="text-[11px] font-semibold uppercase tracking-[0.22em]"
+              style={{ color: "rgba(255,255,255,0.40)" }}
+            >
+              Burning Chog
+            </span>
+          </div>
 
-      {/* ── Content — centred like Dusk ── */}
-      <div className="relative flex flex-col items-center justify-center h-full text-center px-6"
-        style={{ zIndex: 2 }}>
+          {/* Main headline */}
+          <h1
+            className="text-white m-0"
+            style={{
+              fontFamily: "'Anton', sans-serif",
+              fontSize: "clamp(2.4rem, 8vw, 6.5rem)",
+              letterSpacing: "-0.02em",
+              lineHeight: 1.05,
+              maxWidth: "16ch",
+            }}
+          >
+            Always less,{" "}
+            <span style={{ color: PURPLE_BRIGHT }}>always more</span>
+          </h1>
 
-        {/* Small logo + name above heading */}
-        <div className="flex items-center gap-2 mb-6">
-          <img src={TOKEN_LOGO} alt="BCHOG" className="w-6 h-6 rounded-full object-cover" style={{ opacity: 0.7 }} />
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Burning Chog
-          </span>
+          {/* Sub copy */}
+          <p
+            className="mt-5"
+            style={{
+              maxWidth: 520,
+              fontSize: "clamp(0.88rem, 1.8vw, 1.05rem)",
+              color: "rgba(255,255,255,0.40)",
+              lineHeight: 1.65,
+            }}
+          >
+            Infrastructure for regulated digital assets that need privacy,
+            auditability, and deterministic settlement.
+          </p>
+
+          {/* For those who get it */}
+          <p
+            className="mt-4 text-[11px] uppercase tracking-[0.22em]"
+            style={{ color: "rgba(181,76,255,0.45)", fontStyle: "italic" }}
+          >
+            For those who get it
+          </p>
         </div>
-
-        {/* Main heading — Dusk layout: first line white, accent on second */}
-        <h1 className="text-white m-0 leading-[1.05]"
-          style={{ fontFamily: "'Anton', sans-serif", fontSize: "clamp(2.6rem, 9vw, 7.5rem)", letterSpacing: "-0.02em", maxWidth: "18ch" }}>
-          Always less,{" "}
-          <span style={{ color: PURPLE_BRIGHT }}>always more</span>
-        </h1>
-
-        {/* Sub copy — Dusk style descriptor */}
-        <p className="mt-5 max-w-lg"
-          style={{ fontSize: "clamp(0.9rem, 2vw, 1.1rem)", color: "rgba(255,255,255,0.38)", lineHeight: 1.65 }}>
-          Infrastructure for regulated digital assets that need privacy, auditability, and deterministic settlement.
-        </p>
-
-        {/* Tagline below — small, italic, for those who get it */}
-        <p className="mt-4 text-[11px] uppercase tracking-[0.22em]"
-          style={{ color: "rgba(181,76,255,0.45)", fontStyle: "italic" }}>
-          For those who get it
-        </p>
       </div>
 
-      {/* ── Scroll cue ── */}
-      <div className="absolute bottom-7 inset-x-0 flex flex-col items-center gap-1.5 pointer-events-none" style={{ zIndex: 10 }}>
-        <div className="w-px h-8 rounded-full" style={{ background: `linear-gradient(to bottom, transparent, rgba(181,76,255,0.5))` }} />
-        <div style={{ width: 0, height: 0, borderLeft: "3px solid transparent", borderRight: "3px solid transparent", borderTop: `4px solid rgba(181,76,255,0.4)` }} />
+      {/* Scroll cue */}
+      <div className="flex flex-col items-center gap-1.5 mt-8 pointer-events-none" aria-hidden>
+        <div className="w-px h-6 rounded-full" style={{ background: "linear-gradient(to bottom, transparent, rgba(181,76,255,0.4))" }} />
+        <div style={{ width: 0, height: 0, borderLeft: "3px solid transparent", borderRight: "3px solid transparent", borderTop: "4px solid rgba(181,76,255,0.35)" }} />
       </div>
     </section>
   );
