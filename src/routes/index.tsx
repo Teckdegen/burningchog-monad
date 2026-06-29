@@ -1376,147 +1376,181 @@ function FlyOutcome({
 }
 
 function DeflationaryFlywheelDiagram({ lockProgress }: { lockProgress: number }) {
+  // iPhone glass — purple / white / black only
+  const GLASS_BG    = "rgba(255,255,255,0.035)";
+  const GLASS_BORDER = "rgba(255,255,255,0.08)";
+  const GLASS_SHINE = "rgba(255,255,255,0.14)";
+  const GLASS_BOT   = "rgba(255,255,255,0.03)";
+  const SPINE = "rgba(181,76,255,0.30)";
+  const DOT = PURPLE_BRIGHT;
+
+  const glassCard: React.CSSProperties = {
+    background: GLASS_BG,
+    border: `1px solid ${GLASS_BORDER}`,
+    backdropFilter: "blur(24px)",
+    WebkitBackdropFilter: "blur(24px)",
+    boxShadow: `inset 0 1.5px 0 ${GLASS_SHINE}, inset 0 -1px 0 ${GLASS_BOT}, 0 8px 32px rgba(0,0,0,0.40)`,
+    position: "relative" as const,
+    overflow: "hidden" as const,
+  };
+
   const steps = [
     {
       num: "01",
       title: "100k Burn",
       detail: "Every cycle starts with 100,000 BCHOG permanently removed from supply.",
-      color: CORAL,
       side: "left" as const,
     },
     {
       num: "02",
       title: "200% Match",
       detail: "The treasury matches the burn with a 200% contribution — doubling the impact.",
-      color: PURPLE_BRIGHT,
       side: "right" as const,
     },
     {
       num: "03",
       title: "Burn + Lock",
       detail: "+100k burned forever. +50k locked to reduce circulating supply.",
-      color: CREAM,
       side: "left" as const,
     },
     {
       num: "04",
       title: "Rewards",
       detail: "+50k distributed back to the community, fuelling the next cycle.",
-      color: PURPLE,
       side: "right" as const,
     },
   ];
 
+  const GlassSheen = () => (
+    <div
+      aria-hidden
+      style={{
+        position: "absolute",
+        top: 0, left: 0, right: 0,
+        height: "40%",
+        borderRadius: "16px 16px 60% 60% / 12px 12px 28px 28px",
+        background: "linear-gradient(to bottom, rgba(255,255,255,0.10), transparent)",
+        pointerEvents: "none",
+      }}
+    />
+  );
+
   return (
-    <div className="mt-8 relative">
-      {/* Central spine */}
-      <div
-        className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 hidden sm:block"
-        style={{ background: `linear-gradient(to bottom, transparent, ${PURPLE_BRIGHT}55, ${CORAL}55, transparent)` }}
-        aria-hidden
-      />
+    <div className="mt-8 relative w-full">
+      {/* ── Desktop zigzag ── */}
+      <div className="hidden sm:block relative">
+        {/* Spine */}
+        <div
+          className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0"
+          style={{ width: 1, background: `linear-gradient(to bottom, transparent, ${SPINE} 15%, ${SPINE} 85%, transparent)` }}
+          aria-hidden
+        />
 
-      <div className="flex flex-col gap-0 sm:gap-0">
-        {steps.map((step, i) => {
-          const isLeft = step.side === "left";
-          return (
-            <div
-              key={step.num}
-              className={`relative flex items-center sm:items-stretch gap-3 sm:gap-0 mb-6 sm:mb-8 ${isLeft ? "sm:flex-row" : "sm:flex-row-reverse"}`}
-            >
-              {/* Card — takes half width on desktop */}
-              <div className={`flex-1 sm:w-[44%] sm:flex-none ${isLeft ? "sm:pr-8 sm:text-right" : "sm:pl-8 sm:text-left"}`}>
-                <Reveal delay={i * 100} dir={isLeft ? -1 : 1}>
-                  <div
-                    className="rounded-2xl p-4 sm:p-5"
-                    style={{
-                      background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
-                      border: `1.5px solid ${step.color}55`,
-                      boxShadow: `0 0 28px 0 ${step.color}22, inset 0 1px 0 rgba(255,255,255,0.06)`,
-                      backdropFilter: "blur(12px)",
-                      WebkitBackdropFilter: "blur(12px)",
-                    }}
-                  >
-                    <p
-                      className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1"
-                      style={{ color: step.color }}
-                    >
-                      {step.num}
-                    </p>
-                    <p className="text-base font-bold text-white mb-1.5">{step.title}</p>
-                    <p className="text-[11px] leading-relaxed" style={{ color: MUTED }}>{step.detail}</p>
-                    {/* Progress bar for lock step */}
-                    {step.num === "03" && (
-                      <div className="mt-3">
-                        <div className="flex justify-between text-[9px] mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
-                          <span>Lock progress</span>
-                          <span>{Math.round(lockProgress)}%</span>
-                        </div>
-                        {/* iOS glass progress bar */}
-                        <div
-                          className="relative h-3 rounded-full overflow-hidden"
-                          style={{
-                            background: "rgba(255,255,255,0.07)",
-                            boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(255,255,255,0.06)",
-                          }}
-                        >
-                          <div
-                            className="absolute inset-y-0 left-0 rounded-full"
-                            style={{
-                              width: `${lockProgress}%`,
-                              background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 60%, rgba(255,255,255,0.6) 100%)`,
-                              boxShadow: `0 0 10px 2px ${PURPLE_BRIGHT}88`,
-                            }}
-                          />
-                          {/* Glass sheen */}
-                          <div
-                            className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none"
-                            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.18), transparent)" }}
-                          />
-                        </div>
+        <div className="flex flex-col" style={{ gap: 56 }}>
+          {steps.map((step, i) => {
+            const isLeft = step.side === "left";
+            return (
+              <div
+                key={step.num}
+                style={{ display: "grid", gridTemplateColumns: "1fr 80px 1fr", alignItems: "start" }}
+              >
+                {/* Col 1 */}
+                <div style={{ display: "flex", justifyContent: isLeft ? "flex-end" : "flex-start", paddingRight: isLeft ? 24 : 0, paddingLeft: isLeft ? 0 : 24 }}>
+                  {isLeft && (
+                    <Reveal delay={i * 100} dir={-1}>
+                      <div
+                        className="rounded-2xl p-5"
+                        style={{ ...glassCard, width: "min(100%, 320px)" }}
+                      >
+                        <GlassSheen />
+                        <p className="text-[10px] font-bold uppercase tracking-[0.25em] mb-1.5" style={{ color: PURPLE_BRIGHT }}>{step.num}</p>
+                        <p className="text-[15px] font-bold text-white mb-2">{step.title}</p>
+                        <p className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.42)" }}>{step.detail}</p>
+                        {i === 2 && (
+                          <div className="mt-3">
+                            <div className="flex justify-between text-[9px] mb-1.5" style={{ color: "rgba(255,255,255,0.25)" }}>
+                              <span>Lock progress</span><span>{Math.round(lockProgress)}%</span>
+                            </div>
+                            <div className="relative h-3 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4)" }}>
+                              <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 70%, rgba(255,255,255,0.6) 100%)`, boxShadow: `0 0 10px 2px ${PURPLE_BRIGHT}77` }} />
+                              <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.18), transparent)" }} />
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </Reveal>
+                  )}
+                </div>
+                {/* Col 2 — dot */}
+                <div className="flex flex-col items-center pt-5" style={{ zIndex: 2 }}>
+                  <div className="w-3 h-3 rounded-full" style={{ background: DOT, boxShadow: `0 0 12px 4px ${DOT}66, 0 0 0 3px rgba(181,76,255,0.15)` }} />
+                  <div className="flex gap-[3px] mt-1.5" aria-hidden>
+                    {[10,15,11,7,5].map((h, j) => (
+                      <div key={j} style={{ width: 1, height: h, borderRadius: 99, background: `rgba(181,76,255,${[0.7,0.5,0.35,0.2,0.1][j]})` }} />
+                    ))}
                   </div>
-                </Reveal>
-              </div>
-
-              {/* Centre node — dot on the spine */}
-              <div className="hidden sm:flex flex-col items-center justify-center w-[12%] shrink-0" style={{ zIndex: 2 }}>
-                <div
-                  className="w-4 h-4 rounded-full flex items-center justify-center"
-                  style={{
-                    background: step.color,
-                    boxShadow: `0 0 16px 4px ${step.color}66`,
-                  }}
-                />
-                {/* Tail lines radiating from the dot */}
-                <div className="flex gap-px mt-0.5">
-                  {[...Array(5)].map((_, j) => (
-                    <div
-                      key={j}
-                      className="rounded-full"
-                      style={{
-                        width: 1.5,
-                        height: 6 + j * 3,
-                        background: `${step.color}${Math.round(70 - j * 12).toString(16).padStart(2, "0")}`,
-                        transform: `translateY(${j * 1.5}px)`,
-                      }}
-                    />
-                  ))}
+                </div>
+                {/* Col 3 */}
+                <div style={{ display: "flex", justifyContent: isLeft ? "flex-start" : "flex-end", paddingLeft: isLeft ? 24 : 0, paddingRight: isLeft ? 0 : 24 }}>
+                  {!isLeft && (
+                    <Reveal delay={i * 100} dir={1}>
+                      <div
+                        className="rounded-2xl p-5"
+                        style={{ ...glassCard, width: "min(100%, 320px)" }}
+                      >
+                        <GlassSheen />
+                        <p className="text-[10px] font-bold uppercase tracking-[0.25em] mb-1.5" style={{ color: PURPLE_BRIGHT }}>{step.num}</p>
+                        <p className="text-[15px] font-bold text-white mb-2">{step.title}</p>
+                        <p className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.42)" }}>{step.detail}</p>
+                      </div>
+                    </Reveal>
+                  )}
                 </div>
               </div>
+            );
+          })}
+        </div>
+      </div>
 
-              {/* Mobile dot */}
-              <div
-                className="sm:hidden w-3 h-3 rounded-full shrink-0 mt-4"
-                style={{ background: step.color, boxShadow: `0 0 10px 3px ${step.color}55` }}
-              />
-
-              {/* Right spacer */}
-              <div className="hidden sm:block sm:w-[44%] sm:flex-none" />
-            </div>
-          );
-        })}
+      {/* ── Mobile zigzag ── */}
+      <div className="sm:hidden relative">
+        <div className="absolute top-0 bottom-0" style={{ left: "50%", width: 1, transform: "translateX(-50%)", background: `linear-gradient(to bottom, transparent, ${SPINE} 15%, ${SPINE} 85%, transparent)` }} aria-hidden />
+        <div className="flex flex-col" style={{ gap: 20 }}>
+          {steps.map((step, i) => {
+            const isLeft = step.side === "left";
+            return (
+              <div key={step.num} style={{ display: "grid", gridTemplateColumns: "1fr 28px 1fr", alignItems: "start" }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: 8 }}>
+                  {isLeft && (
+                    <Reveal delay={i * 80} dir={-1}>
+                      <div className="rounded-xl p-3" style={{ ...glassCard }}>
+                        <GlassSheen />
+                        <p className="text-[9px] font-bold uppercase tracking-[0.18em] mb-1" style={{ color: PURPLE_BRIGHT }}>{step.num}</p>
+                        <p className="text-[12px] font-bold text-white mb-1">{step.title}</p>
+                        <p className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.40)" }}>{step.detail}</p>
+                      </div>
+                    </Reveal>
+                  )}
+                </div>
+                <div className="flex justify-center pt-3" style={{ zIndex: 2 }}>
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: DOT, boxShadow: `0 0 8px 3px ${DOT}55` }} />
+                </div>
+                <div style={{ display: "flex", justifyContent: "flex-start", paddingLeft: 8 }}>
+                  {!isLeft && (
+                    <Reveal delay={i * 80} dir={1}>
+                      <div className="rounded-xl p-3" style={{ ...glassCard }}>
+                        <GlassSheen />
+                        <p className="text-[9px] font-bold uppercase tracking-[0.18em] mb-1" style={{ color: PURPLE_BRIGHT }}>{step.num}</p>
+                        <p className="text-[12px] font-bold text-white mb-1">{step.title}</p>
+                        <p className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.40)" }}>{step.detail}</p>
+                      </div>
+                    </Reveal>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -1525,6 +1559,28 @@ function DeflationaryFlywheelDiagram({ lockProgress }: { lockProgress: number })
 // ArchBox removed — replaced by EcosystemArchitecture NodeCard
 
 function EcosystemArchitecture() {
+  // iPhone glass — purple / white / black only
+  const G_BG        = "rgba(255,255,255,0.035)";
+  const G_BDR       = "rgba(255,255,255,0.08)";
+  const G_SHINE_TOP = "rgba(255,255,255,0.14)";
+  const G_SHINE_BOT = "rgba(255,255,255,0.03)";
+  const HL_BG       = "rgba(181,76,255,0.10)";
+  const HL_BDR      = "rgba(181,76,255,0.32)";
+  const HL_GLOW     = "rgba(181,76,255,0.22)";
+  const PUB         = PURPLE_BRIGHT;            // #B54CFF
+  const ARW         = PUB;
+  const DASH_CLR    = "rgba(181,76,255,0.55)";
+
+  type NodeDef = {
+    id: string;
+    label: string;
+    sub: string;
+    desc: string;
+    href?: string;
+    Icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+    highlight?: boolean;
+  };
+
   const nodes: NodeDef[] = [
     {
       id: "treasury",
@@ -1532,8 +1588,6 @@ function EcosystemArchitecture() {
       sub: "Ecosystem Engine",
       desc: "The engine that powers the BCHOG ecosystem.",
       href: explorerAddr(WALLETS.treasury),
-      color: PURPLE_BRIGHT,
-      glow: "rgba(181,76,255,0.4)",
       Icon: Cog,
       highlight: true,
     },
@@ -1543,8 +1597,6 @@ function EcosystemArchitecture() {
       sub: "The Vault",
       desc: "Accumulating lock tokens, locked with Atlantis at 1M.",
       href: explorerAddr(WALLETS.lockHolding),
-      color: PURPLE,
-      glow: "rgba(122,45,255,0.3)",
       Icon: Lock,
     },
     {
@@ -1553,8 +1605,6 @@ function EcosystemArchitecture() {
       sub: "Market Support",
       desc: "Investing in the community, profits feed the BCHOG flywheel.",
       href: explorerAddr(WALLETS.trading),
-      color: CREAM,
-      glow: "rgba(255,232,180,0.15)",
       Icon: Briefcase,
     },
     {
@@ -1562,69 +1612,83 @@ function EcosystemArchitecture() {
       label: "REWARDS WALLET",
       sub: "Community Rewards",
       desc: "Funds community engagement, contests, and rewards.",
-      color: PURPLE_BRIGHT,
-      glow: "rgba(181,76,255,0.2)",
       Icon: Gift,
     },
     {
       id: "burn",
       label: "BUYBACK & BURN",
       sub: "Deflation",
-      desc: "Tokens permanently removed from circulation.",
-      color: CORAL,
-      glow: "rgba(255,92,138,0.3)",
+      desc: "Tokens permanently removed from circulation to drive deflation.",
       Icon: Flame,
     },
   ];
 
-  type NodeDef = {
-    id: string;
-    label: string;
-    sub: string;
-    desc: string;
-    href?: string;
-    color: string;
-    glow: string;
-    Icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
-    highlight?: boolean;
-  };
-
   const NodeCard = ({ node, compact = false }: { node: NodeDef; compact?: boolean }) => {
     const { Icon } = node;
+    const isHL = !!node.highlight;
     const inner = (
       <div
-        className="rounded-2xl flex flex-col items-center text-center gap-2 transition-all duration-200 hover:scale-[1.03]"
+        className="rounded-2xl flex flex-col items-center text-center transition-all duration-200 hover:scale-[1.03]"
         style={{
-          padding: compact ? "12px 10px" : "16px 12px",
-          background: node.highlight
-            ? `linear-gradient(145deg, ${PANEL} 0%, #3a1a72 100%)`
-            : `linear-gradient(145deg, ${SURFACE} 0%, ${PANEL} 100%)`,
-          border: `1.5px solid ${node.color}`,
-          boxShadow: `0 0 20px 3px ${node.glow}, inset 0 1px 0 rgba(255,255,255,0.07)`,
+          padding: compact ? "10px 8px" : "16px 12px",
+          gap: compact ? 5 : 7,
+          position: "relative",
+          overflow: "hidden",
+          background: isHL ? HL_BG : G_BG,
+          border: `1px solid ${isHL ? HL_BDR : G_BDR}`,
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          boxShadow: isHL
+            ? `inset 0 1.5px 0 ${G_SHINE_TOP}, inset 0 -1px 0 ${G_SHINE_BOT}, 0 0 28px ${HL_GLOW}, 0 12px 32px rgba(0,0,0,0.45)`
+            : `inset 0 1.5px 0 ${G_SHINE_TOP}, inset 0 -1px 0 ${G_SHINE_BOT}, 0 8px 24px rgba(0,0,0,0.4)`,
         }}
       >
+        {/* top glass sheen stripe */}
         <div
-          className="rounded-xl flex items-center justify-center"
+          aria-hidden
           style={{
-            width: compact ? 32 : 38,
-            height: compact ? 32 : 38,
-            background: `${node.color}22`,
-            border: `1px solid ${node.color}55`,
+            position: "absolute",
+            top: 0, left: 0, right: 0,
+            height: "38%",
+            borderRadius: "16px 16px 60% 60% / 12px 12px 32px 32px",
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.10), transparent)",
+            pointerEvents: "none",
+          }}
+        />
+        {/* icon pill */}
+        <div
+          className="rounded-xl flex items-center justify-center shrink-0"
+          style={{
+            width: compact ? 28 : 38,
+            height: compact ? 28 : 38,
+            background: isHL ? "rgba(181,76,255,0.18)" : "rgba(255,255,255,0.06)",
+            border: `1px solid ${isHL ? "rgba(181,76,255,0.30)" : "rgba(255,255,255,0.10)"}`,
+            boxShadow: isHL ? `0 0 14px rgba(181,76,255,0.30)` : "none",
           }}
         >
-          <Icon size={compact ? 15 : 18} color={node.color} strokeWidth={1.8} />
+          <Icon size={compact ? 13 : 18} color={isHL ? PUB : "rgba(255,255,255,0.65)"} strokeWidth={1.75} />
         </div>
         <p
-          className="font-bold uppercase leading-tight"
-          style={{ fontSize: compact ? 9 : 10, letterSpacing: "0.1em", color: "white" }}
+          className="font-bold uppercase leading-tight text-white"
+          style={{ fontSize: compact ? 8 : 9.5, letterSpacing: "0.13em" }}
         >
           {node.label}
         </p>
-        <p style={{ fontSize: 8, color: node.color, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+        <p
+          style={{
+            fontSize: compact ? 7 : 8,
+            color: isHL ? PUB : "rgba(255,255,255,0.32)",
+            letterSpacing: "0.09em",
+            textTransform: "uppercase",
+          }}
+        >
           {node.sub}
         </p>
         {!compact && (
-          <p className="leading-snug" style={{ fontSize: 9, color: MUTED, marginTop: 2 }}>
+          <p
+            className="leading-snug"
+            style={{ fontSize: 9, color: "rgba(255,255,255,0.36)", marginTop: 1 }}
+          >
             {node.desc}
           </p>
         )}
@@ -1637,111 +1701,193 @@ function EcosystemArchitecture() {
     ) : inner;
   };
 
-  // SVG-based flow diagram for desktop
+  // ── Flywheel flow (matching the reference image) ──
+  // Treasury  ──solid──►  Lock    (top-centre → mid-left)
+  // Treasury  ──solid──►  Rewards (top-centre → mid-right)
+  // Treasury  ──solid──►  Trading (top-centre → bottom-centre)
+  // Trading   ──dashed──► Burn    (bottom-centre → bottom-left)
+  // Burn      ──dashed──► Lock    (bottom-left  → mid-left)   [cycle closes]
+
+  // We render a 3-row layout with an SVG overlay for arrows:
+  // Row 0  (centre):        Treasury
+  // Row 1  (3-col):         Lock | [space] | Rewards
+  // Row 2  (centre):        Trading
+  // Row 3  (left-of-centre): Burn
+
+  // SVG coordinate assumptions (maxWidth 600):
+  // Treasury centre  ≈ (300, 70)
+  // Lock centre      ≈ (80, 210)
+  // Rewards centre   ≈ (520, 210)
+  // Trading centre   ≈ (300, 340)
+  // Burn centre      ≈ (80, 460)
+
+  const SVG_W = 600;
+  const T  = { x: 300, y:  70 };
+  const LK = { x:  80, y: 210 };
+  const RW = { x: 520, y: 210 };
+  const TR = { x: 300, y: 340 };
+  const BN = { x:  80, y: 460 };
+
+  function arrowHead(x: number, y: number, angle: number, fill: string) {
+    const size = 7;
+    const rad = (angle * Math.PI) / 180;
+    const tip = { x, y };
+    const left  = { x: x - size * Math.cos(rad - 0.5), y: y - size * Math.sin(rad - 0.5) };
+    const right = { x: x - size * Math.cos(rad + 0.5), y: y - size * Math.sin(rad + 0.5) };
+    return <polygon points={`${tip.x},${tip.y} ${left.x},${left.y} ${right.x},${right.y}`} fill={fill} />;
+  }
+
   return (
     <div className="mt-4 w-full">
-      <div className="text-center mb-5">
+      <div className="text-center mb-6">
         <p
           className="text-white font-bold uppercase"
           style={{
             fontFamily: "'Anton', sans-serif",
-            fontSize: "clamp(0.85rem, 2.5vw, 1.25rem)",
+            fontSize: "clamp(0.85rem,2.5vw,1.2rem)",
             letterSpacing: "0.15em",
-            textShadow: `0 0 24px ${PURPLE_BRIGHT}`,
+            color: "rgba(255,255,255,0.92)",
           }}
         >
           BCHOG ECOSYSTEM WALLET FLOW
         </p>
       </div>
 
-      {/* Desktop layout — centered hub + spokes */}
+      {/* ── Desktop ── */}
       <div className="hidden sm:block">
-        <div className="relative w-full" style={{ maxWidth: 620, margin: "0 auto" }}>
-          {/* Treasury — top center */}
-          <div className="flex justify-center mb-1">
-            <div style={{ width: 170 }}>
+        <div className="relative" style={{ maxWidth: SVG_W, margin: "0 auto" }}>
+
+          {/* Absolute SVG arrow layer — covers full diagram height */}
+          <svg
+            aria-hidden
+            viewBox={`0 0 ${SVG_W} 530`}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              pointerEvents: "none",
+              zIndex: 1,
+            }}
+          >
+            {/* Treasury → Lock (solid) */}
+            <path d={`M${T.x},${T.y} Q${T.x},${LK.y} ${LK.x+8},${LK.y}`} fill="none" stroke={ARW} strokeWidth="1.6" />
+            {arrowHead(LK.x + 8, LK.y, 180, ARW)}
+
+            {/* Treasury → Rewards (solid) */}
+            <path d={`M${T.x},${T.y} Q${T.x},${RW.y} ${RW.x-8},${RW.y}`} fill="none" stroke={ARW} strokeWidth="1.6" />
+            {arrowHead(RW.x - 8, RW.y, 0, ARW)}
+
+            {/* Treasury → Trading (solid) */}
+            <line x1={T.x} y1={T.y} x2={TR.x} y2={TR.y - 10} stroke={ARW} strokeWidth="1.6" />
+            {arrowHead(TR.x, TR.y - 10, 90, ARW)}
+
+            {/* Trading → Burn (dashed) */}
+            <path d={`M${TR.x},${TR.y} Q${TR.x},${BN.y} ${BN.x+8},${BN.y}`} fill="none" stroke={DASH_CLR} strokeWidth="1.6" strokeDasharray="5 4" />
+            {arrowHead(BN.x + 8, BN.y, 180, DASH_CLR)}
+
+            {/* Burn → Lock (dashed — cycle closes) */}
+            <line x1={BN.x} y1={BN.y - 8} x2={LK.x} y2={LK.y + 8} stroke={DASH_CLR} strokeWidth="1.4" strokeDasharray="4 4" />
+            {arrowHead(LK.x, LK.y + 8, 270, DASH_CLR)}
+          </svg>
+
+          {/* Row 0 — Treasury (centred) */}
+          <div className="flex justify-center" style={{ position: "relative", zIndex: 2 }}>
+            <div style={{ width: 160 }}>
               <NodeCard node={nodes[0]} />
             </div>
           </div>
 
-          {/* Arrow row */}
-          <div className="grid grid-cols-3 items-start" style={{ maxWidth: 540, margin: "0 auto" }}>
-            {/* left arrow */}
-            <div className="flex justify-end pr-4 pt-0">
-              <svg width="56" height="40" viewBox="0 0 56 40" aria-hidden>
-                <path d="M40 4 Q12 4 12 36" fill="none" stroke={PURPLE_BRIGHT} strokeWidth="1.5" />
-                <polygon points="8,36 16,36 12,43" fill={PURPLE_BRIGHT} />
-              </svg>
+          {/* Row 1 — Lock | gap | Rewards */}
+          <div
+            className="grid"
+            style={{
+              gridTemplateColumns: "1fr 1fr 1fr",
+              maxWidth: SVG_W,
+              margin: "80px auto 0",
+              position: "relative",
+              zIndex: 2,
+            }}
+          >
+            <div className="flex justify-start">
+              <div style={{ width: 150 }}><NodeCard node={nodes[1]} /></div>
             </div>
-            {/* center arrow */}
-            <div className="flex justify-center">
-              <svg width="16" height="40" viewBox="0 0 16 40" aria-hidden>
-                <line x1="8" y1="0" x2="8" y2="30" stroke={PURPLE_BRIGHT} strokeWidth="1.5" />
-                <polygon points="4,30 12,30 8,40" fill={PURPLE_BRIGHT} />
-              </svg>
-            </div>
-            {/* right arrow */}
-            <div className="flex justify-start pl-4 pt-0">
-              <svg width="56" height="40" viewBox="0 0 56 40" aria-hidden>
-                <path d="M16 4 Q44 4 44 36" fill="none" stroke={PURPLE_BRIGHT} strokeWidth="1.5" />
-                <polygon points="40,36 48,36 44,43" fill={PURPLE_BRIGHT} />
-              </svg>
+            <div />
+            <div className="flex justify-end">
+              <div style={{ width: 150 }}><NodeCard node={nodes[3]} /></div>
             </div>
           </div>
 
-          {/* Lock | Trading | Rewards */}
-          <div className="grid grid-cols-3 gap-3" style={{ maxWidth: 540, margin: "0 auto" }}>
-            <NodeCard node={nodes[1]} />
-            <NodeCard node={nodes[2]} />
-            <NodeCard node={nodes[3]} />
+          {/* Row 2 — Trading (centred) */}
+          <div className="flex justify-center" style={{ marginTop: 80, position: "relative", zIndex: 2 }}>
+            <div style={{ width: 160 }}>
+              <NodeCard node={nodes[2]} />
+            </div>
           </div>
 
-          {/* Dashed arrow from Trading (center) down to Burn */}
-          <div className="flex justify-center mt-1">
-            <svg width="16" height="36" viewBox="0 0 16 36" aria-hidden>
-              <line x1="8" y1="0" x2="8" y2="26" stroke={CORAL} strokeWidth="1.5" strokeDasharray="4 3" />
-              <polygon points="4,26 12,26 8,36" fill={CORAL} />
-            </svg>
-          </div>
-
-          {/* Burn — bottom center */}
-          <div className="flex justify-center">
-            <div style={{ width: 170 }}>
+          {/* Row 3 — Burn (left) */}
+          <div className="flex justify-start" style={{ marginTop: 80, paddingLeft: 5, position: "relative", zIndex: 2 }}>
+            <div style={{ width: 150 }}>
               <NodeCard node={nodes[4]} />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile layout — vertical stack with connector lines */}
-      <div className="sm:hidden flex flex-col items-center gap-0">
-        <div style={{ width: "min(100%, 260px)" }}>
-          <NodeCard node={nodes[0]} compact />
-        </div>
-        <div className="flex justify-center"><svg width="16" height="24" viewBox="0 0 16 24"><line x1="8" y1="0" x2="8" y2="18" stroke={PURPLE_BRIGHT} strokeWidth="1.5"/><polygon points="4,18 12,18 8,24" fill={PURPLE_BRIGHT}/></svg></div>
+      {/* ── Mobile ── */}
+      <div className="sm:hidden flex flex-col items-center gap-3">
+        {/* Treasury */}
+        <div style={{ width: "min(100%,220px)" }}><NodeCard node={nodes[0]} compact /></div>
+
+        {/* Arrow */}
+        <svg width="16" height="20" viewBox="0 0 16 20" aria-hidden>
+          <line x1="8" y1="0" x2="8" y2="12" stroke={ARW} strokeWidth="1.5" />
+          <polygon points="4,12 12,12 8,20" fill={ARW} />
+        </svg>
+
+        {/* Lock + Rewards side by side */}
         <div className="grid grid-cols-2 gap-2 w-full">
           <NodeCard node={nodes[1]} compact />
           <NodeCard node={nodes[3]} compact />
         </div>
-        <div className="flex justify-center"><svg width="16" height="24" viewBox="0 0 16 24"><line x1="8" y1="0" x2="8" y2="18" stroke={PURPLE_BRIGHT} strokeWidth="1.5"/><polygon points="4,18 12,18 8,24" fill={PURPLE_BRIGHT}/></svg></div>
-        <div style={{ width: "min(100%, 260px)" }}>
-          <NodeCard node={nodes[2]} compact />
-        </div>
-        <div className="flex justify-center"><svg width="16" height="24" viewBox="0 0 16 24"><line x1="8" y1="0" x2="8" y2="18" stroke={CORAL} strokeWidth="1.5" strokeDasharray="4 3"/><polygon points="4,18 12,18 8,24" fill={CORAL}/></svg></div>
-        <div style={{ width: "min(100%, 260px)" }}>
-          <NodeCard node={nodes[4]} compact />
-        </div>
+
+        {/* Arrow */}
+        <svg width="16" height="20" viewBox="0 0 16 20" aria-hidden>
+          <line x1="8" y1="0" x2="8" y2="12" stroke={ARW} strokeWidth="1.5" />
+          <polygon points="4,12 12,12 8,20" fill={ARW} />
+        </svg>
+
+        {/* Trading */}
+        <div style={{ width: "min(100%,220px)" }}><NodeCard node={nodes[2]} compact /></div>
+
+        {/* Dashed arrow */}
+        <svg width="16" height="20" viewBox="0 0 16 20" aria-hidden>
+          <line x1="8" y1="0" x2="8" y2="12" stroke={DASH_CLR} strokeWidth="1.5" strokeDasharray="4 3" />
+          <polygon points="4,12 12,12 8,20" fill={DASH_CLR} />
+        </svg>
+
+        {/* Burn */}
+        <div style={{ width: "min(100%,220px)" }}><NodeCard node={nodes[4]} compact /></div>
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-8 mt-5 pt-4" style={{ borderTop: `1px solid ${BORDER}` }}>
-        <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-          <span className="inline-block w-5 h-px" style={{ background: PURPLE_BRIGHT }} />
-          Flow
+      <div
+        className="flex items-center justify-center gap-8 mt-6 pt-4"
+        style={{ borderTop: "1px solid rgba(181,76,255,0.10)" }}
+      >
+        <span
+          className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]"
+          style={{ color: "rgba(255,255,255,0.28)" }}
+        >
+          <span className="inline-block w-5 h-px" style={{ background: PUB }} />
+          Wallet Flow
         </span>
-        <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-          <span className="inline-block" style={{ width: 20, borderTop: `2px dashed ${CORAL}` }} />
-          Buyback
+        <span
+          className="flex items-center gap-2 text-[10px] uppercase tracking-[0.1em]"
+          style={{ color: "rgba(255,255,255,0.28)" }}
+        >
+          <span className="inline-block" style={{ width: 20, borderTop: `2px dashed ${DASH_CLR}` }} />
+          Buyback / Burn
         </span>
       </div>
     </div>
@@ -2392,7 +2538,7 @@ function SectionMock({
           "Multiplied deflationary impact",
         ],
         side: "right" as const,
-        accent: "rgba(181,76,255,0.7)",
+        accent: PURPLE_BRIGHT,
       },
       {
         num: "Phase 03",
@@ -2403,7 +2549,7 @@ function SectionMock({
           "Lock progress tracked on-chain",
         ],
         side: "left" as const,
-        accent: PURPLE,
+        accent: PURPLE_BRIGHT,
       },
       {
         num: "Phase 04",
@@ -2414,7 +2560,7 @@ function SectionMock({
           "Cycle repeats — flywheel spins",
         ],
         side: "right" as const,
-        accent: "rgba(122,45,255,0.9)",
+        accent: PURPLE_BRIGHT,
       },
     ];
 
@@ -2473,29 +2619,34 @@ function SectionMock({
                             className="rounded-2xl p-5"
                             style={{
                               width: "min(100%, 340px)",
-                              background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
-                              border: `1.5px solid ${step.accent}55`,
-                              boxShadow: `0 0 32px 0 ${step.accent}22, inset 0 1px 0 rgba(255,255,255,0.07)`,
+                              position: "relative",
+                              overflow: "hidden",
+                              background: "rgba(255,255,255,0.035)",
+                              border: "1px solid rgba(255,255,255,0.08)",
+                              backdropFilter: "blur(24px)",
+                              WebkitBackdropFilter: "blur(24px)",
+                              boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(255,255,255,0.03), 0 8px 32px rgba(0,0,0,0.40)",
                             }}
                           >
-                            <p className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1.5" style={{ color: step.accent }}>{step.num}</p>
+                            <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", borderRadius: "16px 16px 60% 60% / 12px 12px 28px 28px", background: "linear-gradient(to bottom, rgba(255,255,255,0.10), transparent)", pointerEvents: "none" }} />
+                            <p className="text-[10px] font-bold uppercase tracking-[0.25em] mb-1.5" style={{ color: PURPLE_BRIGHT }}>{step.num}</p>
                             <p className="text-[15px] font-bold text-white mb-3">{step.title}</p>
                             <ul className="flex flex-col gap-1.5">
                               {step.bullets.map((b) => (
                                 <li key={b} className="flex items-start gap-2">
-                                  <span className="text-[10px] mt-0.5 shrink-0" style={{ color: step.accent }}>+</span>
-                                  <span className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>{b}</span>
+                                  <span className="text-[10px] mt-0.5 shrink-0" style={{ color: PURPLE_BRIGHT }}>+</span>
+                                  <span className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.48)" }}>{b}</span>
                                 </li>
                               ))}
                             </ul>
                             {i === 2 && (
                               <div className="mt-4">
-                                <div className="flex justify-between text-[9px] mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                                <div className="flex justify-between text-[9px] mb-1.5" style={{ color: "rgba(255,255,255,0.28)" }}>
                                   <span>Lock progress</span><span>{Math.round(lockProgress)}%</span>
                                 </div>
                                 <div className="relative h-2.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4)" }}>
                                   <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 70%, rgba(255,255,255,0.55) 100%)`, boxShadow: `0 0 10px 2px ${PURPLE_BRIGHT}77` }} />
-                                  <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.16), transparent)" }} />
+                                  <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.18), transparent)" }} />
                                 </div>
                               </div>
                             )}
@@ -2506,10 +2657,10 @@ function SectionMock({
 
                     {/* Col 2 — centre dot always */}
                     <div className="flex flex-col items-center pt-5" style={{ zIndex: 2 }}>
-                      <div className="w-3.5 h-3.5 rounded-full shrink-0" style={{ background: step.accent, boxShadow: `0 0 14px 4px ${step.accent}77` }} />
+                      <div className="w-3.5 h-3.5 rounded-full shrink-0" style={{ background: PURPLE_BRIGHT, boxShadow: `0 0 12px 4px ${PURPLE_BRIGHT}66, 0 0 0 3px rgba(181,76,255,0.15)` }} />
                       <div className="flex gap-[3px] mt-1.5" aria-hidden>
                         {[10, 16, 12, 8, 6].map((h, j) => (
-                          <div key={j} className="rounded-full" style={{ width: 1, height: h, background: `${step.accent}${["cc","99","77","55","33"][j]}` }} />
+                          <div key={j} className="rounded-full" style={{ width: 1, height: h, background: `rgba(181,76,255,${[0.7,0.5,0.35,0.2,0.1][j]})` }} />
                         ))}
                       </div>
                     </div>
@@ -2522,18 +2673,23 @@ function SectionMock({
                             className="rounded-2xl p-5"
                             style={{
                               width: "min(100%, 340px)",
-                              background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
-                              border: `1.5px solid ${step.accent}55`,
-                              boxShadow: `0 0 32px 0 ${step.accent}22, inset 0 1px 0 rgba(255,255,255,0.07)`,
+                              position: "relative",
+                              overflow: "hidden",
+                              background: "rgba(255,255,255,0.035)",
+                              border: "1px solid rgba(255,255,255,0.08)",
+                              backdropFilter: "blur(24px)",
+                              WebkitBackdropFilter: "blur(24px)",
+                              boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(255,255,255,0.03), 0 8px 32px rgba(0,0,0,0.40)",
                             }}
                           >
-                            <p className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1.5" style={{ color: step.accent }}>{step.num}</p>
+                            <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", borderRadius: "16px 16px 60% 60% / 12px 12px 28px 28px", background: "linear-gradient(to bottom, rgba(255,255,255,0.10), transparent)", pointerEvents: "none" }} />
+                            <p className="text-[10px] font-bold uppercase tracking-[0.25em] mb-1.5" style={{ color: PURPLE_BRIGHT }}>{step.num}</p>
                             <p className="text-[15px] font-bold text-white mb-3">{step.title}</p>
                             <ul className="flex flex-col gap-1.5">
                               {step.bullets.map((b) => (
                                 <li key={b} className="flex items-start gap-2">
-                                  <span className="text-[10px] mt-0.5 shrink-0" style={{ color: step.accent }}>+</span>
-                                  <span className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>{b}</span>
+                                  <span className="text-[10px] mt-0.5 shrink-0" style={{ color: PURPLE_BRIGHT }}>+</span>
+                                  <span className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.48)" }}>{b}</span>
                                 </li>
                               ))}
                             </ul>
@@ -2571,18 +2727,12 @@ function SectionMock({
                     <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: 10 }}>
                       {isLeft && (
                         <Reveal delay={i * 80} dir={-1}>
-                          <div
-                            className="rounded-xl p-3"
-                            style={{
-                              background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
-                              border: `1.5px solid ${step.accent}44`,
-                              boxShadow: `0 0 18px 0 ${step.accent}18`,
-                            }}
-                          >
-                            <p className="text-[9px] font-bold uppercase tracking-[0.18em] mb-1" style={{ color: step.accent }}>{step.num}</p>
-                            <p className="text-[13px] font-bold text-white mb-1.5">{step.title}</p>
+                          <div className="rounded-xl p-3" style={{ position: "relative", overflow: "hidden", background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(255,255,255,0.03), 0 4px 16px rgba(0,0,0,0.38)" }}>
+                            <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", borderRadius: "12px 12px 60% 60% / 8px 8px 20px 20px", background: "linear-gradient(to bottom, rgba(255,255,255,0.10), transparent)", pointerEvents: "none" }} />
+                            <p className="text-[9px] font-bold uppercase tracking-[0.2em] mb-1" style={{ color: PURPLE_BRIGHT }}>{step.num}</p>
+                            <p className="text-[12px] font-bold text-white mb-1.5">{step.title}</p>
                             {step.bullets.map((b) => (
-                              <p key={b} className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>+ {b}</p>
+                              <p key={b} className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.44)" }}>+ {b}</p>
                             ))}
                           </div>
                         </Reveal>
@@ -2590,24 +2740,18 @@ function SectionMock({
                     </div>
                     {/* Col 2 — dot */}
                     <div className="flex justify-center pt-3" style={{ zIndex: 2 }}>
-                      <div className="w-3 h-3 rounded-full shrink-0" style={{ background: step.accent, boxShadow: `0 0 10px 3px ${step.accent}66` }} />
+                      <div className="w-3 h-3 rounded-full shrink-0" style={{ background: PURPLE_BRIGHT, boxShadow: `0 0 10px 3px ${PURPLE_BRIGHT}55, 0 0 0 2px rgba(181,76,255,0.15)` }} />
                     </div>
                     {/* Col 3 */}
                     <div style={{ display: "flex", justifyContent: "flex-start", paddingLeft: 10 }}>
                       {!isLeft && (
                         <Reveal delay={i * 80} dir={1}>
-                          <div
-                            className="rounded-xl p-3"
-                            style={{
-                              background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
-                              border: `1.5px solid ${step.accent}44`,
-                              boxShadow: `0 0 18px 0 ${step.accent}18`,
-                            }}
-                          >
-                            <p className="text-[9px] font-bold uppercase tracking-[0.18em] mb-1" style={{ color: step.accent }}>{step.num}</p>
-                            <p className="text-[13px] font-bold text-white mb-1.5">{step.title}</p>
+                          <div className="rounded-xl p-3" style={{ position: "relative", overflow: "hidden", background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(255,255,255,0.03), 0 4px 16px rgba(0,0,0,0.38)" }}>
+                            <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", borderRadius: "12px 12px 60% 60% / 8px 8px 20px 20px", background: "linear-gradient(to bottom, rgba(255,255,255,0.10), transparent)", pointerEvents: "none" }} />
+                            <p className="text-[9px] font-bold uppercase tracking-[0.2em] mb-1" style={{ color: PURPLE_BRIGHT }}>{step.num}</p>
+                            <p className="text-[12px] font-bold text-white mb-1.5">{step.title}</p>
                             {step.bullets.map((b) => (
-                              <p key={b} className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>+ {b}</p>
+                              <p key={b} className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.44)" }}>+ {b}</p>
                             ))}
                           </div>
                         </Reveal>
