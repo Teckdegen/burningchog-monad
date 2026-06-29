@@ -80,7 +80,6 @@ const GRAIN_SVG =
   );
 
 const SECTION_SUBTITLES: Record<string, string> = {
-  dashboard: "Live on-chain stats.",
   "trading-desk": "Market support and portfolio activity.",
   contests: "Community contests and collaborations.",
 };
@@ -1713,122 +1712,119 @@ function SectionMock({
 
     return (
       <div className="flex flex-col gap-4">
-        {/* 4 stat cards — 2×2 on mobile, 4 across on desktop */}
+        {/* Glass stat cards — 2×2 mobile, 4-across desktop */}
         <Reveal>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {[
-              {
-                label: "MARKET CAP",
-                value: formatUsd(market.marketCapUsd),
-                sub: "Live",
-              },
-              {
-                label: "HOLDERS",
-                value: formatCount(market.holders),
-                sub: "Boblievers",
-              },
-              {
-                label: "TOTAL BURNED",
-                value: formatToken(stats.balances.burn, stats.decimals),
-                sub: "Deflationary",
-              },
-              {
-                label: "SUPPLY LOCKED",
-                value: `${Math.round(lockPct)}%`,
-                sub: "Lock progress",
-              },
-            ].map((s) => (
-              <div
-                key={s.label}
-                className="rounded-xl px-3 py-3 flex flex-col justify-between"
-                style={{
-                  background: DB_PANEL,
-                  border: `1px solid ${DB_BORDER_STRONG}`,
-                  minHeight: 80,
-                }}
-              >
-                <p className="text-[9px] font-bold uppercase tracking-[0.12em] mb-1" style={{ color: DB_MUTED }}>
-                  {s.label}
-                </p>
-                <p className="text-[clamp(1rem,4vw,1.6rem)] font-bold text-white leading-none truncate">
-                  {s.value}
-                </p>
-                <p className="text-[9px] uppercase tracking-[0.1em] mt-1 font-semibold" style={{ color: PURPLE_BRIGHT }}>
-                  {s.sub}
-                </p>
+
+            {/* Market Cap */}
+            <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-2" style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+            }}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.35)" }}>Market Cap</p>
+              <p className="text-[clamp(1.3rem,4.5vw,2rem)] font-bold text-white leading-none truncate">{formatUsd(market.marketCapUsd)}</p>
+              <p className="text-[11px]" style={{ color: "rgba(181,76,255,0.9)" }}>Live</p>
+            </div>
+
+            {/* Holders */}
+            <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-2" style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+            }}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.35)" }}>Holders</p>
+              <p className="text-[clamp(1.3rem,4.5vw,2rem)] font-bold text-white leading-none truncate">{formatCount(market.holders)}</p>
+              <p className="text-[11px]" style={{ color: "rgba(181,76,255,0.9)" }}>Boblievers</p>
+            </div>
+
+            {/* Total Burned */}
+            <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-2" style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+            }}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.35)" }}>Total Burned</p>
+              <p className="text-[clamp(1.3rem,4.5vw,2rem)] font-bold text-white leading-none truncate">{formatToken(stats.balances.burn, stats.decimals)}</p>
+              <p className="text-[11px]" style={{ color: "rgba(181,76,255,0.9)" }}>Deflationary</p>
+            </div>
+
+            {/* Supply Locked — with mini progress bar */}
+            <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-2" style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+            }}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.35)" }}>Supply Locked</p>
+              <p className="text-[clamp(1.3rem,4.5vw,2rem)] font-bold text-white leading-none">{Math.round(lockPct)}%</p>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(181,76,255,0.15)" }}>
+                <div className="h-full rounded-full" style={{ width: `${lockPct}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 100%)` }} />
               </div>
-            ))}
+              <p className="text-[11px]" style={{ color: "rgba(181,76,255,0.9)" }}>Lock progress</p>
+            </div>
+
           </div>
         </Reveal>
 
-        {/* Lock progress bar */}
+        {/* Lock Holding Progress — full-width glass card */}
         <Reveal delay={60}>
-          <div
-            className="rounded-xl px-4 py-4"
-            style={{ background: DB_PANEL, border: `1px solid ${DB_BORDER_STRONG}` }}
-          >
-            <div className="flex items-baseline justify-between gap-2 mb-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: DB_MUTED }}>
+          <div className="rounded-2xl px-5 py-5" style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+          }}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.35)" }}>
                 Lock Holding Progress
               </p>
-              <p className="text-base font-bold text-white shrink-0">
-                {formatToken(stats.balances.lockHolding, stats.decimals)}
-              </p>
+              <p className="text-base font-bold text-white">{formatToken(stats.balances.lockHolding, stats.decimals)}</p>
             </div>
-            <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(181,76,255,0.12)" }}>
+            <div className="relative h-2 rounded-full overflow-hidden" style={{ background: "rgba(181,76,255,0.12)" }}>
               <div
-                className="h-full rounded-full"
+                className="absolute inset-y-0 left-0 rounded-full"
                 style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 100%)` }}
               />
             </div>
-            <div className="flex justify-between mt-2 text-[9px]" style={{ color: DB_MUTED }}>
+            <div className="flex justify-between mt-2.5 text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
               <span>{Math.round(lockProgress)}% of 1M target</span>
-              <span>Target: 1,000,000</span>
+              <span>1,000,000</span>
             </div>
           </div>
         </Reveal>
 
-        {/* Supply breakdown — 3 cols on mobile, 5 on desktop */}
+        {/* Supply Breakdown — glass card, 3-col mobile / 5-col desktop */}
         <Reveal delay={100}>
-          <div
-            className="rounded-xl p-4"
-            style={{ background: DB_PANEL, border: `1px solid ${DB_BORDER_STRONG}` }}
-          >
-            <p className="text-[10px] font-bold uppercase tracking-[0.1em] mb-3" style={{ color: DB_MUTED }}>
+          <div className="rounded-2xl p-4 sm:p-5" style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+          }}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>
               Supply Breakdown
             </p>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
               {[
-                { label: "Burned", pct: burnedPct, color: CORAL },
-                { label: "Treasury", pct: treasuryPct, color: PURPLE_BRIGHT },
-                { label: "Trading", pct: tradingPct, color: PURPLE },
-                { label: "Locked", pct: lockPct, color: PURPLE_BRIGHT },
-                { label: "Circulating", pct: circPct, color: "rgba(255,255,255,0.35)" },
+                { label: "Burned",      pct: burnedPct,   color: CORAL },
+                { label: "Treasury",    pct: treasuryPct, color: PURPLE_BRIGHT },
+                { label: "Trading",     pct: tradingPct,  color: PURPLE },
+                { label: "Locked",      pct: lockPct,     color: PURPLE_BRIGHT },
+                { label: "Circulating", pct: circPct,     color: "rgba(255,255,255,0.4)" },
               ].map((s) => (
                 <div key={s.label}>
-                  <p className="text-[9px] uppercase tracking-[0.07em]" style={{ color: DB_MUTED }}>
-                    {s.label}
-                  </p>
-                  <p className="text-lg font-bold text-white mt-0.5">{Math.round(s.pct)}%</p>
-                  <div className="h-2 rounded-full mt-1.5 overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                  <p className="text-[9px] uppercase tracking-[0.08em] mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{s.label}</p>
+                  <p className="text-[clamp(1rem,3.5vw,1.4rem)] font-bold text-white leading-none">{Math.round(s.pct)}%</p>
+                  <div className="h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
                     <div className="h-full rounded-full" style={{ width: `${s.pct}%`, background: s.color }} />
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        </Reveal>
-
-        <Reveal delay={130}>
-          <div
-            className="flex items-center justify-between text-[9px] uppercase tracking-[0.1em] pt-1"
-            style={{ color: DB_MUTED }}
-          >
-            <span>Live on-chain · refreshes every 60s</span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: PURPLE_BRIGHT }} />
-              Live
-            </span>
           </div>
         </Reveal>
       </div>
