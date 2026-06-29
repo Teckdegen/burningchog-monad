@@ -549,156 +549,76 @@ function SiteHeader({
 }
 
 function LandingHero() {
-  const [unlocked, setUnlocked] = useState(false);
-
-  // Unlock scroll on first downward swipe/scroll
-  useEffect(() => {
-    let touchStartY = 0;
-    const onWheel = (e: WheelEvent) => {
-      if (unlocked) return;
-      if (e.deltaY > 20) { setUnlocked(true); }
-    };
-    const onTouchStart = (e: TouchEvent) => { touchStartY = e.touches[0].clientY; };
-    const onTouchMove = (e: TouchEvent) => {
-      if (unlocked) return;
-      if (touchStartY - e.touches[0].clientY > 40) { setUnlocked(true); }
-    };
-    window.addEventListener("wheel", onWheel, { passive: true });
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: true });
-    return () => {
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-    };
-  }, [unlocked]);
-
   // Particle star positions — stable (generated once)
-  const stars = Array.from({ length: 120 }, (_, i) => ({
+  const stars = Array.from({ length: 140 }, (_, i) => ({
     x: ((i * 137.508) % 100),
     y: ((i * 97.3) % 100),
     r: i % 5 === 0 ? 1.4 : i % 3 === 0 ? 1.0 : 0.6,
-    o: 0.15 + (i % 7) * 0.08,
+    o: 0.10 + (i % 7) * 0.06,
   }));
 
   return (
     <section
       id="top"
       className="relative w-full overflow-hidden flex flex-col"
-      style={{ height: "100dvh", backgroundColor: "#080412" }}
+      style={{ height: "100dvh", backgroundColor: "#060310" }}
     >
+      {/* ── Horizontal scan lines (Dusk-style) ── */}
+      <div aria-hidden style={{
+        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
+        backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.018) 3px, rgba(255,255,255,0.018) 4px)",
+      }} />
+
       {/* ── Star particle field ── */}
-      <svg
-        aria-hidden
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }}
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-      >
+      <svg aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 1 }}
+        viewBox="0 0 100 100" preserveAspectRatio="none">
         {stars.map((s, i) => (
-          <circle key={i} cx={s.x} cy={s.y} r={s.r * 0.4} fill="white" fillOpacity={s.o} />
+          <circle key={i} cx={s.x} cy={s.y} r={s.r * 0.38} fill="white" fillOpacity={s.o} />
         ))}
       </svg>
 
-      {/* ── Subtle radial purple glow bottom-right ── */}
+      {/* ── Purple glow — bottom centre, like a rising sun ── */}
       <div aria-hidden style={{
-        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse 70% 55% at 75% 85%, rgba(122,45,255,0.22) 0%, transparent 70%)",
-      }} />
-      <div aria-hidden style={{
-        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse 50% 40% at 20% 60%, rgba(181,76,255,0.08) 0%, transparent 65%)",
+        position: "absolute", bottom: 0, left: 0, right: 0, height: "55%", zIndex: 1, pointerEvents: "none",
+        background: "radial-gradient(ellipse 80% 60% at 50% 110%, rgba(122,45,255,0.30) 0%, rgba(181,76,255,0.08) 50%, transparent 75%)",
       }} />
 
-      {/* ── Grid lines (very subtle) ── */}
-      <div aria-hidden className="absolute inset-0 bchog-grid-bg pointer-events-none" style={{ opacity: 0.12, zIndex: 0 }} />
+      {/* ── Content — centred like Dusk ── */}
+      <div className="relative flex flex-col items-center justify-center h-full text-center px-6"
+        style={{ zIndex: 2 }}>
 
-      {/* ── Hero content — left aligned like Capricorn ── */}
-      <div
-        className="relative flex flex-col justify-center h-full px-6 sm:px-12 lg:px-20 max-w-6xl mx-auto w-full"
-        style={{ zIndex: 2 }}
-      >
-        {/* Eyebrow */}
-        <p
-          className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.22em] mb-5"
-          style={{ color: PURPLE_BRIGHT, letterSpacing: "0.24em" }}
-        >
-          Built on Monad
-        </p>
+        {/* Small logo + name above heading */}
+        <div className="flex items-center gap-2 mb-6">
+          <img src={TOKEN_LOGO} alt="BCHOG" className="w-6 h-6 rounded-full object-cover" style={{ opacity: 0.7 }} />
+          <span className="text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: "rgba(255,255,255,0.35)" }}>
+            Burning Chog
+          </span>
+        </div>
 
-        {/* Big heading */}
-        <h1
-          className="text-white m-0 leading-[0.95]"
-          style={{
-            fontFamily: "'Anton', sans-serif",
-            fontSize: "clamp(3.2rem, 12vw, 9rem)",
-            letterSpacing: "-0.02em",
-            maxWidth: "14ch",
-          }}
-        >
-          BCHOG
+        {/* Main heading — Dusk layout: first line white, accent on second */}
+        <h1 className="text-white m-0 leading-[1.05]"
+          style={{ fontFamily: "'Anton', sans-serif", fontSize: "clamp(2.6rem, 9vw, 7.5rem)", letterSpacing: "-0.02em", maxWidth: "18ch" }}>
+          Always less,{" "}
+          <span style={{ color: PURPLE_BRIGHT }}>always more</span>
         </h1>
 
-        {/* Sub-tagline */}
-        <p
-          className="mt-5 max-w-sm sm:max-w-md"
-          style={{
-            fontSize: "clamp(0.95rem, 2.2vw, 1.2rem)",
-            color: "rgba(255,255,255,0.45)",
-            lineHeight: 1.6,
-          }}
-        >
-          Always less. Always more.
+        {/* Sub copy — Dusk style descriptor */}
+        <p className="mt-5 max-w-lg"
+          style={{ fontSize: "clamp(0.9rem, 2vw, 1.1rem)", color: "rgba(255,255,255,0.38)", lineHeight: 1.65 }}>
+          Infrastructure for regulated digital assets that need privacy, auditability, and deterministic settlement.
         </p>
 
-        {/* CTA */}
-        <div className="flex items-center gap-4 mt-8 flex-wrap">
-          <a
-            href={NADFUN_TOKEN_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="no-underline flex items-center gap-2.5 px-6 py-3.5 rounded-full font-bold transition-all hover:scale-[1.04] hover:brightness-110"
-            style={{
-              background: PURPLE_BRIGHT,
-              color: "white",
-              fontSize: "clamp(0.85rem,2vw,1rem)",
-              letterSpacing: "0.04em",
-              boxShadow: `0 0 28px rgba(181,76,255,0.5), 0 4px 16px rgba(0,0,0,0.4)`,
-            }}
-          >
-            Buy BCHOG
-            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="white" strokeWidth="2" aria-hidden>
-              <path d="M3 8h10M9 4l4 4-4 4" />
-            </svg>
-          </a>
-          <button
-            type="button"
-            onClick={() => document.getElementById("dashboard")?.scrollIntoView({ behavior: "smooth" })}
-            className="flex items-center gap-2 px-5 py-3.5 rounded-full font-semibold transition-all hover:scale-[1.03]"
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.14)",
-              color: "rgba(255,255,255,0.7)",
-              fontSize: "clamp(0.85rem,2vw,1rem)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.10)",
-            }}
-          >
-            View Dashboard
-          </button>
-        </div>
+        {/* Tagline below — small, italic, for those who get it */}
+        <p className="mt-4 text-[11px] uppercase tracking-[0.22em]"
+          style={{ color: "rgba(181,76,255,0.45)", fontStyle: "italic" }}>
+          For those who get it
+        </p>
       </div>
 
       {/* ── Scroll cue ── */}
-      <div
-        className="absolute bottom-8 inset-x-0 flex flex-col items-center gap-2 pointer-events-none"
-        style={{ zIndex: 10, opacity: unlocked ? 0 : 1, transition: "opacity 600ms ease" }}
-      >
-        <div className="flex flex-col gap-0.5 items-center" aria-hidden>
-          <div className="w-px h-8 rounded-full" style={{ background: `linear-gradient(to bottom, transparent, ${PURPLE_BRIGHT})` }} />
-          <div style={{ width: 0, height: 0, borderLeft: "4px solid transparent", borderRight: "4px solid transparent", borderTop: `5px solid ${PURPLE_BRIGHT}` }} />
-        </div>
-        <span className="text-[9px] uppercase tracking-[0.22em]" style={{ color: "rgba(181,76,255,0.5)" }}>Scroll</span>
+      <div className="absolute bottom-7 inset-x-0 flex flex-col items-center gap-1.5 pointer-events-none" style={{ zIndex: 10 }}>
+        <div className="w-px h-8 rounded-full" style={{ background: `linear-gradient(to bottom, transparent, rgba(181,76,255,0.5))` }} />
+        <div style={{ width: 0, height: 0, borderLeft: "3px solid transparent", borderRight: "3px solid transparent", borderTop: `4px solid rgba(181,76,255,0.4)` }} />
       </div>
     </section>
   );
@@ -2195,21 +2115,6 @@ function SectionMock({
     const burnedPct = percentOf(stats.balances.burn, stats.totalSupply);
     const lockPct = percentOf(lockedTotal, stats.totalSupply);
 
-    // Simple sparkline data (visual only — represents trend shape)
-    const sparkPts = [30, 38, 34, 44, 40, 52, 48, 58, 54, 62, 68, 64, 72, 70, 78];
-
-    // Build sparkline polyline string
-    const sparkW = 200, sparkH = 48;
-    const sparkMax = Math.max(...sparkPts);
-    const sparkMin = Math.min(...sparkPts);
-    const sparkRange = sparkMax - sparkMin || 1;
-    const sparkCoords = sparkPts.map((v, i) => {
-      const x = (i / (sparkPts.length - 1)) * sparkW;
-      const y = sparkH - ((v - sparkMin) / sparkRange) * (sparkH - 6) - 3;
-      return `${x},${y}`;
-    }).join(" ");
-    const sparkArea = `0,${sparkH} ${sparkCoords} ${sparkW},${sparkH}`;
-
     const glassCard: React.CSSProperties = {
       position: "relative",
       overflow: "hidden",
@@ -2231,10 +2136,10 @@ function SectionMock({
         <Reveal>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
-              { label: "Market Cap",    value: formatUsd(market.marketCapUsd),                            accent: PURPLE_BRIGHT },
-              { label: "Holders",       value: formatCount(market.holders),                               accent: PURPLE_BRIGHT },
-              { label: "Total Burned",  value: formatToken(stats.balances.burn, stats.decimals),          accent: CORAL        },
-              { label: "Supply Locked", value: `${Math.round(lockPct)}%`,                                 accent: PURPLE_BRIGHT },
+              { label: "Market Cap",    value: formatUsd(market.marketCapUsd),                   accent: PURPLE_BRIGHT },
+              { label: "Holders",       value: formatCount(market.holders),                      accent: PURPLE_BRIGHT },
+              { label: "Total Burned",  value: formatToken(stats.balances.burn, stats.decimals), accent: CORAL        },
+              { label: "Supply Locked", value: `${Math.round(lockPct)}%`,                        accent: PURPLE_BRIGHT },
             ].map((s) => (
               <div key={s.label} className="rounded-2xl p-4 sm:p-5 flex flex-col gap-1" style={glassCard}>
                 <GlassSheen />
@@ -2250,132 +2155,77 @@ function SectionMock({
           </div>
         </Reveal>
 
-        {/* ── Row 2: Sparkline chart + Lock progress ── */}
+        {/* ── Row 2: Lock to 1M progress — full width ── */}
         <Reveal delay={60}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-
-            {/* Price trend chart */}
-            <div className="rounded-2xl p-5 flex flex-col gap-3" style={glassCard}>
-              <GlassSheen />
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.30)" }}>Price Trend</p>
-                  <p className="font-black text-white mt-1 leading-none" style={{ fontSize: "clamp(1.2rem,3.5vw,1.8rem)", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
-                    {market.priceUsd ? `$${market.priceUsd.toPrecision(3)}` : "$---"}
-                  </p>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-1 rounded-lg" style={{ background: "rgba(181,76,255,0.15)", color: PURPLE_BRIGHT, border: "1px solid rgba(181,76,255,0.25)" }}>
-                  BCHOG
-                </span>
-              </div>
-              <div className="relative mt-1" style={{ height: 52 }}>
-                <svg viewBox={`0 0 ${sparkW} ${sparkH}`} style={{ width: "100%", height: "100%", overflow: "visible" }} preserveAspectRatio="none" aria-hidden>
-                  <defs>
-                    <linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={PURPLE_BRIGHT} stopOpacity="0.35" />
-                      <stop offset="100%" stopColor={PURPLE_BRIGHT} stopOpacity="0.02" />
-                    </linearGradient>
-                  </defs>
-                  <polygon points={sparkArea} fill="url(#spark-fill)" />
-                  <polyline points={sparkCoords} fill="none" stroke={PURPLE_BRIGHT} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
-                  {/* last point dot */}
-                  <circle cx={sparkW} cy={parseFloat(sparkCoords.split(" ").at(-1)!.split(",")[1])} r="3" fill={PURPLE_BRIGHT} />
-                </svg>
-              </div>
-              <div className="flex justify-between text-[9px]" style={{ color: "rgba(255,255,255,0.22)" }}>
-                <span>Early</span>
-                <span>Now</span>
-              </div>
-            </div>
-
-            {/* Lock to 1M progress */}
-            <div className="rounded-2xl p-5 flex flex-col justify-between gap-4" style={glassCard}>
-              <GlassSheen />
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.30)" }}>Lock Target</p>
-                  <p className="font-black text-white mt-1 leading-none" style={{ fontSize: "clamp(1.2rem,3.5vw,1.8rem)", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
-                    {formatToken(stats.balances.lockHolding, stats.decimals)}
-                  </p>
-                </div>
-                <span className="font-black text-[clamp(1.4rem,4vw,2rem)]" style={{ color: PURPLE_BRIGHT, letterSpacing: "-0.02em" }}>
-                  {Math.round(lockProgress)}%
-                </span>
-              </div>
-              {/* Thick progress bar */}
+          <div className="rounded-2xl p-5" style={glassCard}>
+            <GlassSheen />
+            <div className="flex items-start justify-between mb-3">
               <div>
-                <div className="relative h-4 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", boxShadow: "inset 0 2px 5px rgba(0,0,0,0.55)" }}>
-                  <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-700" style={{
-                    width: `${lockProgress}%`,
-                    background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 60%, rgba(255,255,255,0.6) 100%)`,
-                    boxShadow: `0 0 14px 3px ${PURPLE_BRIGHT}88`,
-                  }} />
-                  <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.18), transparent)" }} />
-                </div>
-                <div className="flex justify-between mt-2 text-[10px]" style={{ color: "rgba(255,255,255,0.28)" }}>
-                  <span>{Math.round(lockProgress)}% of 1M target</span>
-                  <span>1,000,000</span>
-                </div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.30)" }}>Lock Target</p>
+                <p className="font-black text-white mt-1 leading-none" style={{ fontSize: "clamp(1.2rem,3.5vw,1.8rem)", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
+                  {formatToken(stats.balances.lockHolding, stats.decimals)}
+                </p>
               </div>
+              <span className="font-black text-[clamp(1.4rem,4vw,2rem)]" style={{ color: PURPLE_BRIGHT, letterSpacing: "-0.02em" }}>
+                {Math.round(lockProgress)}%
+              </span>
+            </div>
+            <div className="relative h-4 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", boxShadow: "inset 0 2px 5px rgba(0,0,0,0.55)" }}>
+              <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-700" style={{
+                width: `${lockProgress}%`,
+                background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 60%, rgba(255,255,255,0.6) 100%)`,
+                boxShadow: `0 0 14px 3px ${PURPLE_BRIGHT}88`,
+              }} />
+              <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.18), transparent)" }} />
+            </div>
+            <div className="flex justify-between mt-2 text-[10px]" style={{ color: "rgba(255,255,255,0.28)" }}>
+              <span>{Math.round(lockProgress)}% of 1M target</span>
+              <span>1,000,000</span>
             </div>
           </div>
         </Reveal>
 
-        {/* ── Row 3: Supply split + Trading desk value ── */}
+        {/* ── Row 3: Supply snapshot — full width ── */}
         <Reveal delay={100}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-
-            {/* Burned vs locked vs circulating — 3 big numbers */}
-            <div className="lg:col-span-2 rounded-2xl p-5" style={glassCard}>
-              <GlassSheen />
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: "rgba(255,255,255,0.30)" }}>Supply Snapshot</p>
-              <div className="grid grid-cols-3 gap-4">
-                {[
-                  { label: "Burned",      pct: burnedPct,  color: CORAL,        value: formatToken(stats.balances.burn, stats.decimals) },
-                  { label: "Locked",      pct: lockPct,    color: PURPLE_BRIGHT, value: formatToken(lockedTotal, stats.decimals) },
-                  { label: "Circulating", pct: percentOf(circulating, stats.totalSupply), color: "rgba(255,255,255,0.55)", value: formatToken(circulating, stats.decimals) },
-                ].map((s) => (
-                  <div key={s.label}>
-                    <p className="text-[9px] uppercase tracking-[0.1em] mb-1.5" style={{ color: "rgba(255,255,255,0.28)" }}>{s.label}</p>
-                    <p className="font-black text-white leading-none" style={{ fontSize: "clamp(1rem,3.5vw,1.5rem)", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em", textShadow: `0 0 16px ${s.color}66` }}>
-                      {s.value}
-                    </p>
-                    <p className="text-[10px] mt-1" style={{ color: s.color }}>{Math.round(s.pct)}%</p>
-                    <div className="relative h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
-                      <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${s.pct}%`, background: s.color, boxShadow: `0 0 6px ${s.color}` }} />
-                    </div>
+          <div className="rounded-2xl p-5" style={glassCard}>
+            <GlassSheen />
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: "rgba(255,255,255,0.30)" }}>Supply Snapshot</p>
+            <div className="grid grid-cols-3 gap-4 sm:gap-6">
+              {[
+                { label: "Burned",      pct: burnedPct,                               color: CORAL,                      value: formatToken(stats.balances.burn, stats.decimals) },
+                { label: "Locked",      pct: lockPct,                                 color: PURPLE_BRIGHT,               value: formatToken(lockedTotal, stats.decimals) },
+                { label: "Circulating", pct: percentOf(circulating, stats.totalSupply), color: "rgba(255,255,255,0.55)", value: formatToken(circulating, stats.decimals) },
+              ].map((s) => (
+                <div key={s.label}>
+                  <p className="text-[9px] uppercase tracking-[0.1em] mb-1.5" style={{ color: "rgba(255,255,255,0.28)" }}>{s.label}</p>
+                  <p className="font-black text-white leading-none" style={{ fontSize: "clamp(1rem,3.5vw,1.5rem)", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em", textShadow: `0 0 16px ${s.color}66` }}>
+                    {s.value}
+                  </p>
+                  <p className="text-[10px] mt-1" style={{ color: s.color }}>{Math.round(s.pct)}%</p>
+                  <div className="relative h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
+                    <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${s.pct}%`, background: s.color, boxShadow: `0 0 6px ${s.color}` }} />
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-
-            {/* Trading desk snapshot */}
-            <a href="#trading-desk" onClick={(e) => { e.preventDefault(); document.getElementById("trading-desk")?.scrollIntoView({ behavior: "smooth" }); }}
-              className="no-underline rounded-2xl p-5 flex flex-col justify-between gap-3 transition-all hover:scale-[1.02]"
-              style={{ ...glassCard, cursor: "pointer" }}>
-              <GlassSheen />
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.30)" }}>Trading Desk</p>
-                <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.22)" }}>{shortAddress(WALLETS.trading)}</p>
-              </div>
-              <div>
-                <p className="font-black text-white leading-none" style={{ fontSize: "clamp(1.2rem,3.5vw,1.8rem)", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
-                  {formatToken(stats.balances.trading, stats.decimals)}
-                </p>
-                <p className="text-[10px] mt-1" style={{ color: PURPLE_BRIGHT }}>BCHOG balance</p>
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.35)" }}>
-                <span>View desk</span>
-                <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden><path d="M3 8h10M9 4l4 4-4 4" /></svg>
-              </div>
-            </a>
-
           </div>
         </Reveal>
 
       </div>
     );
   }
+      position: "relative",
+      overflow: "hidden",
+      background: "rgba(255,255,255,0.035)",
+      border: "1px solid rgba(255,255,255,0.08)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.03), 0 8px 24px rgba(0,0,0,0.4)",
+    };
+
+    const GlassSheen = () => (
+      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", borderRadius: "16px 16px 60% 60% / 10px 10px 24px 24px", background: "linear-gradient(to bottom, rgba(255,255,255,0.08), transparent)", pointerEvents: "none" }} />
+    );
 
   if (id === "how-it-works") {
     const lockProgress = percentOf(
