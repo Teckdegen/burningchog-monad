@@ -965,7 +965,7 @@ function SectionBlock({
     >
       <div className="absolute inset-0 bchog-grid-bg opacity-20 pointer-events-none" />
       <div
-        className="relative px-4 sm:px-8 lg:px-16 pt-16 sm:pt-20 pb-14 w-full max-w-6xl mx-auto"
+        className={`relative px-4 sm:px-8 lg:px-16 w-full max-w-6xl mx-auto ${section.id === "coming-soon" ? "pt-10 sm:pt-12 pb-6" : "pt-16 sm:pt-20 pb-14"}`}
         style={{ zIndex: 2 }}
       >
         <div className="mb-7 sm:mb-8">
@@ -2435,7 +2435,7 @@ function SectionMock({
             Explore the Flywheel
           </p>
 
-          {/* Desktop zigzag */}
+          {/* Desktop zigzag — true 3-column grid, cards alternate left/right */}
           <div className="hidden sm:block relative">
             {/* Spine */}
             <div
@@ -2449,36 +2449,36 @@ function SectionMock({
               aria-hidden
             />
 
-            <div className="flex flex-col" style={{ gap: 0 }}>
+            <div className="flex flex-col" style={{ gap: 64 }}>
               {timelineSteps.map((step, i) => {
                 const isLeft = step.side === "left";
+                // card goes col 1 (left) or col 3 (right); spacer fills the opposite
                 return (
-                  <div key={step.num} style={{ marginBottom: i < timelineSteps.length - 1 ? 48 : 0 }}>
+                  <div
+                    key={step.num}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 80px 1fr",
+                      gridTemplateRows: "1fr",
+                      alignItems: "start",
+                    }}
+                  >
+                    {/* Col 1 — card when isLeft, empty when isRight */}
                     <div
-                      className="relative grid"
-                      style={{ gridTemplateColumns: "1fr 80px 1fr" }}
+                      style={{ display: "flex", justifyContent: isLeft ? "flex-end" : "flex-start", paddingRight: isLeft ? 24 : 0, paddingLeft: isLeft ? 0 : 24 }}
                     >
-                      {/* Card — col 1 for left-side, col 3 for right-side */}
-                      <div
-                        className={`flex ${isLeft ? "justify-end pr-6" : "justify-start pl-6"}`}
-                        style={{ gridColumn: isLeft ? 1 : 3, gridRow: 1 }}
-                      >
-                        <Reveal delay={i * 110} dir={isLeft ? -1 : 1}>
+                      {isLeft && (
+                        <Reveal delay={i * 110} dir={-1}>
                           <div
-                            className="rounded-2xl p-5 w-full"
+                            className="rounded-2xl p-5"
                             style={{
-                              maxWidth: 340,
+                              width: "min(100%, 340px)",
                               background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
                               border: `1.5px solid ${step.accent}55`,
-                              boxShadow: `0 0 32px 0 ${step.accent}1a, inset 0 1px 0 rgba(255,255,255,0.07)`,
+                              boxShadow: `0 0 32px 0 ${step.accent}22, inset 0 1px 0 rgba(255,255,255,0.07)`,
                             }}
                           >
-                            <p
-                              className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1.5"
-                              style={{ color: step.accent }}
-                            >
-                              {step.num}
-                            </p>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1.5" style={{ color: step.accent }}>{step.num}</p>
                             <p className="text-[15px] font-bold text-white mb-3">{step.title}</p>
                             <ul className="flex flex-col gap-1.5">
                               {step.bullets.map((b) => (
@@ -2491,41 +2491,55 @@ function SectionMock({
                             {i === 2 && (
                               <div className="mt-4">
                                 <div className="flex justify-between text-[9px] mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
-                                  <span>Lock progress</span>
-                                  <span>{Math.round(lockProgress)}%</span>
+                                  <span>Lock progress</span><span>{Math.round(lockProgress)}%</span>
                                 </div>
-                                <div className="relative h-2.5 rounded-full overflow-hidden"
-                                  style={{ background: "rgba(255,255,255,0.07)", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4)" }}>
-                                  <div className="absolute inset-y-0 left-0 rounded-full"
-                                    style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 70%, rgba(255,255,255,0.55) 100%)`, boxShadow: `0 0 10px 2px ${PURPLE_BRIGHT}77` }} />
-                                  <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none"
-                                    style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.16), transparent)" }} />
+                                <div className="relative h-2.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4)" }}>
+                                  <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 70%, rgba(255,255,255,0.55) 100%)`, boxShadow: `0 0 10px 2px ${PURPLE_BRIGHT}77` }} />
+                                  <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.16), transparent)" }} />
                                 </div>
                               </div>
                             )}
                           </div>
                         </Reveal>
-                      </div>
+                      )}
+                    </div>
 
-                      {/* Centre node — always col 2 */}
-                      <div
-                        className="flex flex-col items-center justify-start pt-5"
-                        style={{ gridColumn: 2, gridRow: 1, zIndex: 2 }}
-                      >
-                        <div
-                          className="w-3.5 h-3.5 rounded-full shrink-0"
-                          style={{ background: step.accent, boxShadow: `0 0 14px 4px ${step.accent}77` }}
-                        />
-                        <div className="flex gap-[3px] mt-1.5" aria-hidden>
-                          {[10, 16, 12, 8, 6].map((h, j) => (
-                            <div key={j} className="rounded-full"
-                              style={{ width: 1, height: h, background: `${step.accent}${["cc","99","77","55","33"][j]}` }} />
-                          ))}
-                        </div>
+                    {/* Col 2 — centre dot always */}
+                    <div className="flex flex-col items-center pt-5" style={{ zIndex: 2 }}>
+                      <div className="w-3.5 h-3.5 rounded-full shrink-0" style={{ background: step.accent, boxShadow: `0 0 14px 4px ${step.accent}77` }} />
+                      <div className="flex gap-[3px] mt-1.5" aria-hidden>
+                        {[10, 16, 12, 8, 6].map((h, j) => (
+                          <div key={j} className="rounded-full" style={{ width: 1, height: h, background: `${step.accent}${["cc","99","77","55","33"][j]}` }} />
+                        ))}
                       </div>
+                    </div>
 
-                      {/* Spacer — opposite column */}
-                      <div style={{ gridColumn: isLeft ? 3 : 1, gridRow: 1 }} />
+                    {/* Col 3 — card when isRight, empty when isLeft */}
+                    <div style={{ display: "flex", justifyContent: isLeft ? "flex-start" : "flex-end", paddingLeft: isLeft ? 24 : 0, paddingRight: isLeft ? 0 : 24 }}>
+                      {!isLeft && (
+                        <Reveal delay={i * 110} dir={1}>
+                          <div
+                            className="rounded-2xl p-5"
+                            style={{
+                              width: "min(100%, 340px)",
+                              background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+                              border: `1.5px solid ${step.accent}55`,
+                              boxShadow: `0 0 32px 0 ${step.accent}22, inset 0 1px 0 rgba(255,255,255,0.07)`,
+                            }}
+                          >
+                            <p className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1.5" style={{ color: step.accent }}>{step.num}</p>
+                            <p className="text-[15px] font-bold text-white mb-3">{step.title}</p>
+                            <ul className="flex flex-col gap-1.5">
+                              {step.bullets.map((b) => (
+                                <li key={b} className="flex items-start gap-2">
+                                  <span className="text-[10px] mt-0.5 shrink-0" style={{ color: step.accent }}>+</span>
+                                  <span className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>{b}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </Reveal>
+                      )}
                     </div>
                   </div>
                 );
@@ -2533,45 +2547,76 @@ function SectionMock({
             </div>
           </div>
 
-          {/* Mobile — vertical list with dots */}
-          <div className="sm:hidden flex flex-col gap-5 relative">
+          {/* Mobile zigzag — cards alternate left/right with a narrow centre line */}
+          <div className="sm:hidden relative" style={{ paddingLeft: 0, paddingRight: 0 }}>
+            {/* Centre spine */}
             <div
-              className="absolute left-3 top-2 bottom-2 w-px"
-              style={{ background: `linear-gradient(to bottom, transparent, ${PURPLE_BRIGHT}66, transparent)` }}
+              className="absolute top-0 bottom-0"
+              style={{ left: "50%", width: 1, transform: "translateX(-50%)", background: `linear-gradient(to bottom, transparent, ${PURPLE_BRIGHT}55, transparent)` }}
               aria-hidden
             />
-            {timelineSteps.map((step, i) => (
-              <Reveal key={step.num} delay={i * 80}>
-                <div className="flex items-start gap-4 pl-2">
-                  {/* dot */}
-                  <div className="relative shrink-0" style={{ marginTop: 14 }}>
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ background: step.accent, boxShadow: `0 0 10px 3px ${step.accent}66` }}
-                    />
-                  </div>
-                  {/* card */}
+            <div className="flex flex-col" style={{ gap: 28 }}>
+              {timelineSteps.map((step, i) => {
+                const isLeft = step.side === "left";
+                return (
                   <div
-                    className="flex-1 rounded-2xl p-4"
+                    key={step.num}
                     style={{
-                      background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
-                      border: `1.5px solid ${step.accent}44`,
+                      display: "grid",
+                      gridTemplateColumns: "1fr 28px 1fr",
+                      alignItems: "start",
                     }}
                   >
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-1" style={{ color: step.accent }}>{step.num}</p>
-                    <p className="text-[14px] font-bold text-white mb-2">{step.title}</p>
-                    <ul className="flex flex-col gap-1">
-                      {step.bullets.map((b) => (
-                        <li key={b} className="flex items-start gap-1.5">
-                          <span className="text-[10px] mt-0.5 shrink-0" style={{ color: step.accent }}>+</span>
-                          <span className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>{b}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    {/* Col 1 */}
+                    <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: 10 }}>
+                      {isLeft && (
+                        <Reveal delay={i * 80} dir={-1}>
+                          <div
+                            className="rounded-xl p-3"
+                            style={{
+                              background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+                              border: `1.5px solid ${step.accent}44`,
+                              boxShadow: `0 0 18px 0 ${step.accent}18`,
+                            }}
+                          >
+                            <p className="text-[9px] font-bold uppercase tracking-[0.18em] mb-1" style={{ color: step.accent }}>{step.num}</p>
+                            <p className="text-[13px] font-bold text-white mb-1.5">{step.title}</p>
+                            {step.bullets.map((b) => (
+                              <p key={b} className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>+ {b}</p>
+                            ))}
+                          </div>
+                        </Reveal>
+                      )}
+                    </div>
+                    {/* Col 2 — dot */}
+                    <div className="flex justify-center pt-3" style={{ zIndex: 2 }}>
+                      <div className="w-3 h-3 rounded-full shrink-0" style={{ background: step.accent, boxShadow: `0 0 10px 3px ${step.accent}66` }} />
+                    </div>
+                    {/* Col 3 */}
+                    <div style={{ display: "flex", justifyContent: "flex-start", paddingLeft: 10 }}>
+                      {!isLeft && (
+                        <Reveal delay={i * 80} dir={1}>
+                          <div
+                            className="rounded-xl p-3"
+                            style={{
+                              background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+                              border: `1.5px solid ${step.accent}44`,
+                              boxShadow: `0 0 18px 0 ${step.accent}18`,
+                            }}
+                          >
+                            <p className="text-[9px] font-bold uppercase tracking-[0.18em] mb-1" style={{ color: step.accent }}>{step.num}</p>
+                            <p className="text-[13px] font-bold text-white mb-1.5">{step.title}</p>
+                            {step.bullets.map((b) => (
+                              <p key={b} className="text-[10px] leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>+ {b}</p>
+                            ))}
+                          </div>
+                        </Reveal>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Reveal>
-            ))}
+                );
+              })}
+            </div>
           </div>
         </Reveal>
 
@@ -2742,11 +2787,11 @@ function ComingSoonBlock() {
   };
 
   return (
-    <div ref={blockRef} className="flex flex-col items-center" style={{ minHeight: 240 }}>
+    <div ref={blockRef} className="flex flex-col items-center" style={{ minHeight: 0, paddingBottom: 8 }}>
       {/* Feature — bare text only, no card/box */}
       <div style={{ ...cardStyle, width: "100%", maxWidth: 420, textAlign: "center" }}>
         <span
-          className="text-[10px] font-bold uppercase tracking-[0.25em] block mb-3"
+          className="text-[10px] font-bold uppercase tracking-[0.25em] block mb-2"
           style={{ color: "rgba(255,255,255,0.35)" }}
         >
           {active.num}
@@ -2755,18 +2800,18 @@ function ComingSoonBlock() {
           className="text-white m-0"
           style={{
             fontFamily: "'Anton', sans-serif",
-            fontSize: "clamp(1.6rem, 5vw, 2.6rem)",
+            fontSize: "clamp(1.4rem, 4.5vw, 2.2rem)",
             letterSpacing: "0.06em",
             lineHeight: 1.1,
           }}
         >
           {active.label}
         </h3>
-        <p className="text-sm mt-3" style={{ color: "rgba(255,255,255,0.4)" }}>{active.detail}</p>
+        <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.4)" }}>{active.detail}</p>
       </div>
 
       {/* Dot indicator */}
-      <div className="flex items-center gap-2 mt-5">
+      <div className="flex items-center gap-2 mt-4">
         {items.map((_, i) => (
           <div
             key={i}
