@@ -1935,8 +1935,6 @@ function PhantomWallet({
   neverslandItems,
   veDust,
   trades,
-  activeTab,
-  onTabChange,
 }: {
   bchogBalance: string;
   totalNetworkValue: number;
@@ -1945,15 +1943,8 @@ function PhantomWallet({
   neverslandItems: { k: string; v: string }[];
   veDust: VeDustData | undefined;
   trades: Trade[];
-  activeTab?: "network" | "tokens" | "defi" | "activity";
-  onTabChange?: (tab: "network" | "tokens" | "defi" | "activity") => void;
 }) {
-  const [internalTab, setInternalTab] = useState<"network" | "tokens" | "defi" | "activity">("network");
-  const walletTab = activeTab ?? internalTab;
-  const setWalletTab = (t: "network" | "tokens" | "defi" | "activity") => {
-    setInternalTab(t);
-    onTabChange?.(t);
-  };
+  const [walletTab, setWalletTab] = useState<"network" | "tokens" | "defi" | "activity">("network");
 
   const walletTabs: { id: "network" | "tokens" | "defi" | "activity"; label: string }[] = [
     { id: "network", label: "Wallet" },
@@ -2102,6 +2093,7 @@ function PhantomWallet({
               <div
                 className="flex flex-col pt-2 rounded-2xl mt-2"
                 style={{
+                  maxHeight: 420,
                   overflowY: "auto",
                   scrollbarWidth: "none",
                   position: "relative",
@@ -2250,6 +2242,7 @@ function PhantomWallet({
                   <div
                     className="flex flex-col rounded-2xl"
                     style={{
+                      maxHeight: 400,
                       overflowY: "auto",
                       scrollbarWidth: "none",
                       position: "relative",
@@ -2854,7 +2847,7 @@ function SectionMock({
     const bchogBalance = formatToken(stats.balances.trading, stats.decimals);
     const totalNetworkValue = memeTotal + (veDust?.valueUsd ?? 0);
 
-    return <TradingDeskScrollDriver
+    return <PhantomWallet
       bchogBalance={bchogBalance}
       totalNetworkValue={totalNetworkValue}
       memeTotal={memeTotal}
@@ -2871,179 +2864,6 @@ function SectionMock({
     return <ComingSoonBlock />;
   }
   return null;
-}
-
-function TradingDeskScrollDriver({
-  bchogBalance, totalNetworkValue, memeTotal, roster, neverslandItems, veDust, trades,
-}: {
-  bchogBalance: string; totalNetworkValue: number; memeTotal: number;
-  roster: PortfolioToken[]; neverslandItems: { k: string; v: string }[];
-  veDust: VeDustData | undefined; trades: Trade[];
-}) {
-  const TAB_ORDER = ["network", "tokens", "defi", "activity"] as const;
-  type Tab = typeof TAB_ORDER[number];
-
-  // locked = scroll is hijacked; false = released to normal page scroll
-  const [locked, setLocked]       = useState(false);
-  const [activeTab, setActiveTab] = useState<Tab>("network");
-
-  const lockedRef    = useRef(false);
-  const tabIndexRef  = useRef(0);
-  const advancingRef = useRef(false);
-  const sectionRef   = useRef<HTMLDivElement>(null);
-
-  // keep refs in sync
-  useEffect(() => { lockedRef.current = locked; }, [locked]);
-
-  // Lock scroll only once the section top is fully in view (near nav bar)
-  useEffect(() => {
-    const checkLock = () => {
-      const el = sectionRef.current;
-      if (!el || lockedRef.current || tabIndexRef.current > 0) return;
-      const rect = el.getBoundingClientRect();
-      // Top of section has reached the nav (~90px) — wallet is now fully visible
-      if (rect.top <= 90 && rect.top >= -40) {
-        lockedRef.current = true;
-        setLocked(true);
-      }
-    };
-    window.addEventListener("scroll", checkLock, { passive: true });
-    return () => window.removeEventListener("scroll", checkLock);
-  }, []);
-
-  const advanceTab = () => {
-    if (advancingRef.current) return;
-    const cur  = tabIndexRef.current;
-    const next = cur + 1;
-    if (next >= TAB_ORDER.length) {
-      // reached last tab — release scroll so page moves on
-      lockedRef.current = false;
-      setLocked(false);
-      return;
-    }
-    advancingRef.current = true;
-    tabIndexRef.current  = next;
-    setActiveTab(TAB_ORDER[next]);
-    setTimeout(() => { advancingRef.current = false; }, 600);
-    // after showing last tab, release scroll
-    if (next === TAB_ORDER.length - 1) {
-      setTimeout(() => { lockedRef.current = false; setLocked(false); }, 700);
-    }
-  };
-
-  const retreatTab = () => {
-    if (advancingRef.current) return;
-    const cur = tabIndexRef.current;
-    if (cur <= 0) {
-      // Already on first tab — release upward so user can scroll back up the page
-      lockedRef.current = false;
-      setLocked(false);
-      return;
-    }
-    advancingRef.current = true;
-    const prev = cur - 1;
-    tabIndexRef.current  = prev;
-    setActiveTab(TAB_ORDER[prev]);
-    setTimeout(() => { advancingRef.current = false; }, 600);
-    // Back to first tab → also release upward
-    if (prev === 0) {
-      setTimeout(() => { lockedRef.current = false; setLocked(false); }, 650);
-    }
-  };
-
-  // Intercept wheel + touch while locked; also intercept upward scroll at top of section
-  useEffect(() => {
-    let touchStartY = 0;
-
-    const onWheel = (e: WheelEvent) => {
-      if (!lockedRef.current) return;
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.deltaY > 0) advanceTab();
-      else retreatTab();
-    };
-
-    const onTouchStart = (e: TouchEvent) => { touchStartY = e.touches[0].clientY; };
-    const onTouchMove  = (e: TouchEvent) => {
-      if (!lockedRef.current) return;
-      const dy = touchStartY - e.touches[0].clientY;
-      if (dy > 30)       { e.preventDefault(); advanceTab(); }
-      else if (dy < -30) { e.preventDefault(); retreatTab(); }
-    };
-
-    window.addEventListener("wheel",      onWheel,      { passive: false });
-    window.addEventListener("touchstart", onTouchStart, { passive: true  });
-    window.addEventListener("touchmove",  onTouchMove,  { passive: false });
-    return () => {
-      window.removeEventListener("wheel",      onWheel);
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove",  onTouchMove);
-    };
-  }, []);
-
-  const handleManualTab = (t: Tab) => {
-    const idx = TAB_ORDER.indexOf(t);
-    tabIndexRef.current = idx;
-    setActiveTab(t);
-    // clicking a tab while unlocked should re-lock
-    if (!lockedRef.current && idx < TAB_ORDER.length - 1) {
-      lockedRef.current = true;
-      setLocked(true);
-    }
-    if (idx === TAB_ORDER.length - 1) {
-      setTimeout(() => { lockedRef.current = false; setLocked(false); }, 700);
-    }
-  };
-
-  return (
-    <div ref={sectionRef}>
-      {/* Scroll-progress indicator — subtle dots on the right edge */}
-      <div
-        className="fixed right-5 top-1/2 -translate-y-1/2 flex-col gap-2 z-50"
-        style={{ display: locked ? "flex" : "none" }}
-        aria-hidden
-      >
-        {TAB_ORDER.map((t, i) => (
-          <div
-            key={t}
-            style={{
-              width: activeTab === TAB_ORDER[i] ? 8 : 4,
-              height: activeTab === TAB_ORDER[i] ? 8 : 4,
-              borderRadius: "50%",
-              background: activeTab === TAB_ORDER[i] ? PURPLE_BRIGHT : "rgba(181,76,255,0.30)",
-              transition: "all 300ms ease",
-              boxShadow: activeTab === TAB_ORDER[i] ? `0 0 8px ${PURPLE_BRIGHT}` : "none",
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Scroll hint */}
-      <div
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none z-50"
-        style={{ opacity: locked ? 1 : 0, transition: "opacity 500ms ease" }}
-        aria-hidden
-      >
-        <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.35)" }}>
-          {tabIndexRef.current < TAB_ORDER.length - 1 ? "Scroll to explore" : "Scroll to continue"}
-        </span>
-        <div className="w-px h-5 rounded-full" style={{ background: `linear-gradient(to bottom, transparent, ${PURPLE_BRIGHT})` }} />
-        <div style={{ width: 0, height: 0, borderLeft: "4px solid transparent", borderRight: "4px solid transparent", borderTop: `5px solid ${PURPLE_BRIGHT}` }} />
-      </div>
-
-      <PhantomWallet
-        bchogBalance={bchogBalance}
-        totalNetworkValue={totalNetworkValue}
-        memeTotal={memeTotal}
-        roster={roster}
-        neverslandItems={neverslandItems}
-        veDust={veDust}
-        trades={trades}
-        activeTab={activeTab}
-        onTabChange={handleManualTab}
-      />
-    </div>
-  );
 }
 
 function ContestsCollabs() {
