@@ -2895,22 +2895,20 @@ function TradingDeskScrollDriver({
   // keep refs in sync
   useEffect(() => { lockedRef.current = locked; }, [locked]);
 
-  // Lock scroll when the section enters the viewport
+  // Lock scroll only once the section top is fully in view (near nav bar)
   useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        // When section scrolls into view and user hasn't passed it yet → lock
-        if (entry.isIntersecting && tabIndexRef.current === 0) {
-          lockedRef.current = true;
-          setLocked(true);
-        }
-      },
-      { threshold: 0.3 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
+    const checkLock = () => {
+      const el = sectionRef.current;
+      if (!el || lockedRef.current || tabIndexRef.current > 0) return;
+      const rect = el.getBoundingClientRect();
+      // Top of section has reached the nav (~90px) — wallet is now fully visible
+      if (rect.top <= 90 && rect.top >= -40) {
+        lockedRef.current = true;
+        setLocked(true);
+      }
+    };
+    window.addEventListener("scroll", checkLock, { passive: true });
+    return () => window.removeEventListener("scroll", checkLock);
   }, []);
 
   const advanceTab = () => {
@@ -2936,14 +2934,21 @@ function TradingDeskScrollDriver({
   const retreatTab = () => {
     if (advancingRef.current) return;
     const cur = tabIndexRef.current;
-    if (cur <= 0) return;
-    // re-lock if user scrolls back up
-    if (!lockedRef.current) { lockedRef.current = true; setLocked(true); }
+    if (cur <= 0) {
+      // Already on first tab — release upward so user can scroll back up the page
+      lockedRef.current = false;
+      setLocked(false);
+      return;
+    }
     advancingRef.current = true;
     const prev = cur - 1;
     tabIndexRef.current  = prev;
     setActiveTab(TAB_ORDER[prev]);
     setTimeout(() => { advancingRef.current = false; }, 600);
+    // Back to first tab → also release upward
+    if (prev === 0) {
+      setTimeout(() => { lockedRef.current = false; setLocked(false); }, 650);
+    }
   };
 
   // Intercept wheel + touch while locked; also intercept upward scroll at top of section
@@ -2951,22 +2956,7 @@ function TradingDeskScrollDriver({
     let touchStartY = 0;
 
     const onWheel = (e: WheelEvent) => {
-      // If not locked but user scrolls up and section top is in view → re-enter
-      if (!lockedRef.current) {
-        if (e.deltaY < 0 && tabIndexRef.current > 0) {
-          const el = sectionRef.current;
-          if (el) {
-            const rect = el.getBoundingClientRect();
-            if (rect.top >= -100 && rect.top <= window.innerHeight) {
-              e.preventDefault();
-              e.stopPropagation();
-              retreatTab();
-              return;
-            }
-          }
-        }
-        return;
-      }
+      if (!lockedRef.current) return;
       e.preventDefault();
       e.stopPropagation();
       if (e.deltaY > 0) advanceTab();
@@ -2995,7 +2985,11 @@ function TradingDeskScrollDriver({
     const idx = TAB_ORDER.indexOf(t);
     tabIndexRef.current = idx;
     setActiveTab(t);
-    // if user manually clicks last tab, unlock
+    // clicking a tab while unlocked should re-lock
+    if (!lockedRef.current && idx < TAB_ORDER.length - 1) {
+      lockedRef.current = true;
+      setLocked(true);
+    }
     if (idx === TAB_ORDER.length - 1) {
       setTimeout(() => { lockedRef.current = false; setLocked(false); }, 700);
     }
