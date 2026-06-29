@@ -458,9 +458,8 @@ function SiteHeader({
   return (
     <>
       <div className="fixed top-4 sm:top-5 inset-x-0 z-[100] flex justify-center px-4 pointer-events-none">
-// Navbar — smaller height, perfectly centered nav
         <header
-          className="pointer-events-auto w-[82%] max-w-[1080px] min-w-[300px] h-11 sm:h-12 rounded-full flex items-center justify-between px-4 sm:px-6 relative"
+          className="pointer-events-auto w-[82%] max-w-[1080px] min-w-[300px] h-14 sm:h-[60px] rounded-full flex items-center justify-between px-5 sm:px-7 relative"
           style={{
             background: "rgba(18, 5, 42, 0.55)",
             backdropFilter: "blur(20px)",
@@ -470,25 +469,27 @@ function SiteHeader({
           }}
         >
           <a href="#top" className="flex items-center gap-2 no-underline shrink-0" style={{ color: "white" }}>
-            <img src={TOKEN_LOGO} alt="BCHOG" className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover" />
-            <span className="text-xs sm:text-sm font-semibold tracking-[0.16em] uppercase">BCHOG</span>
+            <img src={TOKEN_LOGO} alt="BCHOG" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover" />
+            <span className="text-sm font-semibold tracking-[0.16em] uppercase">BCHOG</span>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-0 absolute left-1/2 -translate-x-1/2">
+          <nav className="hidden lg:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2">
             {SECTIONS.map((s) => (
               <button
                 type="button"
                 key={s.id}
                 onClick={() => scrollToId(s.id)}
-                className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06]"
+                className="px-3.5 py-1.5 text-[12px] font-semibold uppercase tracking-[0.1em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06]"
                 style={{ color: MUTED }}
               >
                 {s.short}
                 {s.soon && (
                   <span
-                    className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full align-middle"
-                    style={{ background: CORAL }}
-                  />
+                    className="ml-1.5 text-[9px] font-bold uppercase tracking-[0.1em] align-middle"
+                    style={{ color: CORAL }}
+                  >
+                    soon
+                  </span>
                 )}
               </button>
             ))}
@@ -585,7 +586,7 @@ function LandingHero() {
     imageIndexRef.current = imageIndex;
   }, [imageIndex]);
 
-  // Advance image index, unlock scroll after last image is shown
+  // Advance image index forward, unlock scroll after last image is shown
   const advanceImage = () => {
     if (advancingRef.current) return;
     const cur = imageIndexRef.current;
@@ -599,9 +600,7 @@ function LandingHero() {
     advancingRef.current = true;
     imageIndexRef.current = next;
     setImageIndex(next);
-    // debounce: don't allow another advance for 800ms
     setTimeout(() => { advancingRef.current = false; }, 800);
-    // if this was the last image, also schedule unlock
     if (next === HERO_IMAGES.length - 1) {
       setTimeout(() => {
         lockedRef.current = false;
@@ -610,16 +609,44 @@ function LandingHero() {
     }
   };
 
+  // Go back one image (scroll up while on hero or when page is at top)
+  const retreatImage = () => {
+    if (advancingRef.current) return;
+    const cur = imageIndexRef.current;
+    if (cur <= 0) return; // already at first image
+    // re-lock scroll so user can cycle again
+    if (!lockedRef.current) {
+      lockedRef.current = true;
+      setLocked(true);
+    }
+    advancingRef.current = true;
+    const prev = cur - 1;
+    imageIndexRef.current = prev;
+    setImageIndex(prev);
+    setTimeout(() => { advancingRef.current = false; }, 800);
+  };
+
   // Intercept wheel and touch events while locked
   useEffect(() => {
     let touchStartY = 0;
 
     const onWheel = (e: WheelEvent) => {
-      if (!lockedRef.current) return;
+      // When page is scrolled back to the very top, intercept upward scroll to retreat images
+      if (!lockedRef.current) {
+        if (e.deltaY < 0 && window.scrollY <= 0 && imageIndexRef.current > 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          retreatImage();
+          return;
+        }
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
       if (e.deltaY > 0) {
-        e.preventDefault();
-        e.stopPropagation();
         advanceImage();
+      } else if (e.deltaY < 0) {
+        retreatImage();
       }
     };
 
@@ -627,11 +654,21 @@ function LandingHero() {
       touchStartY = e.touches[0].clientY;
     };
     const onTouchMove = (e: TouchEvent) => {
-      if (!lockedRef.current) return;
+      if (!lockedRef.current) {
+        const dy = touchStartY - e.touches[0].clientY;
+        if (dy < -30 && window.scrollY <= 0 && imageIndexRef.current > 0) {
+          e.preventDefault();
+          retreatImage();
+        }
+        return;
+      }
       const dy = touchStartY - e.touches[0].clientY;
       if (dy > 30) {
         e.preventDefault();
         advanceImage();
+      } else if (dy < -30) {
+        e.preventDefault();
+        retreatImage();
       }
     };
 
@@ -1654,102 +1691,220 @@ function SectionMock({
     const circPct = percentOf(circulating, stats.totalSupply);
     const holderPct = market.holders ? Math.min((market.holders / 500) * 100, 100) : 0;
 
-    const burnBars = [42, 58, 48, 72, 65, 88, 76, 94];
-    const capArea = [22, 28, 25, 34, 31, 38, 42, 45];
-    const treasuryCurrent = Number(stats.balances.treasury ?? 0n) / Number(scaledDivisor(stats.decimals));
-    const lockTargetNum = Number(LOCK_TARGET);
+    // Simulated weekly burn history bars (most recent = rightmost)
+    const burnBars = [32, 45, 38, 55, 62, 70, 58, 80, 74, 92, 85, 100, 94, 88, 78];
+    // Market cap area sparkline
+    const capArea = [18, 24, 20, 28, 32, 27, 36, 40, 35, 44, 48, 43, 52, 50, 58];
+
+    // Colored top-stat cards (like HR dashboard)
+    const topCards = [
+      {
+        label: "Total Burned",
+        value: formatToken(stats.balances.burn, stats.decimals),
+        sub: "BCHOG removed",
+        bg: "linear-gradient(135deg, #7A2DFF 0%, #B54CFF 100%)",
+        icon: "🔥",
+      },
+      {
+        label: "Supply Locked",
+        value: `${Math.round(lockPct)}%`,
+        sub: "of total supply",
+        bg: "linear-gradient(135deg, #2d1a6e 0%, #4a2fa0 100%)",
+        icon: "🔒",
+      },
+      {
+        label: "Holders",
+        value: formatCount(market.holders),
+        sub: "unique wallets",
+        bg: "linear-gradient(135deg, #1a3a6e 0%, #2a5fa0 100%)",
+        icon: "👥",
+      },
+      {
+        label: "Market Cap",
+        value: formatUsd(market.marketCapUsd),
+        sub: market.priceUsd ? `$${Number(market.priceUsd).toPrecision(3)} per token` : "live price",
+        bg: "linear-gradient(135deg, #1a5040 0%, #2a8060 100%)",
+        icon: "📈",
+      },
+    ];
+
+    // Supply breakdown table rows
+    const supplyRows = [
+      { label: "Burned", value: formatToken(stats.balances.burn, stats.decimals), pct: burnedPct, color: CORAL },
+      { label: "Treasury", value: formatToken(stats.balances.treasury, stats.decimals), pct: treasuryPct, color: CREAM },
+      { label: "Trading", value: formatToken(stats.balances.trading, stats.decimals), pct: tradingPct, color: PURPLE_BRIGHT },
+      { label: "Locked", value: formatToken(lockedTotal, stats.decimals), pct: lockPct, color: "#4adeae" },
+      { label: "Circulating", value: formatToken(circulating, stats.decimals), pct: circPct, color: "#60a5fa" },
+    ];
 
     return (
       <div className="flex flex-col gap-4 sm:gap-5">
+        {/* Row 1: Colored stat cards */}
         <Reveal>
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-            <DashCard title="Total Burned" value={formatToken(stats.balances.burn, stats.decimals)}>
-              <SparkBars values={burnBars} highlight={6} />
-            </DashCard>
-            <DashCard title="Supply Locked" value={`${Math.round(lockPct)}%`}>
-              <DonutChart
-                segments={[
-                  { value: lockPct, label: "locked" },
-                  { value: Math.max(100 - lockPct, 1), label: "free" },
-                ]}
-              />
-            </DashCard>
-            <DashCard title="Holders" value={formatCount(market.holders)}>
-              <RingProgress pct={holderPct} />
-            </DashCard>
-            <DashCard title="Market Cap" value={formatUsd(market.marketCapUsd)}>
-              <SparkArea values={capArea} />
-            </DashCard>
-            <DashCard
-              title="Treasury"
-              value={formatToken(stats.balances.treasury, stats.decimals)}
-              className="col-span-2 lg:col-span-1"
-            >
-              <TargetCompare current={treasuryCurrent} target={lockTargetNum * 0.25} />
-            </DashCard>
-          </div>
-        </Reveal>
-
-        <Reveal delay={80}>
-          <div
-            className="rounded-xl px-5 py-4"
-            style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
-          >
-            <div className="flex items-baseline justify-between gap-4">
-              <p className="text-[11px] font-medium uppercase tracking-[0.08em]" style={{ color: MUTED }}>
-                Lock Holding
-              </p>
-              <p className="bchog-stat-value text-xl sm:text-2xl font-semibold text-white">
-                {formatToken(stats.balances.lockHolding, stats.decimals)}
-              </p>
-            </div>
-            <div className="h-4 rounded-full overflow-hidden mt-3" style={{ background: INDIGO }}>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {topCards.map((c) => (
               <div
-                className="h-full rounded-full"
-                style={{ width: `${lockProgress}%`, background: PURPLE_BRIGHT }}
-              />
-            </div>
+                key={c.label}
+                className="rounded-2xl p-4 sm:p-5 flex flex-col gap-1 relative overflow-hidden"
+                style={{ background: c.bg, boxShadow: "0 4px 24px rgba(0,0,0,0.3)" }}
+              >
+                <span className="text-2xl absolute top-4 right-4 opacity-30 select-none">{c.icon}</span>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/70">{c.label}</p>
+                <p className="text-[clamp(1.4rem,4vw,2rem)] font-bold text-white leading-tight">{c.value}</p>
+                <p className="text-[10px] text-white/50">{c.sub}</p>
+              </div>
+            ))}
           </div>
         </Reveal>
 
-        <Reveal delay={120}>
+        {/* Row 2: Burn chart + Donut breakdown side by side */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Reveal delay={60} className="lg:col-span-2">
+            <div
+              className="rounded-2xl p-5 sm:p-6 h-full"
+              style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: PURPLE_BRIGHT }}>
+                    Burn Activity
+                  </p>
+                  <p className="text-[10px] mt-0.5" style={{ color: MUTED }}>Weekly burn trend</p>
+                </div>
+                <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: "rgba(181,76,255,0.15)", color: PURPLE_BRIGHT }}>
+                  LIVE
+                </span>
+              </div>
+              {/* Bar chart */}
+              <svg viewBox="0 0 300 80" className="w-full" style={{ height: 80 }} aria-hidden>
+                {burnBars.map((v, i) => {
+                  const h = (v / 100) * 68;
+                  const isLast = i === burnBars.length - 1;
+                  return (
+                    <g key={i}>
+                      <rect
+                        x={4 + i * 19.5}
+                        y={72 - h}
+                        width={14}
+                        height={h}
+                        rx={4}
+                        fill={isLast ? PURPLE_BRIGHT : "rgba(181,76,255,0.35)"}
+                      />
+                      {isLast && (
+                        <text x={4 + i * 19.5 + 7} y={72 - h - 5} textAnchor="middle" fontSize="7" fill={PURPLE_BRIGHT}>
+                          {formatToken(stats.balances.burn, stats.decimals)}
+                        </text>
+                      )}
+                    </g>
+                  );
+                })}
+              </svg>
+              {/* Lock progress bar */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] uppercase tracking-[0.08em]" style={{ color: MUTED }}>Lock Progress to 1M</span>
+                  <span className="text-[11px] font-bold" style={{ color: PURPLE_BRIGHT }}>{Math.round(lockProgress)}%</span>
+                </div>
+                <div className="h-2.5 rounded-full overflow-hidden" style={{ background: INDIGO }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 100%)` }}
+                  />
+                </div>
+              </div>
+              {/* Market cap sparkline */}
+              <div className="mt-4">
+                <p className="text-[10px] uppercase tracking-[0.08em] mb-1.5" style={{ color: MUTED }}>Market Cap Trend</p>
+                <SparkArea values={capArea} />
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal delay={100}>
+            <div
+              className="rounded-2xl p-5 sm:p-6 flex flex-col gap-4 h-full"
+              style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
+            >
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: PURPLE_BRIGHT }}>
+                Supply Split
+              </p>
+              {/* Donut + legend */}
+              <div className="flex items-center justify-center">
+                <DonutChart
+                  segments={[
+                    { value: burnedPct, label: "Burned" },
+                    { value: lockPct, label: "Locked" },
+                    { value: treasuryPct, label: "Treasury" },
+                    { value: tradingPct, label: "Trading" },
+                    { value: Math.max(circPct, 1), label: "Circulating" },
+                  ]}
+                />
+              </div>
+              {/* Holders ring */}
+              <div className="flex items-center gap-3 mt-auto">
+                <RingProgress pct={holderPct} />
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.08em]" style={{ color: MUTED }}>Holder Goal</p>
+                  <p className="text-lg font-bold text-white">{formatCount(market.holders)}</p>
+                  <p className="text-[10px]" style={{ color: MUTED }}>{Math.round(holderPct)}% of 500 target</p>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+
+        {/* Row 3: Supply breakdown table */}
+        <Reveal delay={140}>
           <div
-            className="rounded-xl p-5 sm:p-6"
+            className="rounded-2xl overflow-hidden"
             style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
           >
-            <SectionLabel>Supply breakdown</SectionLabel>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-5">
-              {[
-                { label: "Burned", pct: burnedPct },
-                { label: "Treasury", pct: treasuryPct },
-                { label: "Trading", pct: tradingPct },
-                { label: "Locked", pct: lockPct },
-                { label: "Circulating", pct: circPct },
-              ].map((s) => (
-                <div key={s.label}>
-                  <p className="text-[10px] uppercase tracking-[0.08em]" style={{ color: MUTED }}>
-                    {s.label}
-                  </p>
-                  <p className="text-xl font-semibold text-white mt-1">{Math.round(s.pct)}%</p>
-                  <div className="h-4 rounded-full mt-2 overflow-hidden" style={{ background: INDIGO }}>
-                    <div className="h-full rounded-full" style={{ width: `${s.pct}%`, background: PURPLE_BRIGHT }} />
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: PURPLE_BRIGHT }}>
+                Supply Breakdown
+              </p>
+              <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: PURPLE_BRIGHT }} />
+                Live on-chain
+              </span>
             </div>
-          </div>
-        </Reveal>
-
-        <Reveal delay={160}>
-          <div
-            className="flex items-center justify-between text-[10px] uppercase tracking-[0.12em] pt-1"
-            style={{ color: MUTED }}
-          >
-            <span>Live on-chain data · refreshes every 60s</span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: PURPLE_BRIGHT }} />
-              Live
-            </span>
+            {/* Header */}
+            <div className="grid grid-cols-4 px-5 py-2 text-[10px] uppercase tracking-[0.08em]" style={{ color: MUTED, borderBottom: `1px solid ${BORDER}` }}>
+              <span>Wallet</span>
+              <span className="text-right">Amount</span>
+              <span className="text-right">% of Supply</span>
+              <span className="text-right">Status</span>
+            </div>
+            {supplyRows.map((row) => (
+              <div
+                key={row.label}
+                className="grid grid-cols-4 px-5 py-3 items-center transition-colors hover:bg-white/[0.03]"
+                style={{ borderBottom: `1px solid ${BORDER}` }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: row.color }} />
+                  <span className="text-sm font-medium text-white">{row.label}</span>
+                </div>
+                <span className="text-sm font-mono text-right text-white">{row.value}</span>
+                <div className="flex items-center justify-end gap-2">
+                  <div className="h-1.5 rounded-full overflow-hidden w-16" style={{ background: INDIGO }}>
+                    <div className="h-full rounded-full" style={{ width: `${row.pct}%`, background: row.color }} />
+                  </div>
+                  <span className="text-[11px] font-mono" style={{ color: row.color }}>{Math.round(row.pct)}%</span>
+                </div>
+                <div className="flex justify-end">
+                  <span
+                    className="px-2 py-0.5 rounded text-[10px] font-bold uppercase"
+                    style={{
+                      background: row.label === "Circulating" ? "rgba(96,165,250,0.15)" : row.label === "Burned" ? "rgba(255,92,138,0.15)" : "rgba(181,76,255,0.15)",
+                      color: row.label === "Circulating" ? "#60a5fa" : row.label === "Burned" ? CORAL : PURPLE_BRIGHT,
+                    }}
+                  >
+                    {row.label === "Burned" ? "Burned" : row.label === "Circulating" ? "Active" : "Locked"}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </Reveal>
       </div>
@@ -1794,137 +1949,205 @@ function SectionMock({
     ];
     return (
       <div className="flex flex-col gap-5">
-        {/* Stat cards */}
+
+        {/* ── Row 1: Stat cards ── */}
         <Reveal>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
-              { dot: STAT_DOTS.green, label: "Trading Wallet", value: formatToken(stats.balances.trading, stats.decimals), sub: "BCHOG" },
-              { dot: STAT_DOTS.purple, label: "Meme Portfolio", value: memeTotal > 0 ? formatUsd(memeTotal) : "$---", sub: undefined },
-              { dot: STAT_DOTS.cream, label: "veDUST Value", value: veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---", sub: undefined },
-              { dot: STAT_DOTS.pink, label: "Weekly Yield", value: veDust?.weeklyUsd ? formatUsd(veDust.weeklyUsd) : "$---", sub: "USDC" },
+              {
+                dot: STAT_DOTS.purple,
+                label: "Trading Wallet",
+                value: formatToken(stats.balances.trading, stats.decimals),
+                sub: "BCHOG",
+                bg: "linear-gradient(135deg, rgba(122,45,255,0.35) 0%, rgba(181,76,255,0.2) 100%)",
+              },
+              {
+                dot: STAT_DOTS.cream,
+                label: "Meme Portfolio",
+                value: memeTotal > 0 ? formatUsd(memeTotal) : "$---",
+                sub: `${roster.length} tokens`,
+                bg: "linear-gradient(135deg, rgba(255,232,180,0.18) 0%, rgba(255,232,180,0.08) 100%)",
+              },
+              {
+                dot: STAT_DOTS.green,
+                label: "veDUST Value",
+                value: veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---",
+                sub: veDust ? `${veDust.nfts} NFTs` : "---",
+                bg: "linear-gradient(135deg, rgba(74,222,174,0.2) 0%, rgba(74,222,174,0.08) 100%)",
+              },
+              {
+                dot: STAT_DOTS.pink,
+                label: "Weekly Yield",
+                value: veDust?.weeklyUsd ? formatUsd(veDust.weeklyUsd) : "$---",
+                sub: "USDC",
+                bg: "linear-gradient(135deg, rgba(255,92,138,0.25) 0%, rgba(255,92,138,0.1) 100%)",
+              },
             ].map((s) => (
               <div
                 key={s.label}
-                className="rounded-xl p-4 flex flex-col"
+                className="rounded-2xl p-4 sm:p-5 flex flex-col gap-1"
                 style={{
-                  background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+                  background: s.bg,
                   border: `1px solid ${BORDER_STRONG}`,
-                  boxShadow: `0 0 14px 1px rgba(122,45,255,0.12)`,
+                  boxShadow: `0 0 20px 2px rgba(122,45,255,0.12)`,
                 }}
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full shrink-0" style={{ background: s.dot }} />
-                  <span className="text-[10px] font-medium uppercase tracking-[0.1em]" style={{ color: MUTED }}>{s.label}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ color: MUTED }}>{s.label}</span>
                 </div>
-                <div className="bchog-stat-value text-[clamp(1.1rem,3vw,1.6rem)] font-bold text-white">{s.value}</div>
-                {s.sub && <div className="text-[9px] mt-0.5 uppercase tracking-[0.1em]" style={{ color: MUTED }}>{s.sub}</div>}
+                <div className="text-[clamp(1.2rem,3.5vw,1.7rem)] font-bold text-white leading-tight">{s.value}</div>
+                {s.sub && <div className="text-[10px] uppercase tracking-[0.08em]" style={{ color: MUTED }}>{s.sub}</div>}
               </div>
             ))}
           </div>
         </Reveal>
 
-        {/* Two-column on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {/* Left: Meme Portfolio horizontal scroll + veDUST vault */}
-          <div className="flex flex-col gap-4">
-            <Reveal>
-              <div
-                className="rounded-xl p-4 sm:p-5"
-                style={{ background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`, border: `1px solid ${BORDER_STRONG}` }}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>Meme Portfolio</span>
-                  {memeTotal > 0 && <span className="text-xs font-semibold text-white">{formatUsd(memeTotal)}</span>}
-                </div>
-                {roster.length === 0 ? (
-                  <div className="text-sm py-4" style={{ color: MUTED }}>Loading holdings…</div>
-                ) : (
-                  /* Horizontal scroll — shows ~5 cards, wraps to next line */
-                  <div
-                    className="no-scrollbar overflow-x-auto"
-                    style={{ scrollbarWidth: "none" }}
-                  >
-                    <div className="flex gap-2" style={{ width: "max-content" }}>
-                      {roster.map((t) => (
-                        <a
-                          key={t.address}
-                          href={explorerToken(t.address)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex-shrink-0 flex flex-col items-center rounded-xl p-3 no-underline text-white transition-all hover:scale-[1.03]"
-                          style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}`, width: 88 }}
-                        >
-                          <div className="w-9 h-9 rounded-full overflow-hidden mb-2" style={{ background: PANEL, border: `1px solid ${BORDER}` }}>
-                            {t.iconUrl && <img src={t.iconUrl} alt="" className="w-full h-full object-cover" draggable={false} />}
-                          </div>
-                          <div className="text-[10px] font-semibold uppercase truncate w-full text-center">{t.symbol}</div>
-                          <div className="text-[11px] font-bold mt-0.5" style={{ color: PURPLE_BRIGHT }}>{formatUsd(t.valueUsd)}</div>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Reveal>
-
-            <Reveal delay={60}>
-              <div
-                className="rounded-xl p-4 sm:p-5"
-                style={{ background: `linear-gradient(160deg, ${PANEL} 0%, ${INDIGO} 100%)`, border: `1px solid ${BORDER_STRONG}`, boxShadow: `0 0 18px 2px rgba(61,20,136,0.28)` }}
-              >
-                <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>Neverland veDUST Vault</span>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
-                  {vault.map((r) => (
-                    <div key={r.k} className="rounded-lg p-2.5" style={{ background: "rgba(0,0,0,0.22)" }}>
-                      <div className="text-[9px] uppercase tracking-[0.08em]" style={{ color: MUTED }}>{r.k}</div>
-                      <div className="bchog-stat-value text-sm font-bold text-white mt-1">{r.v}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Reveal>
-          </div>
-
-          {/* Right: Recent Trades */}
-          <Reveal delay={100}>
+        {/* ── Row 2: Token portfolio scroll + veDUST vault ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Reveal className="lg:col-span-2">
             <div
-              className="rounded-xl p-4 sm:p-5 h-full"
-              style={{ background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`, border: `1px solid ${BORDER_STRONG}` }}
+              className="rounded-2xl p-4 sm:p-5"
+              style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
             >
-              <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>Recent Trades</span>
-              <div className="mt-3 flex flex-col gap-0.5">
-                {market.trades.length === 0 ? (
-                  <div className="text-sm py-4" style={{ color: MUTED }}>Loading recent trades…</div>
-                ) : (
-                  market.trades.map((t) => (
-                    <a
-                      key={t.hash}
-                      href={explorerTx(t.hash)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-3 no-underline rounded-lg px-3 py-2.5 transition-colors hover:bg-white/[0.04]"
-                      style={{ color: "white", borderBottom: `1px solid ${BORDER}` }}
-                    >
-                      <span
-                        className="px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0"
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>Meme Portfolio</span>
+                {memeTotal > 0 && <span className="text-xs font-semibold text-white">{formatUsd(memeTotal)}</span>}
+              </div>
+              {roster.length === 0 ? (
+                <div className="text-sm py-4" style={{ color: MUTED }}>Loading holdings…</div>
+              ) : (
+                <div className="no-scrollbar overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+                  <div className="flex gap-2.5" style={{ width: "max-content" }}>
+                    {roster.map((t) => (
+                      <a
+                        key={t.address}
+                        href={explorerToken(t.address)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-shrink-0 flex flex-col items-center rounded-2xl p-3 no-underline text-white transition-all hover:scale-[1.05] hover:shadow-lg"
                         style={{
-                          background: t.type === "BUY" ? "rgba(122,45,255,0.25)" : "rgba(255,92,138,0.18)",
-                          color: t.type === "BUY" ? PURPLE_BRIGHT : CORAL,
-                          border: `1px solid ${t.type === "BUY" ? PURPLE : CORAL}`,
+                          background: `linear-gradient(145deg, ${PANEL} 0%, ${INDIGO} 100%)`,
+                          border: `1px solid ${BORDER_STRONG}`,
+                          width: 88,
+                          boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
                         }}
                       >
-                        {t.type}
-                      </span>
-                      <span className="flex-1 text-sm font-medium truncate">{compactAmount(t.tokenAmount)} BCHOG</span>
-                      <span className="text-sm font-mono shrink-0" style={{ color: CREAM }}>{formatUsd(t.valueUsd)}</span>
-                      <span className="text-[10px] w-7 text-right shrink-0" style={{ color: MUTED }}>{timeAgo(t.ts)}</span>
-                    </a>
-                  ))
-                )}
+                        <div
+                          className="w-10 h-10 rounded-full overflow-hidden mb-2 flex items-center justify-center"
+                          style={{ background: PANEL, border: `1.5px solid ${BORDER_STRONG}` }}
+                        >
+                          {t.iconUrl
+                            ? <img src={t.iconUrl} alt="" className="w-full h-full object-cover" draggable={false} />
+                            : <span className="text-xs font-bold" style={{ color: PURPLE_BRIGHT }}>{t.symbol.slice(0, 2)}</span>
+                          }
+                        </div>
+                        <div className="text-[10px] font-bold uppercase truncate w-full text-center tracking-wide">{t.symbol}</div>
+                        <div className="text-[11px] font-bold mt-0.5" style={{ color: t.valueUsd > 100 ? "#4adeae" : PURPLE_BRIGHT }}>
+                          {formatUsd(t.valueUsd)}
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Reveal>
+
+          <Reveal delay={60}>
+            <div
+              className="rounded-2xl p-4 sm:p-5 h-full"
+              style={{
+                background: `linear-gradient(160deg, ${PANEL} 0%, ${INDIGO} 100%)`,
+                border: `1px solid ${BORDER_STRONG}`,
+                boxShadow: `0 0 24px 3px rgba(61,20,136,0.35)`,
+              }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "rgba(181,76,255,0.2)" }}>
+                  <span style={{ fontSize: 10 }}>✦</span>
+                </div>
+                <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>Neverland veDUST</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {vault.map((r) => (
+                  <div key={r.k} className="rounded-xl p-3" style={{ background: "rgba(0,0,0,0.25)" }}>
+                    <div className="text-[9px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>{r.k}</div>
+                    <div className="text-sm font-bold text-white mt-1">{r.v}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </Reveal>
         </div>
+
+        {/* ── Row 3: Recent Trades — full width, beautiful table ── */}
+        <Reveal delay={80}>
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
+          >
+            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
+              <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>
+                Recent Trades
+              </span>
+              <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#4adeae" }} />
+                Live feed
+              </span>
+            </div>
+            {/* Table header */}
+            <div
+              className="grid px-5 py-2.5 text-[10px] uppercase tracking-[0.08em]"
+              style={{ color: MUTED, borderBottom: `1px solid ${BORDER}`, gridTemplateColumns: "60px 1fr 120px 100px 60px" }}
+            >
+              <span>Type</span>
+              <span>Wallet</span>
+              <span className="text-right">Amount</span>
+              <span className="text-right">Value</span>
+              <span className="text-right">Time</span>
+            </div>
+            {market.trades.length === 0 ? (
+              <div className="px-5 py-8 text-sm text-center" style={{ color: MUTED }}>Loading recent trades…</div>
+            ) : (
+              market.trades.map((t, idx) => (
+                <a
+                  key={t.hash}
+                  href={explorerTx(t.hash)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="grid items-center px-5 py-3.5 no-underline transition-colors hover:bg-white/[0.04]"
+                  style={{
+                    color: "white",
+                    borderBottom: idx < market.trades.length - 1 ? `1px solid ${BORDER}` : undefined,
+                    gridTemplateColumns: "60px 1fr 120px 100px 60px",
+                  }}
+                >
+                  <span
+                    className="px-2 py-1 rounded-lg text-[10px] font-bold uppercase w-fit"
+                    style={{
+                      background: t.type === "BUY" ? "rgba(74,222,174,0.15)" : "rgba(255,92,138,0.15)",
+                      color: t.type === "BUY" ? "#4adeae" : CORAL,
+                      border: `1px solid ${t.type === "BUY" ? "rgba(74,222,174,0.35)" : "rgba(255,92,138,0.35)"}`,
+                    }}
+                  >
+                    {t.type}
+                  </span>
+                  <span className="text-[11px] font-mono truncate px-2" style={{ color: MUTED }}>
+                    {t.account ? `${t.account.slice(0, 6)}…${t.account.slice(-4)}` : "—"}
+                  </span>
+                  <span className="text-sm font-semibold text-right text-white">
+                    {compactAmount(t.tokenAmount)} <span className="text-[10px]" style={{ color: MUTED }}>BCHOG</span>
+                  </span>
+                  <span className="text-sm font-bold text-right" style={{ color: t.type === "BUY" ? "#4adeae" : CORAL }}>
+                    {formatUsd(t.valueUsd)}
+                  </span>
+                  <span className="text-[11px] font-mono text-right" style={{ color: MUTED }}>{timeAgo(t.ts)}</span>
+                </a>
+              ))
+            )}
+          </div>
+        </Reveal>
       </div>
     );
   }
