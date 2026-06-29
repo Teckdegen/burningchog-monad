@@ -1713,9 +1713,10 @@ function SectionMock({
 
     return (
       <div className="flex flex-col gap-4">
-        {/* Stat card row — orange accent dark navy like screenshot */}
+        {/* Stat card row */}
         <Reveal>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="overflow-x-auto -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
+            <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))", minWidth: 480 }}>
             {[
               {
                 label: "MARKET CAP",
@@ -1766,6 +1767,7 @@ function SectionMock({
               </div>
             ))}
           </div>
+          </div>
         </Reveal>
 
         {/* Lock progress bar */}
@@ -1804,7 +1806,8 @@ function SectionMock({
             <p className="text-[11px] font-bold uppercase tracking-[0.1em] mb-4" style={{ color: DB_MUTED }}>
               Supply Breakdown
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="overflow-x-auto -mx-1 px-1 mt-4" style={{ scrollbarWidth: "none" }}>
+              <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(5, minmax(0, 1fr))", minWidth: 480 }}>
               {[
                 { label: "Burned", pct: burnedPct, color: CORAL },
                 { label: "Treasury", pct: treasuryPct, color: PURPLE_BRIGHT },
@@ -1822,6 +1825,7 @@ function SectionMock({
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           </div>
         </Reveal>
@@ -1883,7 +1887,8 @@ function SectionMock({
 
         {/* ── Row 1: Stat cards ── */}
         <Reveal>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="overflow-x-auto -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
+            <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))", minWidth: 480 }}>
             {[
               {
                 dot: PURPLE_BRIGHT,
@@ -1930,12 +1935,14 @@ function SectionMock({
                 {s.sub && <div className="text-[10px] uppercase tracking-[0.08em]" style={{ color: DB_MUTED }}>{s.sub}</div>}
               </div>
             ))}
+            </div>
           </div>
         </Reveal>
 
         {/* ── Row 2: Token portfolio scroll + veDUST vault ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Reveal className="lg:col-span-2">
+        <div className="overflow-x-auto -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
+        <div className="grid gap-4" style={{ gridTemplateColumns: "2fr 1fr", minWidth: 480 }}>
+          <Reveal className="">
             <div
               className="rounded-xl p-4"
               style={{ background: DB_PANEL, border: `1px solid ${DB_BORDER_STRONG}` }}
@@ -2004,6 +2011,7 @@ function SectionMock({
               </div>
             </div>
           </Reveal>
+        </div>
         </div>
 
         {/* ── Row 3: Recent Trades ── */}
@@ -2202,47 +2210,38 @@ function ComingSoonBlock() {
 
   return (
     <div ref={blockRef} className="flex flex-col items-center" style={{ minHeight: 240 }}>
-      {/* Feature card */}
-      <div style={{ ...cardStyle, width: "100%", maxWidth: 420 }}>
-        <div
-          className="rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center gap-3"
+      {/* Feature — bare text only, no card/box */}
+      <div style={{ ...cardStyle, width: "100%", maxWidth: 420, textAlign: "center" }}>
+        <span
+          className="text-[10px] font-bold uppercase tracking-[0.25em] block mb-3"
+          style={{ color: "rgba(255,255,255,0.35)" }}
+        >
+          {active.num}
+        </span>
+        <h3
+          className="text-white m-0"
           style={{
-            background: `linear-gradient(145deg, ${SURFACE} 0%, ${PANEL} 100%)`,
-            border: `1.5px solid ${active.color}44`,
-            boxShadow: `0 0 40px 8px ${active.color}18`,
+            fontFamily: "'Anton', sans-serif",
+            fontSize: "clamp(1.6rem, 5vw, 2.6rem)",
+            letterSpacing: "0.06em",
+            lineHeight: 1.1,
           }}
         >
-          <span
-            className="text-[10px] font-bold uppercase tracking-[0.25em] px-3 py-1 rounded-full"
-            style={{ color: active.color, background: `${active.color}18`, border: `1px solid ${active.color}44` }}
-          >
-            {active.num}
-          </span>
-          <h3
-            className="text-white m-0"
-            style={{
-              fontFamily: "'Anton', sans-serif",
-              fontSize: "clamp(1.6rem, 5vw, 2.6rem)",
-              letterSpacing: "0.06em",
-              lineHeight: 1.1,
-            }}
-          >
-            {active.label}
-          </h3>
-          <p className="text-sm" style={{ color: MUTED }}>{active.detail}</p>
-        </div>
+          {active.label}
+        </h3>
+        <p className="text-sm mt-3" style={{ color: "rgba(255,255,255,0.4)" }}>{active.detail}</p>
       </div>
 
       {/* Dot indicator */}
       <div className="flex items-center gap-2 mt-5">
-        {items.map((it, i) => (
+        {items.map((_, i) => (
           <div
             key={i}
             style={{
               width: activeIdx === i ? 22 : 6,
               height: 6,
               borderRadius: 99,
-              background: activeIdx === i ? it.color : "rgba(255,255,255,0.15)",
+              background: activeIdx === i ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.15)",
               transition: "width 350ms cubic-bezier(0.22,1,0.36,1), background 350ms ease",
             }}
           />
