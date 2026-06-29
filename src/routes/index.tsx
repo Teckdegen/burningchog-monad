@@ -2112,7 +2112,6 @@ function SectionMock({
       stats.balances.lockHolding,
       LOCK_TARGET * scaledDivisor(stats.decimals),
     );
-    const burnedPct = percentOf(stats.balances.burn, stats.totalSupply);
     const lockPct = percentOf(lockedTotal, stats.totalSupply);
 
     const glassCard: React.CSSProperties = {
@@ -2185,47 +2184,9 @@ function SectionMock({
           </div>
         </Reveal>
 
-        {/* ── Row 3: Supply snapshot — full width ── */}
-        <Reveal delay={100}>
-          <div className="rounded-2xl p-5" style={glassCard}>
-            <GlassSheen />
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: "rgba(255,255,255,0.30)" }}>Supply Snapshot</p>
-            <div className="grid grid-cols-3 gap-4 sm:gap-6">
-              {[
-                { label: "Burned",      pct: burnedPct,                               color: CORAL,                      value: formatToken(stats.balances.burn, stats.decimals) },
-                { label: "Locked",      pct: lockPct,                                 color: PURPLE_BRIGHT,               value: formatToken(lockedTotal, stats.decimals) },
-                { label: "Circulating", pct: percentOf(circulating, stats.totalSupply), color: "rgba(255,255,255,0.55)", value: formatToken(circulating, stats.decimals) },
-              ].map((s) => (
-                <div key={s.label}>
-                  <p className="text-[9px] uppercase tracking-[0.1em] mb-1.5" style={{ color: "rgba(255,255,255,0.28)" }}>{s.label}</p>
-                  <p className="font-black text-white leading-none" style={{ fontSize: "clamp(1rem,3.5vw,1.5rem)", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em", textShadow: `0 0 16px ${s.color}66` }}>
-                    {s.value}
-                  </p>
-                  <p className="text-[10px] mt-1" style={{ color: s.color }}>{Math.round(s.pct)}%</p>
-                  <div className="relative h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
-                    <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${s.pct}%`, background: s.color, boxShadow: `0 0 6px ${s.color}` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Reveal>
-
       </div>
     );
   }
-      position: "relative",
-      overflow: "hidden",
-      background: "rgba(255,255,255,0.035)",
-      border: "1px solid rgba(255,255,255,0.08)",
-      backdropFilter: "blur(20px)",
-      WebkitBackdropFilter: "blur(20px)",
-      boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.03), 0 8px 24px rgba(0,0,0,0.4)",
-    };
-
-    const GlassSheen = () => (
-      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "40%", borderRadius: "16px 16px 60% 60% / 10px 10px 24px 24px", background: "linear-gradient(to bottom, rgba(255,255,255,0.08), transparent)", pointerEvents: "none" }} />
-    );
 
   if (id === "how-it-works") {
     const lockProgress = percentOf(
