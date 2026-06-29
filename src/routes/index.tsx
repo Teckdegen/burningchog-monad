@@ -471,7 +471,7 @@ function SiteHeader({
     <>
       <div className="fixed top-4 sm:top-5 inset-x-0 z-[100] flex justify-center px-4 pointer-events-none">
         <header
-          className="pointer-events-auto w-[82%] max-w-[1080px] min-w-[300px] h-14 sm:h-[60px] rounded-full flex items-center justify-between px-5 sm:px-7 relative"
+          className="pointer-events-auto w-[82%] max-w-[756px] min-w-[300px] h-[70px] sm:h-[75px] rounded-full flex items-center justify-between px-5 sm:px-7 relative"
           style={{
             background: "rgba(18, 5, 42, 0.55)",
             backdropFilter: "blur(20px)",
