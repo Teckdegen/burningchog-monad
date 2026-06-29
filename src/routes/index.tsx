@@ -1376,18 +1376,147 @@ function FlyOutcome({
 }
 
 function DeflationaryFlywheelDiagram({ lockProgress }: { lockProgress: number }) {
+  const steps = [
+    {
+      num: "01",
+      title: "100k Burn",
+      detail: "Every cycle starts with 100,000 BCHOG permanently removed from supply.",
+      color: CORAL,
+      side: "left" as const,
+    },
+    {
+      num: "02",
+      title: "200% Match",
+      detail: "The treasury matches the burn with a 200% contribution — doubling the impact.",
+      color: PURPLE_BRIGHT,
+      side: "right" as const,
+    },
+    {
+      num: "03",
+      title: "Burn + Lock",
+      detail: "+100k burned forever. +50k locked to reduce circulating supply.",
+      color: CREAM,
+      side: "left" as const,
+    },
+    {
+      num: "04",
+      title: "Rewards",
+      detail: "+50k distributed back to the community, fuelling the next cycle.",
+      color: PURPLE,
+      side: "right" as const,
+    },
+  ];
+
   return (
-    <div className="mt-6 overflow-x-auto pb-1">
-      <div className="flex items-stretch min-w-[min(100%,680px)]">
-        <FlyStep step="01" title="100k Burn" />
-        <FlyConnector />
-        <FlyStep step="02" title="200% Match" />
-        <FlyConnector />
-        <div className="flex-1 grid grid-cols-3 gap-2 min-w-[240px]">
-          <FlyOutcome amount="+100k" label="Burn" />
-          <FlyOutcome amount="+50k" label="Lock" progress={lockProgress} />
-          <FlyOutcome amount="+50k" label="Rewards" />
-        </div>
+    <div className="mt-8 relative">
+      {/* Central spine */}
+      <div
+        className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 hidden sm:block"
+        style={{ background: `linear-gradient(to bottom, transparent, ${PURPLE_BRIGHT}55, ${CORAL}55, transparent)` }}
+        aria-hidden
+      />
+
+      <div className="flex flex-col gap-0 sm:gap-0">
+        {steps.map((step, i) => {
+          const isLeft = step.side === "left";
+          return (
+            <div
+              key={step.num}
+              className={`relative flex items-center sm:items-stretch gap-3 sm:gap-0 mb-6 sm:mb-8 ${isLeft ? "sm:flex-row" : "sm:flex-row-reverse"}`}
+            >
+              {/* Card — takes half width on desktop */}
+              <div className={`flex-1 sm:w-[44%] sm:flex-none ${isLeft ? "sm:pr-8 sm:text-right" : "sm:pl-8 sm:text-left"}`}>
+                <Reveal delay={i * 100} dir={isLeft ? -1 : 1}>
+                  <div
+                    className="rounded-2xl p-4 sm:p-5"
+                    style={{
+                      background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+                      border: `1.5px solid ${step.color}55`,
+                      boxShadow: `0 0 28px 0 ${step.color}22, inset 0 1px 0 rgba(255,255,255,0.06)`,
+                      backdropFilter: "blur(12px)",
+                      WebkitBackdropFilter: "blur(12px)",
+                    }}
+                  >
+                    <p
+                      className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1"
+                      style={{ color: step.color }}
+                    >
+                      {step.num}
+                    </p>
+                    <p className="text-base font-bold text-white mb-1.5">{step.title}</p>
+                    <p className="text-[11px] leading-relaxed" style={{ color: MUTED }}>{step.detail}</p>
+                    {/* Progress bar for lock step */}
+                    {step.num === "03" && (
+                      <div className="mt-3">
+                        <div className="flex justify-between text-[9px] mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          <span>Lock progress</span>
+                          <span>{Math.round(lockProgress)}%</span>
+                        </div>
+                        {/* iOS glass progress bar */}
+                        <div
+                          className="relative h-3 rounded-full overflow-hidden"
+                          style={{
+                            background: "rgba(255,255,255,0.07)",
+                            boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(255,255,255,0.06)",
+                          }}
+                        >
+                          <div
+                            className="absolute inset-y-0 left-0 rounded-full"
+                            style={{
+                              width: `${lockProgress}%`,
+                              background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 60%, rgba(255,255,255,0.6) 100%)`,
+                              boxShadow: `0 0 10px 2px ${PURPLE_BRIGHT}88`,
+                            }}
+                          />
+                          {/* Glass sheen */}
+                          <div
+                            className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none"
+                            style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.18), transparent)" }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Reveal>
+              </div>
+
+              {/* Centre node — dot on the spine */}
+              <div className="hidden sm:flex flex-col items-center justify-center w-[12%] shrink-0" style={{ zIndex: 2 }}>
+                <div
+                  className="w-4 h-4 rounded-full flex items-center justify-center"
+                  style={{
+                    background: step.color,
+                    boxShadow: `0 0 16px 4px ${step.color}66`,
+                  }}
+                />
+                {/* Tail lines radiating from the dot */}
+                <div className="flex gap-px mt-0.5">
+                  {[...Array(5)].map((_, j) => (
+                    <div
+                      key={j}
+                      className="rounded-full"
+                      style={{
+                        width: 1.5,
+                        height: 6 + j * 3,
+                        background: `${step.color}${Math.round(70 - j * 12).toString(16).padStart(2, "0")}`,
+                        transform: `translateY(${j * 1.5}px)`,
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Mobile dot */}
+              <div
+                className="sm:hidden w-3 h-3 rounded-full shrink-0 mt-4"
+                style={{ background: step.color, boxShadow: `0 0 10px 3px ${step.color}55` }}
+              />
+
+              {/* Right spacer */}
+              <div className="hidden sm:block sm:w-[44%] sm:flex-none" />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -1670,6 +1799,332 @@ function TweetEmbed({ url }: { url: string }) {
   );
 }
 
+// ── Phantom-style wallet ──────────────────────────────────────────────────────
+
+function PhantomWallet({
+  bchogBalance,
+  totalNetworkValue,
+  memeTotal,
+  roster,
+  neverslandItems,
+  veDust,
+  trades,
+}: {
+  bchogBalance: string;
+  totalNetworkValue: number;
+  memeTotal: number;
+  roster: PortfolioToken[];
+  neverslandItems: { k: string; v: string }[];
+  veDust: VeDustData | undefined;
+  trades: Trade[];
+}) {
+  const [walletTab, setWalletTab] = useState<"network" | "tokens" | "defi">("network");
+  const [activityTab] = useState<"activity">("activity");
+
+  const walletTabs: { id: "network" | "tokens" | "defi"; label: string }[] = [
+    { id: "network", label: "Network" },
+    { id: "tokens", label: "Tokens" },
+    { id: "defi", label: "DeFi" },
+  ];
+
+  return (
+    <div className="flex flex-col gap-4 items-center">
+
+      {/* ── Wallet card ── */}
+      <Reveal>
+        <div
+          className="w-full rounded-3xl overflow-hidden"
+          style={{
+            background: "linear-gradient(180deg, #1a0636 0%, #110426 100%)",
+            border: `1px solid rgba(181,76,255,0.25)`,
+            boxShadow: "0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03) inset",
+            maxWidth: 420,
+            margin: "0 auto",
+          }}
+        >
+          {/* Top bar: network badge */}
+          <div className="flex items-center justify-between px-5 pt-4 pb-1">
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+              style={{
+                background: "rgba(181,76,255,0.12)",
+                border: "1px solid rgba(181,76,255,0.2)",
+                color: PURPLE_BRIGHT,
+              }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: PURPLE_BRIGHT }} />
+              Monad
+            </div>
+            <div
+              className="text-[10px] font-mono truncate max-w-[120px]"
+              style={{ color: "rgba(255,255,255,0.3)" }}
+            >
+              0x574d…526fb
+            </div>
+          </div>
+
+          {/* Balance */}
+          <div className="px-5 pt-3 pb-5">
+            <p
+              className="font-bold text-white leading-none"
+              style={{ fontSize: "clamp(2rem,8vw,3rem)", letterSpacing: "-0.02em" }}
+            >
+              {totalNetworkValue > 0 ? formatUsd(totalNetworkValue) : "$0.00"}
+            </p>
+            <p className="text-[12px] mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Trading Desk Portfolio
+            </p>
+          </div>
+
+          {/* Tabs */}
+          <div
+            className="flex mx-4 mb-1 rounded-xl overflow-hidden"
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            {walletTabs.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setWalletTab(t.id)}
+                className="flex-1 py-2.5 text-[12px] font-semibold transition-all"
+                style={{
+                  background: walletTab === t.id
+                    ? "rgba(181,76,255,0.2)"
+                    : "transparent",
+                  color: walletTab === t.id ? "white" : "rgba(255,255,255,0.35)",
+                  borderBottom: walletTab === t.id ? `2px solid ${PURPLE_BRIGHT}` : "2px solid transparent",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          <div className="px-4 pb-4 min-h-[200px]">
+
+            {/* Network tab — total network summary */}
+            {walletTab === "network" && (
+              <div className="flex flex-col gap-3 pt-3">
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { label: "BCHOG Balance", value: bchogBalance, sub: "BCHOG", color: PURPLE_BRIGHT },
+                    { label: "Meme Tokens", value: memeTotal > 0 ? formatUsd(memeTotal) : "$---", sub: `${roster.length} tokens`, color: CORAL },
+                    { label: "Neverland veDUST", value: veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---", sub: veDust ? `${veDust.nfts} NFTs` : "---", color: CREAM },
+                    { label: "Weekly Yield", value: veDust?.weeklyUsd ? formatUsd(veDust.weeklyUsd) : "$---", sub: "USDC", color: PURPLE },
+                  ].map((s) => (
+                    <div
+                      key={s.label}
+                      className="rounded-2xl p-3 flex flex-col gap-0.5"
+                      style={{
+                        background: "rgba(255,255,255,0.04)",
+                        border: `1px solid ${s.color}22`,
+                      }}
+                    >
+                      <p className="text-[9px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.3)" }}>{s.label}</p>
+                      <p className="text-sm font-bold text-white leading-tight">{s.value}</p>
+                      <p className="text-[9px]" style={{ color: s.color }}>{s.sub}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tokens tab — all wallet tokens */}
+            {walletTab === "tokens" && (
+              <div className="flex flex-col pt-2" style={{ maxHeight: 320, overflowY: "auto", scrollbarWidth: "none" }}>
+                {/* BCHOG first */}
+                <div
+                  className="flex items-center justify-between py-3"
+                  style={{ borderBottom: `1px solid rgba(255,255,255,0.05)` }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0"
+                      style={{ background: PANEL, border: `1.5px solid ${BORDER_STRONG}` }}
+                    >
+                      <img src={TOKEN_LOGO} alt="BCHOG" className="w-full h-full object-cover" draggable={false} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">BCHOG</p>
+                      <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>Burning Chog</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-white">{bchogBalance}</p>
+                    <p className="text-[10px]" style={{ color: PURPLE_BRIGHT }}>BCHOG</p>
+                  </div>
+                </div>
+                {roster.length === 0 ? (
+                  <div className="py-6 text-sm text-center" style={{ color: "rgba(255,255,255,0.25)" }}>Loading tokens…</div>
+                ) : (
+                  roster.map((t) => (
+                    <a
+                      key={t.address}
+                      href={explorerToken(t.address)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between py-3 no-underline hover:bg-white/[0.03] transition-colors rounded-xl px-1"
+                      style={{ borderBottom: `1px solid rgba(255,255,255,0.04)`, color: "white" }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0"
+                          style={{ background: PANEL, border: `1.5px solid ${BORDER_STRONG}` }}
+                        >
+                          {t.iconUrl
+                            ? <img src={t.iconUrl} alt="" className="w-full h-full object-cover" draggable={false} />
+                            : <span className="text-[10px] font-bold" style={{ color: PURPLE_BRIGHT }}>{t.symbol.slice(0, 2)}</span>
+                          }
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">{t.symbol}</p>
+                          <p className="text-[10px] truncate max-w-[100px]" style={{ color: "rgba(255,255,255,0.3)" }}>{t.name}</p>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0 ml-2">
+                        <p className="text-sm font-semibold" style={{ color: t.valueUsd > 100 ? "white" : "rgba(255,255,255,0.6)" }}>
+                          {formatUsd(t.valueUsd)}
+                        </p>
+                        <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          {t.quantity.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                    </a>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* DeFi tab — Neverland positions */}
+            {walletTab === "defi" && (
+              <div className="flex flex-col gap-3 pt-3">
+                <div
+                  className="rounded-2xl p-4"
+                  style={{
+                    background: `linear-gradient(140deg, rgba(122,45,255,0.15) 0%, rgba(181,76,255,0.08) 100%)`,
+                    border: `1px solid rgba(181,76,255,0.2)`,
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <div
+                      className="w-7 h-7 rounded-lg flex items-center justify-center"
+                      style={{ background: PANEL, border: `1px solid ${BORDER_STRONG}` }}
+                    >
+                      <Lock size={13} color={PURPLE_BRIGHT} strokeWidth={1.8} />
+                    </div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: PURPLE_BRIGHT }}>
+                      Neverland veDUST
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {neverslandItems.map((r) => (
+                      <div
+                        key={r.k}
+                        className="rounded-xl p-2.5"
+                        style={{ background: "rgba(0,0,0,0.2)" }}
+                      >
+                        <p className="text-[9px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.3)" }}>{r.k}</p>
+                        <p className="text-sm font-bold text-white mt-0.5 truncate">{r.v}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ── Activity / Transactions ── */}
+      <Reveal delay={60}>
+        <div
+          className="w-full rounded-3xl overflow-hidden"
+          style={{
+            background: "linear-gradient(180deg, #1a0636 0%, #110426 100%)",
+            border: `1px solid rgba(181,76,255,0.2)`,
+            boxShadow: "0 16px 48px rgba(0,0,0,0.5)",
+            maxWidth: 420,
+            margin: "0 auto",
+          }}
+        >
+          {/* Activity header */}
+          <div
+            className="flex items-center justify-between px-5 py-4"
+            style={{ borderBottom: `1px solid rgba(255,255,255,0.05)` }}
+          >
+            <p className="text-sm font-bold text-white">Activity</p>
+            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.3)" }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: DB_GREEN }} />
+              Live
+            </span>
+          </div>
+
+          {/* Transactions list */}
+          {trades.length === 0 ? (
+            <div className="px-5 py-8 text-sm text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
+              Loading transactions…
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              {trades.map((t, idx) => (
+                <a
+                  key={t.hash}
+                  href={explorerTx(t.hash)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 px-5 py-3.5 no-underline hover:bg-white/[0.03] transition-colors"
+                  style={{
+                    borderBottom: idx < trades.length - 1 ? `1px solid rgba(255,255,255,0.04)` : undefined,
+                    color: "white",
+                  }}
+                >
+                  {/* Icon */}
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                    style={{
+                      background: t.type === "BUY"
+                        ? "rgba(74,222,174,0.12)"
+                        : "rgba(255,92,138,0.12)",
+                      border: `1px solid ${t.type === "BUY" ? "rgba(74,222,174,0.3)" : "rgba(255,92,138,0.3)"}`,
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={t.type === "BUY" ? DB_GREEN : DB_RED} strokeWidth="2.2" aria-hidden>
+                      {t.type === "BUY"
+                        ? <path d="M12 19V5M5 12l7-7 7 7" />
+                        : <path d="M12 5v14M5 12l7 7 7-7" />
+                      }
+                    </svg>
+                  </div>
+                  {/* Description */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-semibold text-white">{t.type === "BUY" ? "Bought" : "Sold"} BCHOG</p>
+                    <p className="text-[10px] font-mono truncate" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      {t.account ? `${t.account.slice(0, 6)}…${t.account.slice(-4)}` : "—"} · {timeAgo(t.ts)}
+                    </p>
+                  </div>
+                  {/* Amount */}
+                  <div className="text-right shrink-0">
+                    <p className="text-[12px] font-semibold" style={{ color: t.type === "BUY" ? DB_GREEN : DB_RED }}>
+                      {t.type === "BUY" ? "+" : "-"}{formatUsd(t.valueUsd)}
+                    </p>
+                    <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      {compactAmount(t.tokenAmount)} BCHOG
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      </Reveal>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+
 function SectionMock({
   id,
   stats,
@@ -1717,54 +2172,96 @@ function SectionMock({
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
 
             {/* Market Cap */}
-            <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-2" style={{
+            <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-1.5" style={{
               background: "rgba(255,255,255,0.04)",
               border: "1px solid rgba(255,255,255,0.08)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
             }}>
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.35)" }}>Market Cap</p>
-              <p className="text-[clamp(1.3rem,4.5vw,2rem)] font-bold text-white leading-none truncate">{formatUsd(market.marketCapUsd)}</p>
-              <p className="text-[11px]" style={{ color: "rgba(181,76,255,0.9)" }}>Live</p>
+              <p className="font-black text-white leading-none" style={{
+                fontSize: "clamp(1.5rem,5.5vw,2.4rem)",
+                fontVariantNumeric: "tabular-nums",
+                letterSpacing: "-0.02em",
+                textShadow: `0 0 24px rgba(181,76,255,0.5)`,
+              }}>{formatUsd(market.marketCapUsd)}</p>
+              <p className="text-[11px] font-medium" style={{ color: "rgba(181,76,255,0.9)" }}>Live</p>
             </div>
 
             {/* Holders */}
-            <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-2" style={{
+            <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-1.5" style={{
               background: "rgba(255,255,255,0.04)",
               border: "1px solid rgba(255,255,255,0.08)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
             }}>
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.35)" }}>Holders</p>
-              <p className="text-[clamp(1.3rem,4.5vw,2rem)] font-bold text-white leading-none truncate">{formatCount(market.holders)}</p>
-              <p className="text-[11px]" style={{ color: "rgba(181,76,255,0.9)" }}>Boblievers</p>
+              <p className="font-black text-white leading-none" style={{
+                fontSize: "clamp(1.5rem,5.5vw,2.4rem)",
+                fontVariantNumeric: "tabular-nums",
+                letterSpacing: "-0.02em",
+                textShadow: `0 0 24px rgba(181,76,255,0.5)`,
+              }}>{formatCount(market.holders)}</p>
+              <p className="text-[11px] font-medium" style={{ color: "rgba(181,76,255,0.9)" }}>Boblievers</p>
             </div>
 
             {/* Total Burned */}
-            <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-2" style={{
+            <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-1.5" style={{
               background: "rgba(255,255,255,0.04)",
               border: "1px solid rgba(255,255,255,0.08)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
             }}>
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.35)" }}>Total Burned</p>
-              <p className="text-[clamp(1.3rem,4.5vw,2rem)] font-bold text-white leading-none truncate">{formatToken(stats.balances.burn, stats.decimals)}</p>
-              <p className="text-[11px]" style={{ color: "rgba(181,76,255,0.9)" }}>Deflationary</p>
+              <p className="font-black text-white leading-none" style={{
+                fontSize: "clamp(1.5rem,5.5vw,2.4rem)",
+                fontVariantNumeric: "tabular-nums",
+                letterSpacing: "-0.02em",
+                textShadow: `0 0 24px rgba(255,92,138,0.5)`,
+              }}>{formatToken(stats.balances.burn, stats.decimals)}</p>
+              <p className="text-[11px] font-medium" style={{ color: "rgba(255,92,138,0.9)" }}>Deflationary</p>
             </div>
 
-            {/* Supply Locked — with mini progress bar */}
-            <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-2" style={{
+            {/* Supply Locked */}
+            <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-1.5" style={{
               background: "rgba(255,255,255,0.04)",
               border: "1px solid rgba(255,255,255,0.08)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
             }}>
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.35)" }}>Supply Locked</p>
-              <p className="text-[clamp(1.3rem,4.5vw,2rem)] font-bold text-white leading-none">{Math.round(lockPct)}%</p>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(181,76,255,0.15)" }}>
-                <div className="h-full rounded-full" style={{ width: `${lockPct}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 100%)` }} />
+              <p className="font-black text-white leading-none" style={{
+                fontSize: "clamp(1.5rem,5.5vw,2.4rem)",
+                fontVariantNumeric: "tabular-nums",
+                letterSpacing: "-0.02em",
+                textShadow: `0 0 24px rgba(181,76,255,0.5)`,
+              }}>{Math.round(lockPct)}%</p>
+              {/* iOS glass progress bar */}
+              <div
+                className="relative h-3.5 rounded-full overflow-hidden"
+                style={{
+                  background: "rgba(255,255,255,0.07)",
+                  boxShadow: "inset 0 2px 4px rgba(0,0,0,0.5), inset 0 -1px 1px rgba(255,255,255,0.05)",
+                }}
+              >
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full"
+                  style={{
+                    width: `${lockPct}%`,
+                    background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 60%, rgba(255,255,255,0.55) 100%)`,
+                    boxShadow: `0 0 12px 2px ${PURPLE_BRIGHT}88`,
+                  }}
+                />
+                <div
+                  className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none"
+                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.15), transparent)" }}
+                />
               </div>
-              <p className="text-[11px]" style={{ color: "rgba(181,76,255,0.9)" }}>Lock progress</p>
+              <p className="text-[11px] font-medium" style={{ color: "rgba(181,76,255,0.9)" }}>Lock progress</p>
             </div>
 
           </div>
@@ -1777,17 +2274,36 @@ function SectionMock({
             border: "1px solid rgba(255,255,255,0.08)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
           }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.35)" }}>
                 Lock Holding Progress
               </p>
-              <p className="text-base font-bold text-white">{formatToken(stats.balances.lockHolding, stats.decimals)}</p>
+              <p className="text-base font-black text-white" style={{ fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>
+                {formatToken(stats.balances.lockHolding, stats.decimals)}
+              </p>
             </div>
-            <div className="relative h-2 rounded-full overflow-hidden" style={{ background: "rgba(181,76,255,0.12)" }}>
+            {/* Thick iOS glass bar */}
+            <div
+              className="relative h-5 rounded-full overflow-hidden"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                boxShadow: "inset 0 2px 5px rgba(0,0,0,0.55), inset 0 -1px 1px rgba(255,255,255,0.05)",
+              }}
+            >
               <div
-                className="absolute inset-y-0 left-0 rounded-full"
-                style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 100%)` }}
+                className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+                style={{
+                  width: `${lockProgress}%`,
+                  background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 55%, rgba(255,255,255,0.65) 100%)`,
+                  boxShadow: `0 0 16px 4px ${PURPLE_BRIGHT}88, 0 0 32px 8px ${PURPLE}44`,
+                }}
+              />
+              {/* Glass sheen */}
+              <div
+                className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none"
+                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.18), transparent)" }}
               />
             </div>
             <div className="flex justify-between mt-2.5 text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
@@ -1804,6 +2320,7 @@ function SectionMock({
             border: "1px solid rgba(255,255,255,0.08)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
           }}>
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>
               Supply Breakdown
@@ -1818,9 +2335,37 @@ function SectionMock({
               ].map((s) => (
                 <div key={s.label}>
                   <p className="text-[9px] uppercase tracking-[0.08em] mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{s.label}</p>
-                  <p className="text-[clamp(1rem,3.5vw,1.4rem)] font-bold text-white leading-none">{Math.round(s.pct)}%</p>
-                  <div className="h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
-                    <div className="h-full rounded-full" style={{ width: `${s.pct}%`, background: s.color }} />
+                  <p
+                    className="font-black text-white leading-none"
+                    style={{
+                      fontSize: "clamp(1.1rem,4vw,1.7rem)",
+                      fontVariantNumeric: "tabular-nums",
+                      letterSpacing: "-0.02em",
+                      textShadow: `0 0 16px ${s.color}88`,
+                    }}
+                  >
+                    {Math.round(s.pct)}%
+                  </p>
+                  {/* iOS glass progress bar */}
+                  <div
+                    className="relative h-3 rounded-full mt-2 overflow-hidden"
+                    style={{
+                      background: "rgba(255,255,255,0.07)",
+                      boxShadow: "inset 0 2px 4px rgba(0,0,0,0.45), inset 0 -1px 1px rgba(255,255,255,0.04)",
+                    }}
+                  >
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-full"
+                      style={{
+                        width: `${s.pct}%`,
+                        background: `linear-gradient(90deg, ${s.color}cc 0%, ${s.color} 60%, rgba(255,255,255,0.5) 100%)`,
+                        boxShadow: `0 0 8px 2px ${s.color}66`,
+                      }}
+                    />
+                    <div
+                      className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none"
+                      style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.16), transparent)" }}
+                    />
                   </div>
                 </div>
               ))}
@@ -1835,16 +2380,125 @@ function SectionMock({
       stats.balances.lockHolding,
       LOCK_TARGET * scaledDivisor(stats.decimals),
     );
+
+    const journeySteps = [
+      {
+        num: "01",
+        label: "Search",
+        detail: "Find BCHOG on Nad.fun or any Monad DEX — the deflationary chog that keeps burning.",
+        color: PURPLE_BRIGHT,
+        icon: (
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+            <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
+          </svg>
+        ),
+      },
+      {
+        num: "02",
+        label: "Scroll",
+        detail: "Explore the dashboard — watch live burns, lock progress, and the Trading Desk at work.",
+        color: CORAL,
+        icon: (
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+            <path d="M12 5v14M5 12l7 7 7-7" />
+          </svg>
+        ),
+      },
+      {
+        num: "03",
+        label: "Review",
+        detail: "Understand the flywheel: 100k burned, 200% matched, locked and rewarded every cycle.",
+        color: CREAM,
+        icon: (
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+            <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 0 0 1.946-.806 3.42 3.42 0 0 1 4.438 0 3.42 3.42 0 0 0 1.946.806 3.42 3.42 0 0 1 3.138 3.138 3.42 3.42 0 0 0 .806 1.946 3.42 3.42 0 0 1 0 4.438 3.42 3.42 0 0 0-.806 1.946 3.42 3.42 0 0 1-3.138 3.138 3.42 3.42 0 0 0-1.946.806 3.42 3.42 0 0 1-4.438 0 3.42 3.42 0 0 0-1.946-.806 3.42 3.42 0 0 1-3.138-3.138 3.42 3.42 0 0 0-.806-1.946 3.42 3.42 0 0 1 0-4.438 3.42 3.42 0 0 0 .806-1.946 3.42 3.42 0 0 1 3.138-3.138z" />
+          </svg>
+        ),
+      },
+      {
+        num: "04",
+        label: "Join",
+        detail: "Grab your bag, hold tight, and become part of the BCHOG burning movement.",
+        color: PURPLE,
+        icon: (
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        ),
+      },
+    ];
+
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
+
+        {/* ── Journey steps ── */}
         <Reveal>
-          <div className="rounded-xl p-5 sm:p-6" style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}>
+          <p
+            className="text-center font-bold uppercase mb-6"
+            style={{
+              fontFamily: "'Anton', sans-serif",
+              fontSize: "clamp(1.1rem,3.5vw,1.8rem)",
+              letterSpacing: "0.12em",
+              color: "rgba(255,255,255,0.85)",
+            }}
+          >
+            Your Journey Ahead
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {journeySteps.map((s, i) => (
+              <Reveal key={s.num} delay={i * 80} dir={i % 2 === 0 ? -1 : 1}>
+                <div
+                  className="rounded-2xl p-4 flex flex-col gap-3 h-full"
+                  style={{
+                    background: `linear-gradient(140deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+                    border: `1.5px solid ${s.color}44`,
+                    boxShadow: `0 0 24px 0 ${s.color}18, inset 0 1px 0 rgba(255,255,255,0.06)`,
+                    backdropFilter: "blur(10px)",
+                    WebkitBackdropFilter: "blur(10px)",
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: s.color }}>
+                      {s.num}
+                    </span>
+                    <span style={{ color: s.color }}>{s.icon}</span>
+                  </div>
+                  <p className="text-base font-bold text-white">{s.label}</p>
+                  <p className="text-[11px] leading-relaxed" style={{ color: MUTED }}>{s.detail}</p>
+                  {/* Accent line */}
+                  <div className="mt-auto pt-2">
+                    <div
+                      className="h-px w-full rounded-full"
+                      style={{ background: `linear-gradient(90deg, ${s.color}66, transparent)` }}
+                    />
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </Reveal>
+
+        {/* ── Deflationary Flywheel ── */}
+        <Reveal delay={80}>
+          <div className="rounded-2xl p-5 sm:p-7" style={{
+            background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+            border: `1px solid ${BORDER_STRONG}`,
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+          }}>
             <SectionLabel>Deflationary Flywheel</SectionLabel>
             <DeflationaryFlywheelDiagram lockProgress={lockProgress} />
           </div>
         </Reveal>
-        <Reveal delay={80}>
-          <div className="rounded-xl p-5 sm:p-6" style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}>
+
+        {/* ── Ecosystem Architecture ── */}
+        <Reveal delay={120}>
+          <div className="rounded-2xl p-5 sm:p-7" style={{
+            background: `linear-gradient(160deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+            border: `1px solid ${BORDER_STRONG}`,
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+          }}>
             <SectionLabel>Ecosystem Architecture</SectionLabel>
             <EcosystemArchitecture />
           </div>
@@ -1855,7 +2509,7 @@ function SectionMock({
   if (id === "trading-desk") {
     const memeTotal = portfolio.reduce((acc, t) => acc + t.valueUsd, 0);
     const roster = portfolio.slice(0, 30);
-    const vault = [
+    const neverslandItems = [
       { k: "NFTs", v: veDust ? veDust.nfts.toString() : "---" },
       {
         k: "veDUST",
@@ -1867,185 +2521,19 @@ function SectionMock({
       { k: "Weekly Yield", v: veDust ? formatUsd(veDust.weeklyUsd) : "$---" },
       { k: "Lifetime Yield", v: veDust ? formatUsd(veDust.lifetimeUsd) : "$---" },
     ];
-    return (
-      <div className="flex flex-col gap-4">
 
-        {/* ── Row 1: Stat cards — 2×2 on mobile, 4 across on desktop ── */}
-        <Reveal>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {[
-              {
-                dot: PURPLE_BRIGHT,
-                label: "Trading Wallet",
-                value: formatToken(stats.balances.trading, stats.decimals),
-                sub: "BCHOG",
-                bg: `linear-gradient(135deg, rgba(122,45,255,0.35) 0%, rgba(181,76,255,0.2) 100%)`,
-              },
-              {
-                dot: PURPLE_BRIGHT,
-                label: "Meme Portfolio",
-                value: memeTotal > 0 ? formatUsd(memeTotal) : "$---",
-                sub: `${roster.length} tokens`,
-                bg: `linear-gradient(135deg, rgba(181,76,255,0.2) 0%, rgba(181,76,255,0.08) 100%)`,
-              },
-              {
-                dot: PURPLE_BRIGHT,
-                label: "veDUST Value",
-                value: veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---",
-                sub: veDust ? `${veDust.nfts} NFTs` : "---",
-                bg: `linear-gradient(135deg, rgba(122,45,255,0.3) 0%, rgba(122,45,255,0.12) 100%)`,
-              },
-              {
-                dot: PURPLE_BRIGHT,
-                label: "Weekly Yield",
-                value: veDust?.weeklyUsd ? formatUsd(veDust.weeklyUsd) : "$---",
-                sub: "USDC",
-                bg: `linear-gradient(135deg, rgba(181,76,255,0.2) 0%, rgba(181,76,255,0.08) 100%)`,
-              },
-            ].map((s) => (
-              <div
-                key={s.label}
-                className="rounded-xl p-3 flex flex-col gap-1"
-                style={{ background: s.bg, border: `1px solid ${DB_BORDER_STRONG}` }}
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: s.dot }} />
-                  <span className="text-[9px] font-bold uppercase tracking-[0.08em] truncate" style={{ color: DB_MUTED }}>{s.label}</span>
-                </div>
-                <div className="text-[clamp(0.95rem,3.5vw,1.5rem)] font-bold text-white leading-tight truncate">{s.value}</div>
-                {s.sub && <div className="text-[9px] uppercase tracking-[0.07em]" style={{ color: DB_MUTED }}>{s.sub}</div>}
-              </div>
-            ))}
-          </div>
-        </Reveal>
+    const bchogBalance = formatToken(stats.balances.trading, stats.decimals);
+    const totalNetworkValue = memeTotal + (veDust?.valueUsd ?? 0);
 
-        {/* ── Row 2: Token portfolio (horizontal scroll) ── */}
-        <Reveal delay={40}>
-          <div className="rounded-xl p-4" style={{ background: DB_PANEL, border: `1px solid ${DB_BORDER_STRONG}` }}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>Meme Portfolio</span>
-              {memeTotal > 0 && <span className="text-xs font-semibold text-white">{formatUsd(memeTotal)}</span>}
-            </div>
-            {roster.length === 0 ? (
-              <div className="text-sm py-4" style={{ color: DB_MUTED }}>Loading holdings…</div>
-            ) : (
-              <div className="overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-                <div className="flex gap-2" style={{ width: "max-content" }}>
-                  {roster.map((t) => (
-                    <a
-                      key={t.address}
-                      href={explorerToken(t.address)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex-shrink-0 flex flex-col items-center rounded-xl p-2.5 no-underline text-white"
-                      style={{
-                        background: SURFACE,
-                        border: `1px solid ${BORDER_STRONG}`,
-                        width: 76,
-                      }}
-                    >
-                      <div
-                        className="w-8 h-8 rounded-full overflow-hidden mb-1.5 flex items-center justify-center"
-                        style={{ background: PANEL, border: `1.5px solid ${BORDER_STRONG}` }}
-                      >
-                        {t.iconUrl
-                          ? <img src={t.iconUrl} alt="" className="w-full h-full object-cover" draggable={false} />
-                          : <span className="text-[10px] font-bold" style={{ color: PURPLE_BRIGHT }}>{t.symbol.slice(0, 2)}</span>
-                        }
-                      </div>
-                      <div className="text-[9px] font-bold uppercase truncate w-full text-center">{t.symbol}</div>
-                      <div className="text-[10px] font-bold mt-0.5" style={{ color: t.valueUsd > 100 ? PURPLE_BRIGHT : MUTED }}>
-                        {formatUsd(t.valueUsd)}
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </Reveal>
-
-        {/* ── Row 3: Neverland veDUST — full width, 2-col grid, no scroll ── */}
-        <Reveal delay={60}>
-          <div
-            className="rounded-xl p-4"
-            style={{
-              background: `linear-gradient(160deg, ${PANEL} 0%, ${SURFACE} 100%)`,
-              border: `1px solid ${BORDER_STRONG}`,
-            }}
-          >
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] block mb-3" style={{ color: PURPLE_BRIGHT }}>
-              Neverland veDUST
-            </span>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-              {vault.map((r) => (
-                <div key={r.k} className="rounded-lg p-2.5" style={{ background: "rgba(0,0,0,0.25)" }}>
-                  <div className="text-[9px] uppercase tracking-[0.08em]" style={{ color: DB_MUTED }}>{r.k}</div>
-                  <div className="text-sm font-bold text-white mt-0.5 truncate">{r.v}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Reveal>
-
-        {/* ── Row 4: Recent Trades — simplified columns for mobile ── */}
-        <Reveal delay={80}>
-          <div
-            className="rounded-xl overflow-hidden"
-            style={{ background: DB_PANEL, border: `1px solid ${DB_BORDER_STRONG}` }}
-          >
-            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${DB_BORDER}` }}>
-              <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>
-                Recent Trades
-              </span>
-              <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em]" style={{ color: DB_MUTED }}>
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: DB_GREEN }} />
-                Live
-              </span>
-            </div>
-            {market.trades.length === 0 ? (
-              <div className="px-4 py-6 text-sm text-center" style={{ color: DB_MUTED }}>Loading recent trades…</div>
-            ) : (
-              market.trades.map((t, idx) => (
-                <a
-                  key={t.hash}
-                  href={explorerTx(t.hash)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-between px-4 py-3 no-underline transition-colors hover:bg-white/[0.04]"
-                  style={{
-                    color: "white",
-                    borderBottom: idx < market.trades.length - 1 ? `1px solid ${DB_BORDER}` : undefined,
-                  }}
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span
-                      className="px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0"
-                      style={{
-                        background: t.type === "BUY" ? "rgba(74,222,174,0.15)" : "rgba(255,92,138,0.15)",
-                        color: t.type === "BUY" ? DB_GREEN : DB_RED,
-                        border: `1px solid ${t.type === "BUY" ? "rgba(74,222,174,0.35)" : "rgba(255,92,138,0.35)"}`,
-                      }}
-                    >
-                      {t.type}
-                    </span>
-                    <span className="text-[10px] font-mono truncate" style={{ color: DB_MUTED }}>
-                      {t.account ? `${t.account.slice(0, 6)}…${t.account.slice(-4)}` : "—"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0 ml-2">
-                    <span className="text-[11px] font-bold" style={{ color: t.type === "BUY" ? DB_GREEN : DB_RED }}>
-                      {formatUsd(t.valueUsd)}
-                    </span>
-                    <span className="text-[10px] font-mono" style={{ color: DB_MUTED }}>{timeAgo(t.ts)}</span>
-                  </div>
-                </a>
-              ))
-            )}
-          </div>
-        </Reveal>
-      </div>
-    );
+    return <PhantomWallet
+      bchogBalance={bchogBalance}
+      totalNetworkValue={totalNetworkValue}
+      memeTotal={memeTotal}
+      roster={roster}
+      neverslandItems={neverslandItems}
+      veDust={veDust}
+      trades={market.trades}
+    />;
   }
   if (id === "contests") {
     const posts = ["https://x.com/BURNINGCHOG/status/2068770674475176411"];
