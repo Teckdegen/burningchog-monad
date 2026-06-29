@@ -33,17 +33,17 @@ const FOOTER_BG = "#0D0418";
 const TOKEN_LOGO = "/bchoglogo.png";
 const MASCOT_HERO = "/photo_2026-06-25_20-11-35-removebg-preview.png";
 
-// Dashboard / Trading Desk dark-navy palette (like the screenshot)
-const DB_BG = "#0b1829";
-const DB_SURFACE = "#0f2235";
-const DB_PANEL = "#122944";
-const DB_BORDER = "rgba(255, 140, 0, 0.18)";
-const DB_BORDER_STRONG = "rgba(255, 140, 0, 0.32)";
-const DB_ORANGE = "#ff8c00";
-const DB_ORANGE_DIM = "rgba(255, 140, 0, 0.55)";
+// Dashboard / Trading Desk palette — purple/black/white, no orange
+const DB_BG = BG;
+const DB_SURFACE = SURFACE;
+const DB_PANEL = PANEL;
+const DB_BORDER = BORDER;
+const DB_BORDER_STRONG = BORDER_STRONG;
+const DB_ORANGE = PURPLE_BRIGHT;
+const DB_ORANGE_DIM = "rgba(181, 76, 255, 0.55)";
 const DB_GREEN = "#4adeae";
 const DB_RED = "#ff5c8a";
-const DB_MUTED = "rgba(200, 220, 255, 0.45)";
+const DB_MUTED = MUTED;
 
 const HERO_IMAGES = [
   {
@@ -977,8 +977,8 @@ function SectionBlock({
             </h2>
             {section.soon && (
               <span
-                className="text-[10px] font-medium uppercase px-2.5 py-1 tracking-[0.14em]"
-                style={{ color: MUTED, border: `1px solid ${BORDER}` }}
+                className="text-[10px] font-medium uppercase tracking-[0.14em]"
+                style={{ color: "rgba(255,255,255,0.45)" }}
               >
                 In Development
               </span>
@@ -1785,7 +1785,7 @@ function SectionMock({
             <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(255,140,0,0.12)" }}>
               <div
                 className="h-full rounded-full"
-                style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${DB_ORANGE} 0%, #ffb347 100%)` }}
+                style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 100%)` }}
               />
             </div>
             <div className="flex justify-between mt-2 text-[10px]" style={{ color: DB_MUTED }}>
@@ -1806,11 +1806,11 @@ function SectionMock({
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
-                { label: "Burned", pct: burnedPct, color: DB_RED },
-                { label: "Treasury", pct: treasuryPct, color: DB_ORANGE },
-                { label: "Trading", pct: tradingPct, color: "#4adeae" },
-                { label: "Locked", pct: lockPct, color: DB_ORANGE },
-                { label: "Circulating", pct: circPct, color: DB_MUTED },
+                { label: "Burned", pct: burnedPct, color: CORAL },
+                { label: "Treasury", pct: treasuryPct, color: PURPLE_BRIGHT },
+                { label: "Trading", pct: tradingPct, color: PURPLE },
+                { label: "Locked", pct: lockPct, color: PURPLE_BRIGHT },
+                { label: "Circulating", pct: circPct, color: MUTED },
               ].map((s) => (
                 <div key={s.label}>
                   <p className="text-[10px] uppercase tracking-[0.08em]" style={{ color: DB_MUTED }}>
@@ -1886,32 +1886,32 @@ function SectionMock({
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               {
-                dot: DB_ORANGE,
+                dot: PURPLE_BRIGHT,
                 label: "Trading Wallet",
                 value: formatToken(stats.balances.trading, stats.decimals),
                 sub: "BCHOG",
-                bg: `linear-gradient(135deg, rgba(255,140,0,0.18) 0%, rgba(255,140,0,0.08) 100%)`,
+                bg: `linear-gradient(135deg, rgba(122,45,255,0.35) 0%, rgba(181,76,255,0.2) 100%)`,
               },
               {
-                dot: DB_GREEN,
+                dot: PURPLE_BRIGHT,
                 label: "Meme Portfolio",
                 value: memeTotal > 0 ? formatUsd(memeTotal) : "$---",
                 sub: `${roster.length} tokens`,
-                bg: `linear-gradient(135deg, rgba(74,222,174,0.18) 0%, rgba(74,222,174,0.06) 100%)`,
+                bg: `linear-gradient(135deg, rgba(181,76,255,0.2) 0%, rgba(181,76,255,0.08) 100%)`,
               },
               {
-                dot: DB_ORANGE,
+                dot: PURPLE_BRIGHT,
                 label: "veDUST Value",
                 value: veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---",
                 sub: veDust ? `${veDust.nfts} NFTs` : "---",
-                bg: `linear-gradient(135deg, rgba(255,140,0,0.14) 0%, rgba(255,140,0,0.06) 100%)`,
+                bg: `linear-gradient(135deg, rgba(122,45,255,0.3) 0%, rgba(122,45,255,0.12) 100%)`,
               },
               {
-                dot: DB_GREEN,
+                dot: PURPLE_BRIGHT,
                 label: "Weekly Yield",
                 value: veDust?.weeklyUsd ? formatUsd(veDust.weeklyUsd) : "$---",
                 sub: "USDC",
-                bg: `linear-gradient(135deg, rgba(74,222,174,0.18) 0%, rgba(74,222,174,0.06) 100%)`,
+                bg: `linear-gradient(135deg, rgba(181,76,255,0.2) 0%, rgba(181,76,255,0.08) 100%)`,
               },
             ].map((s) => (
               <div
@@ -1972,7 +1972,7 @@ function SectionMock({
                           }
                         </div>
                         <div className="text-[10px] font-bold uppercase truncate w-full text-center tracking-wide">{t.symbol}</div>
-                        <div className="text-[11px] font-bold mt-0.5" style={{ color: t.valueUsd > 100 ? DB_GREEN : DB_ORANGE }}>
+                        <div className="text-[11px] font-bold mt-0.5" style={{ color: t.valueUsd > 100 ? PURPLE_BRIGHT : MUTED }}>
                           {formatUsd(t.valueUsd)}
                         </div>
                       </a>
