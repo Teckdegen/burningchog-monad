@@ -1935,6 +1935,8 @@ function PhantomWallet({
   neverslandItems,
   veDust,
   trades,
+  activeTab,
+  onTabChange,
 }: {
   bchogBalance: string;
   totalNetworkValue: number;
@@ -1943,8 +1945,15 @@ function PhantomWallet({
   neverslandItems: { k: string; v: string }[];
   veDust: VeDustData | undefined;
   trades: Trade[];
+  activeTab?: "network" | "tokens" | "defi" | "activity";
+  onTabChange?: (tab: "network" | "tokens" | "defi" | "activity") => void;
 }) {
-  const [walletTab, setWalletTab] = useState<"network" | "tokens" | "defi" | "activity">("network");
+  const [internalTab, setInternalTab] = useState<"network" | "tokens" | "defi" | "activity">("network");
+  const walletTab = activeTab ?? internalTab;
+  const setWalletTab = (t: "network" | "tokens" | "defi" | "activity") => {
+    setInternalTab(t);
+    onTabChange?.(t);
+  };
 
   const walletTabs: { id: "network" | "tokens" | "defi" | "activity"; label: string }[] = [
     { id: "network", label: "Wallet" },
@@ -2847,7 +2856,7 @@ function SectionMock({
     const bchogBalance = formatToken(stats.balances.trading, stats.decimals);
     const totalNetworkValue = memeTotal + (veDust?.valueUsd ?? 0);
 
-    return <PhantomWallet
+    return <TradingDeskScrollDriver
       bchogBalance={bchogBalance}
       totalNetworkValue={totalNetworkValue}
       memeTotal={memeTotal}
@@ -2864,6 +2873,95 @@ function SectionMock({
     return <ComingSoonBlock />;
   }
   return null;
+}
+
+function TradingDeskScrollDriver({
+  bchogBalance, totalNetworkValue, memeTotal, roster, neverslandItems, veDust, trades,
+}: {
+  bchogBalance: string; totalNetworkValue: number; memeTotal: number;
+  roster: PortfolioToken[]; neverslandItems: { k: string; v: string }[];
+  veDust: VeDustData | undefined; trades: Trade[];
+}) {
+  const TAB_ORDER = ["network", "tokens", "defi", "activity"] as const;
+  type Tab = typeof TAB_ORDER[number];
+
+  const [activeTab, setActiveTab] = useState<Tab>("network");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const sentinelRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const userOverride = useRef(false);
+  const overrideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Each sentinel is ~1 viewport-height apart inside a 4×vh tall scroll track
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+    sentinelRefs.current.forEach((el, i) => {
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && !userOverride.current) {
+            setActiveTab(TAB_ORDER[i]);
+          }
+        },
+        { threshold: 0.5 }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, []);
+
+  const handleManualTab = (t: Tab) => {
+    userOverride.current = true;
+    setActiveTab(t);
+    if (overrideTimer.current) clearTimeout(overrideTimer.current);
+    // re-enable scroll driving after 2s of no manual interaction
+    overrideTimer.current = setTimeout(() => { userOverride.current = false; }, 2000);
+  };
+
+  return (
+    // Outer scroll container — tall enough for 4 "panels"
+    <div ref={scrollRef} style={{ position: "relative" }}>
+      {/* Invisible scroll sentinels — each 100vh tall, stacked */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }} aria-hidden>
+        {TAB_ORDER.map((_, i) => (
+          <div
+            key={i}
+            ref={(el) => { sentinelRefs.current[i] = el; }}
+            style={{
+              position: "absolute",
+              top: `${(i / TAB_ORDER.length) * 100}%`,
+              left: 0,
+              width: "100%",
+              height: `${100 / TAB_ORDER.length}%`,
+              // centre point sentinel — 50px tall strip in middle of each panel
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <div style={{ width: "100%", height: 2 }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Sticky wallet card */}
+      <div style={{ position: "sticky", top: 100, zIndex: 10 }}>
+        <PhantomWallet
+          bchogBalance={bchogBalance}
+          totalNetworkValue={totalNetworkValue}
+          memeTotal={memeTotal}
+          roster={roster}
+          neverslandItems={neverslandItems}
+          veDust={veDust}
+          trades={trades}
+          activeTab={activeTab}
+          onTabChange={handleManualTab}
+        />
+      </div>
+
+      {/* Scroll height spacer — 4 × 90vh gives room to cycle all 4 tabs */}
+      <div style={{ height: "360vh" }} aria-hidden />
+    </div>
+  );
 }
 
 function ContestsCollabs() {
