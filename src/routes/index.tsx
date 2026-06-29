@@ -559,7 +559,8 @@ function LandingHero() {
       className="relative w-full flex flex-col items-center justify-center"
       style={{
         height: "100dvh",
-        backgroundImage: "url('/hero-bg.jpg')",
+        backgroundColor: BG,
+        backgroundImage: "url('/backgroundimage.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
