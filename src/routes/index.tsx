@@ -33,6 +33,18 @@ const FOOTER_BG = "#0D0418";
 const TOKEN_LOGO = "/bchoglogo.png";
 const MASCOT_HERO = "/photo_2026-06-25_20-11-35-removebg-preview.png";
 
+// Dashboard / Trading Desk dark-navy palette (like the screenshot)
+const DB_BG = "#0b1829";
+const DB_SURFACE = "#0f2235";
+const DB_PANEL = "#122944";
+const DB_BORDER = "rgba(255, 140, 0, 0.18)";
+const DB_BORDER_STRONG = "rgba(255, 140, 0, 0.32)";
+const DB_ORANGE = "#ff8c00";
+const DB_ORANGE_DIM = "rgba(255, 140, 0, 0.55)";
+const DB_GREEN = "#4adeae";
+const DB_RED = "#ff5c8a";
+const DB_MUTED = "rgba(200, 220, 255, 0.45)";
+
 const HERO_IMAGES = [
   {
     src: "https://www.image2url.com/r2/default/images/1782680314666-954b3ebf-5b98-427a-b773-5ca1a515e950.png",
@@ -938,25 +950,28 @@ function SectionBlock({
   portfolio: PortfolioToken[];
   veDust: VeDustData | undefined;
 }) {
+  const isDashboard = section.id === "dashboard" || section.id === "trading-desk";
+  const sectionBg = isDashboard ? DB_BG : BG;
+  const sectionBorder = isDashboard ? DB_BORDER : BORDER;
   return (
     <section
       id={section.id}
       className="relative w-full overflow-hidden"
       style={{
-        minHeight: section.id === "coming-soon" ? undefined : "100vh",
-        backgroundColor: BG,
+        minHeight: section.id === "coming-soon" ? undefined : "70vh",
+        backgroundColor: sectionBg,
         color: "white",
-        borderTop: `1px solid ${BORDER}`,
+        borderTop: `1px solid ${sectionBorder}`,
       }}
     >
       <div className="absolute inset-0 bchog-grid-bg opacity-20 pointer-events-none" />
       <div
-        className="relative px-4 sm:px-8 lg:px-16 pt-24 sm:pt-28 pb-20 w-full max-w-6xl mx-auto"
+        className="relative px-4 sm:px-8 lg:px-16 pt-16 sm:pt-20 pb-14 w-full max-w-6xl mx-auto"
         style={{ zIndex: 2 }}
       >
-        <div className="mb-10 sm:mb-12">
+        <div className="mb-7 sm:mb-8">
           <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="bchog-section-title text-[clamp(2.8rem,8vw,5rem)] text-white m-0"
+            <h2 className="bchog-section-title text-[clamp(2rem,6vw,3.6rem)] text-white m-0"
             style={{ fontFamily: "'Anton', sans-serif", letterSpacing: "-0.01em" }}>
               {section.title}
             </h2>
@@ -970,7 +985,7 @@ function SectionBlock({
             )}
           </div>
           {SECTION_SUBTITLES[section.id] && (
-            <p className="mt-3 text-sm" style={{ color: MUTED }}>
+            <p className="mt-2 text-sm" style={{ color: isDashboard ? DB_MUTED : MUTED }}>
               {SECTION_SUBTITLES[section.id]}
             </p>
           )}
@@ -1691,220 +1706,136 @@ function SectionMock({
     const circPct = percentOf(circulating, stats.totalSupply);
     const holderPct = market.holders ? Math.min((market.holders / 500) * 100, 100) : 0;
 
-    // Simulated weekly burn history bars (most recent = rightmost)
-    const burnBars = [32, 45, 38, 55, 62, 70, 58, 80, 74, 92, 85, 100, 94, 88, 78];
-    // Market cap area sparkline
-    const capArea = [18, 24, 20, 28, 32, 27, 36, 40, 35, 44, 48, 43, 52, 50, 58];
-
-    // Colored top-stat cards (like HR dashboard)
-    const topCards = [
-      {
-        label: "Total Burned",
-        value: formatToken(stats.balances.burn, stats.decimals),
-        sub: "BCHOG removed",
-        bg: "linear-gradient(135deg, #7A2DFF 0%, #B54CFF 100%)",
-        icon: "🔥",
-      },
-      {
-        label: "Supply Locked",
-        value: `${Math.round(lockPct)}%`,
-        sub: "of total supply",
-        bg: "linear-gradient(135deg, #2d1a6e 0%, #4a2fa0 100%)",
-        icon: "🔒",
-      },
-      {
-        label: "Holders",
-        value: formatCount(market.holders),
-        sub: "unique wallets",
-        bg: "linear-gradient(135deg, #1a3a6e 0%, #2a5fa0 100%)",
-        icon: "👥",
-      },
-      {
-        label: "Market Cap",
-        value: formatUsd(market.marketCapUsd),
-        sub: market.priceUsd ? `$${Number(market.priceUsd).toPrecision(3)} per token` : "live price",
-        bg: "linear-gradient(135deg, #1a5040 0%, #2a8060 100%)",
-        icon: "📈",
-      },
-    ];
-
-    // Supply breakdown table rows
-    const supplyRows = [
-      { label: "Burned", value: formatToken(stats.balances.burn, stats.decimals), pct: burnedPct, color: CORAL },
-      { label: "Treasury", value: formatToken(stats.balances.treasury, stats.decimals), pct: treasuryPct, color: CREAM },
-      { label: "Trading", value: formatToken(stats.balances.trading, stats.decimals), pct: tradingPct, color: PURPLE_BRIGHT },
-      { label: "Locked", value: formatToken(lockedTotal, stats.decimals), pct: lockPct, color: "#4adeae" },
-      { label: "Circulating", value: formatToken(circulating, stats.decimals), pct: circPct, color: "#60a5fa" },
-    ];
+    const burnBars = [42, 58, 48, 72, 65, 88, 76, 94];
+    const capArea = [22, 28, 25, 34, 31, 38, 42, 45];
+    const treasuryCurrent = Number(stats.balances.treasury ?? 0n) / Number(scaledDivisor(stats.decimals));
+    const lockTargetNum = Number(LOCK_TARGET);
 
     return (
-      <div className="flex flex-col gap-4 sm:gap-5">
-        {/* Row 1: Colored stat cards */}
+      <div className="flex flex-col gap-4">
+        {/* Stat card row — orange accent dark navy like screenshot */}
         <Reveal>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {topCards.map((c) => (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              {
+                label: "MARKET CAP",
+                value: formatUsd(market.marketCapUsd),
+                sub: "Live",
+                subColor: DB_ORANGE,
+              },
+              {
+                label: "HOLDERS",
+                value: formatCount(market.holders),
+                sub: "Boblievers",
+                subColor: DB_ORANGE,
+              },
+              {
+                label: "TOTAL BURNED",
+                value: formatToken(stats.balances.burn, stats.decimals),
+                sub: "Deflationary",
+                subColor: DB_ORANGE_DIM,
+              },
+              {
+                label: "SUPPLY LOCKED",
+                value: `${Math.round(lockPct)}%`,
+                sub: "Lock progress",
+                subColor: DB_ORANGE_DIM,
+              },
+            ].map((s) => (
               <div
-                key={c.label}
-                className="rounded-2xl p-4 sm:p-5 flex flex-col gap-1 relative overflow-hidden"
-                style={{ background: c.bg, boxShadow: "0 4px 24px rgba(0,0,0,0.3)" }}
+                key={s.label}
+                className="rounded-xl px-4 py-4 flex flex-col justify-between"
+                style={{
+                  background: DB_PANEL,
+                  border: `1px solid ${DB_BORDER_STRONG}`,
+                  minHeight: 90,
+                }}
               >
-                <span className="text-2xl absolute top-4 right-4 opacity-30 select-none">{c.icon}</span>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/70">{c.label}</p>
-                <p className="text-[clamp(1.4rem,4vw,2rem)] font-bold text-white leading-tight">{c.value}</p>
-                <p className="text-[10px] text-white/50">{c.sub}</p>
+                <p
+                  className="text-[10px] font-bold uppercase tracking-[0.14em] mb-2"
+                  style={{ color: DB_MUTED }}
+                >
+                  {s.label}
+                </p>
+                <p className="text-[clamp(1.3rem,3.8vw,2rem)] font-bold text-white leading-none">
+                  {s.value}
+                </p>
+                <p className="text-[10px] uppercase tracking-[0.1em] mt-1.5 font-semibold" style={{ color: s.subColor }}>
+                  {s.sub}
+                </p>
               </div>
             ))}
           </div>
         </Reveal>
 
-        {/* Row 2: Burn chart + Donut breakdown side by side */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Reveal delay={60} className="lg:col-span-2">
-            <div
-              className="rounded-2xl p-5 sm:p-6 h-full"
-              style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: PURPLE_BRIGHT }}>
-                    Burn Activity
-                  </p>
-                  <p className="text-[10px] mt-0.5" style={{ color: MUTED }}>Weekly burn trend</p>
-                </div>
-                <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: "rgba(181,76,255,0.15)", color: PURPLE_BRIGHT }}>
-                  LIVE
-                </span>
-              </div>
-              {/* Bar chart */}
-              <svg viewBox="0 0 300 80" className="w-full" style={{ height: 80 }} aria-hidden>
-                {burnBars.map((v, i) => {
-                  const h = (v / 100) * 68;
-                  const isLast = i === burnBars.length - 1;
-                  return (
-                    <g key={i}>
-                      <rect
-                        x={4 + i * 19.5}
-                        y={72 - h}
-                        width={14}
-                        height={h}
-                        rx={4}
-                        fill={isLast ? PURPLE_BRIGHT : "rgba(181,76,255,0.35)"}
-                      />
-                      {isLast && (
-                        <text x={4 + i * 19.5 + 7} y={72 - h - 5} textAnchor="middle" fontSize="7" fill={PURPLE_BRIGHT}>
-                          {formatToken(stats.balances.burn, stats.decimals)}
-                        </text>
-                      )}
-                    </g>
-                  );
-                })}
-              </svg>
-              {/* Lock progress bar */}
-              <div className="mt-4">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] uppercase tracking-[0.08em]" style={{ color: MUTED }}>Lock Progress to 1M</span>
-                  <span className="text-[11px] font-bold" style={{ color: PURPLE_BRIGHT }}>{Math.round(lockProgress)}%</span>
-                </div>
-                <div className="h-2.5 rounded-full overflow-hidden" style={{ background: INDIGO }}>
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 100%)` }}
-                  />
-                </div>
-              </div>
-              {/* Market cap sparkline */}
-              <div className="mt-4">
-                <p className="text-[10px] uppercase tracking-[0.08em] mb-1.5" style={{ color: MUTED }}>Market Cap Trend</p>
-                <SparkArea values={capArea} />
-              </div>
-            </div>
-          </Reveal>
-
-          <Reveal delay={100}>
-            <div
-              className="rounded-2xl p-5 sm:p-6 flex flex-col gap-4 h-full"
-              style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
-            >
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: PURPLE_BRIGHT }}>
-                Supply Split
-              </p>
-              {/* Donut + legend */}
-              <div className="flex items-center justify-center">
-                <DonutChart
-                  segments={[
-                    { value: burnedPct, label: "Burned" },
-                    { value: lockPct, label: "Locked" },
-                    { value: treasuryPct, label: "Treasury" },
-                    { value: tradingPct, label: "Trading" },
-                    { value: Math.max(circPct, 1), label: "Circulating" },
-                  ]}
-                />
-              </div>
-              {/* Holders ring */}
-              <div className="flex items-center gap-3 mt-auto">
-                <RingProgress pct={holderPct} />
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.08em]" style={{ color: MUTED }}>Holder Goal</p>
-                  <p className="text-lg font-bold text-white">{formatCount(market.holders)}</p>
-                  <p className="text-[10px]" style={{ color: MUTED }}>{Math.round(holderPct)}% of 500 target</p>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-
-        {/* Row 3: Supply breakdown table */}
-        <Reveal delay={140}>
+        {/* Lock progress bar */}
+        <Reveal delay={60}>
           <div
-            className="rounded-2xl overflow-hidden"
-            style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
+            className="rounded-xl px-5 py-4"
+            style={{ background: DB_PANEL, border: `1px solid ${DB_BORDER_STRONG}` }}
           >
-            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: PURPLE_BRIGHT }}>
-                Supply Breakdown
+            <div className="flex items-baseline justify-between gap-4 mb-3">
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: DB_MUTED }}>
+                Lock Holding Progress
               </p>
-              <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: PURPLE_BRIGHT }} />
-                Live on-chain
-              </span>
+              <p className="text-lg font-bold text-white">
+                {formatToken(stats.balances.lockHolding, stats.decimals)}
+              </p>
             </div>
-            {/* Header */}
-            <div className="grid grid-cols-4 px-5 py-2 text-[10px] uppercase tracking-[0.08em]" style={{ color: MUTED, borderBottom: `1px solid ${BORDER}` }}>
-              <span>Wallet</span>
-              <span className="text-right">Amount</span>
-              <span className="text-right">% of Supply</span>
-              <span className="text-right">Status</span>
-            </div>
-            {supplyRows.map((row) => (
+            <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(255,140,0,0.12)" }}>
               <div
-                key={row.label}
-                className="grid grid-cols-4 px-5 py-3 items-center transition-colors hover:bg-white/[0.03]"
-                style={{ borderBottom: `1px solid ${BORDER}` }}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: row.color }} />
-                  <span className="text-sm font-medium text-white">{row.label}</span>
-                </div>
-                <span className="text-sm font-mono text-right text-white">{row.value}</span>
-                <div className="flex items-center justify-end gap-2">
-                  <div className="h-1.5 rounded-full overflow-hidden w-16" style={{ background: INDIGO }}>
-                    <div className="h-full rounded-full" style={{ width: `${row.pct}%`, background: row.color }} />
+                className="h-full rounded-full"
+                style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${DB_ORANGE} 0%, #ffb347 100%)` }}
+              />
+            </div>
+            <div className="flex justify-between mt-2 text-[10px]" style={{ color: DB_MUTED }}>
+              <span>{Math.round(lockProgress)}% of 1M target</span>
+              <span>Target: 1,000,000</span>
+            </div>
+          </div>
+        </Reveal>
+
+        {/* Supply breakdown */}
+        <Reveal delay={100}>
+          <div
+            className="rounded-xl p-4 sm:p-5"
+            style={{ background: DB_PANEL, border: `1px solid ${DB_BORDER_STRONG}` }}
+          >
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] mb-4" style={{ color: DB_MUTED }}>
+              Supply Breakdown
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {[
+                { label: "Burned", pct: burnedPct, color: DB_RED },
+                { label: "Treasury", pct: treasuryPct, color: DB_ORANGE },
+                { label: "Trading", pct: tradingPct, color: "#4adeae" },
+                { label: "Locked", pct: lockPct, color: DB_ORANGE },
+                { label: "Circulating", pct: circPct, color: DB_MUTED },
+              ].map((s) => (
+                <div key={s.label}>
+                  <p className="text-[10px] uppercase tracking-[0.08em]" style={{ color: DB_MUTED }}>
+                    {s.label}
+                  </p>
+                  <p className="text-xl font-bold text-white mt-1">{Math.round(s.pct)}%</p>
+                  <div className="h-2 rounded-full mt-2 overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                    <div className="h-full rounded-full" style={{ width: `${s.pct}%`, background: s.color }} />
                   </div>
-                  <span className="text-[11px] font-mono" style={{ color: row.color }}>{Math.round(row.pct)}%</span>
                 </div>
-                <div className="flex justify-end">
-                  <span
-                    className="px-2 py-0.5 rounded text-[10px] font-bold uppercase"
-                    style={{
-                      background: row.label === "Circulating" ? "rgba(96,165,250,0.15)" : row.label === "Burned" ? "rgba(255,92,138,0.15)" : "rgba(181,76,255,0.15)",
-                      color: row.label === "Circulating" ? "#60a5fa" : row.label === "Burned" ? CORAL : PURPLE_BRIGHT,
-                    }}
-                  >
-                    {row.label === "Burned" ? "Burned" : row.label === "Circulating" ? "Active" : "Locked"}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delay={130}>
+          <div
+            className="flex items-center justify-between text-[10px] uppercase tracking-[0.12em] pt-1"
+            style={{ color: DB_MUTED }}
+          >
+            <span>Live on-chain data · refreshes every 60s</span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: DB_ORANGE }} />
+              Live
+            </span>
           </div>
         </Reveal>
       </div>
@@ -1948,56 +1879,55 @@ function SectionMock({
       { k: "Lifetime Yield", v: veDust ? formatUsd(veDust.lifetimeUsd) : "$---" },
     ];
     return (
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
 
         {/* ── Row 1: Stat cards ── */}
         <Reveal>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               {
-                dot: STAT_DOTS.purple,
+                dot: DB_ORANGE,
                 label: "Trading Wallet",
                 value: formatToken(stats.balances.trading, stats.decimals),
                 sub: "BCHOG",
-                bg: "linear-gradient(135deg, rgba(122,45,255,0.35) 0%, rgba(181,76,255,0.2) 100%)",
+                bg: `linear-gradient(135deg, rgba(255,140,0,0.18) 0%, rgba(255,140,0,0.08) 100%)`,
               },
               {
-                dot: STAT_DOTS.cream,
+                dot: DB_GREEN,
                 label: "Meme Portfolio",
                 value: memeTotal > 0 ? formatUsd(memeTotal) : "$---",
                 sub: `${roster.length} tokens`,
-                bg: "linear-gradient(135deg, rgba(255,232,180,0.18) 0%, rgba(255,232,180,0.08) 100%)",
+                bg: `linear-gradient(135deg, rgba(74,222,174,0.18) 0%, rgba(74,222,174,0.06) 100%)`,
               },
               {
-                dot: STAT_DOTS.green,
+                dot: DB_ORANGE,
                 label: "veDUST Value",
                 value: veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---",
                 sub: veDust ? `${veDust.nfts} NFTs` : "---",
-                bg: "linear-gradient(135deg, rgba(74,222,174,0.2) 0%, rgba(74,222,174,0.08) 100%)",
+                bg: `linear-gradient(135deg, rgba(255,140,0,0.14) 0%, rgba(255,140,0,0.06) 100%)`,
               },
               {
-                dot: STAT_DOTS.pink,
+                dot: DB_GREEN,
                 label: "Weekly Yield",
                 value: veDust?.weeklyUsd ? formatUsd(veDust.weeklyUsd) : "$---",
                 sub: "USDC",
-                bg: "linear-gradient(135deg, rgba(255,92,138,0.25) 0%, rgba(255,92,138,0.1) 100%)",
+                bg: `linear-gradient(135deg, rgba(74,222,174,0.18) 0%, rgba(74,222,174,0.06) 100%)`,
               },
             ].map((s) => (
               <div
                 key={s.label}
-                className="rounded-2xl p-4 sm:p-5 flex flex-col gap-1"
+                className="rounded-xl p-4 flex flex-col gap-1"
                 style={{
                   background: s.bg,
-                  border: `1px solid ${BORDER_STRONG}`,
-                  boxShadow: `0 0 20px 2px rgba(122,45,255,0.12)`,
+                  border: `1px solid ${DB_BORDER_STRONG}`,
                 }}
               >
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full shrink-0" style={{ background: s.dot }} />
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ color: MUTED }}>{s.label}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: DB_MUTED }}>{s.label}</span>
                 </div>
                 <div className="text-[clamp(1.2rem,3.5vw,1.7rem)] font-bold text-white leading-tight">{s.value}</div>
-                {s.sub && <div className="text-[10px] uppercase tracking-[0.08em]" style={{ color: MUTED }}>{s.sub}</div>}
+                {s.sub && <div className="text-[10px] uppercase tracking-[0.08em]" style={{ color: DB_MUTED }}>{s.sub}</div>}
               </div>
             ))}
           </div>
@@ -2007,15 +1937,15 @@ function SectionMock({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Reveal className="lg:col-span-2">
             <div
-              className="rounded-2xl p-4 sm:p-5"
-              style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
+              className="rounded-xl p-4"
+              style={{ background: DB_PANEL, border: `1px solid ${DB_BORDER_STRONG}` }}
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>Meme Portfolio</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: DB_ORANGE }}>Meme Portfolio</span>
                 {memeTotal > 0 && <span className="text-xs font-semibold text-white">{formatUsd(memeTotal)}</span>}
               </div>
               {roster.length === 0 ? (
-                <div className="text-sm py-4" style={{ color: MUTED }}>Loading holdings…</div>
+                <div className="text-sm py-4" style={{ color: DB_MUTED }}>Loading holdings…</div>
               ) : (
                 <div className="no-scrollbar overflow-x-auto" style={{ scrollbarWidth: "none" }}>
                   <div className="flex gap-2.5" style={{ width: "max-content" }}>
@@ -2025,25 +1955,24 @@ function SectionMock({
                         href={explorerToken(t.address)}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex-shrink-0 flex flex-col items-center rounded-2xl p-3 no-underline text-white transition-all hover:scale-[1.05] hover:shadow-lg"
+                        className="flex-shrink-0 flex flex-col items-center rounded-xl p-3 no-underline text-white transition-all hover:scale-[1.05] hover:shadow-lg"
                         style={{
-                          background: `linear-gradient(145deg, ${PANEL} 0%, ${INDIGO} 100%)`,
-                          border: `1px solid ${BORDER_STRONG}`,
-                          width: 88,
-                          boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
+                          background: DB_SURFACE,
+                          border: `1px solid ${DB_BORDER_STRONG}`,
+                          width: 84,
                         }}
                       >
                         <div
-                          className="w-10 h-10 rounded-full overflow-hidden mb-2 flex items-center justify-center"
-                          style={{ background: PANEL, border: `1.5px solid ${BORDER_STRONG}` }}
+                          className="w-9 h-9 rounded-full overflow-hidden mb-2 flex items-center justify-center"
+                          style={{ background: DB_PANEL, border: `1.5px solid ${DB_BORDER_STRONG}` }}
                         >
                           {t.iconUrl
                             ? <img src={t.iconUrl} alt="" className="w-full h-full object-cover" draggable={false} />
-                            : <span className="text-xs font-bold" style={{ color: PURPLE_BRIGHT }}>{t.symbol.slice(0, 2)}</span>
+                            : <span className="text-xs font-bold" style={{ color: DB_ORANGE }}>{t.symbol.slice(0, 2)}</span>
                           }
                         </div>
                         <div className="text-[10px] font-bold uppercase truncate w-full text-center tracking-wide">{t.symbol}</div>
-                        <div className="text-[11px] font-bold mt-0.5" style={{ color: t.valueUsd > 100 ? "#4adeae" : PURPLE_BRIGHT }}>
+                        <div className="text-[11px] font-bold mt-0.5" style={{ color: t.valueUsd > 100 ? DB_GREEN : DB_ORANGE }}>
                           {formatUsd(t.valueUsd)}
                         </div>
                       </a>
@@ -2056,23 +1985,19 @@ function SectionMock({
 
           <Reveal delay={60}>
             <div
-              className="rounded-2xl p-4 sm:p-5 h-full"
+              className="rounded-xl p-4 h-full"
               style={{
-                background: `linear-gradient(160deg, ${PANEL} 0%, ${INDIGO} 100%)`,
-                border: `1px solid ${BORDER_STRONG}`,
-                boxShadow: `0 0 24px 3px rgba(61,20,136,0.35)`,
+                background: `linear-gradient(160deg, ${DB_PANEL} 0%, ${DB_SURFACE} 100%)`,
+                border: `1px solid ${DB_BORDER_STRONG}`,
               }}
             >
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "rgba(181,76,255,0.2)" }}>
-                  <span style={{ fontSize: 10 }}>✦</span>
-                </div>
-                <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>Neverland veDUST</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: DB_ORANGE }}>Neverland veDUST</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {vault.map((r) => (
-                  <div key={r.k} className="rounded-xl p-3" style={{ background: "rgba(0,0,0,0.25)" }}>
-                    <div className="text-[9px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>{r.k}</div>
+                  <div key={r.k} className="rounded-lg p-3" style={{ background: "rgba(0,0,0,0.3)" }}>
+                    <div className="text-[9px] uppercase tracking-[0.1em]" style={{ color: DB_MUTED }}>{r.k}</div>
                     <div className="text-sm font-bold text-white mt-1">{r.v}</div>
                   </div>
                 ))}
@@ -2081,25 +2006,25 @@ function SectionMock({
           </Reveal>
         </div>
 
-        {/* ── Row 3: Recent Trades — full width, beautiful table ── */}
+        {/* ── Row 3: Recent Trades ── */}
         <Reveal delay={80}>
           <div
-            className="rounded-2xl overflow-hidden"
-            style={{ background: SURFACE, border: `1px solid ${BORDER_STRONG}` }}
+            className="rounded-xl overflow-hidden"
+            style={{ background: DB_PANEL, border: `1px solid ${DB_BORDER_STRONG}` }}
           >
-            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
-              <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>
+            <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: `1px solid ${DB_BORDER}` }}>
+              <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: DB_ORANGE }}>
                 Recent Trades
               </span>
-              <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#4adeae" }} />
+              <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em]" style={{ color: DB_MUTED }}>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: DB_GREEN }} />
                 Live feed
               </span>
             </div>
             {/* Table header */}
             <div
-              className="grid px-5 py-2.5 text-[10px] uppercase tracking-[0.08em]"
-              style={{ color: MUTED, borderBottom: `1px solid ${BORDER}`, gridTemplateColumns: "60px 1fr 120px 100px 60px" }}
+              className="grid px-5 py-2 text-[10px] uppercase tracking-[0.08em]"
+              style={{ color: DB_MUTED, borderBottom: `1px solid ${DB_BORDER}`, gridTemplateColumns: "60px 1fr 120px 100px 60px" }}
             >
               <span>Type</span>
               <span>Wallet</span>
@@ -2108,7 +2033,7 @@ function SectionMock({
               <span className="text-right">Time</span>
             </div>
             {market.trades.length === 0 ? (
-              <div className="px-5 py-8 text-sm text-center" style={{ color: MUTED }}>Loading recent trades…</div>
+              <div className="px-5 py-6 text-sm text-center" style={{ color: DB_MUTED }}>Loading recent trades…</div>
             ) : (
               market.trades.map((t, idx) => (
                 <a
@@ -2116,10 +2041,10 @@ function SectionMock({
                   href={explorerTx(t.hash)}
                   target="_blank"
                   rel="noreferrer"
-                  className="grid items-center px-5 py-3.5 no-underline transition-colors hover:bg-white/[0.04]"
+                  className="grid items-center px-5 py-3 no-underline transition-colors hover:bg-white/[0.04]"
                   style={{
                     color: "white",
-                    borderBottom: idx < market.trades.length - 1 ? `1px solid ${BORDER}` : undefined,
+                    borderBottom: idx < market.trades.length - 1 ? `1px solid ${DB_BORDER}` : undefined,
                     gridTemplateColumns: "60px 1fr 120px 100px 60px",
                   }}
                 >
@@ -2127,22 +2052,22 @@ function SectionMock({
                     className="px-2 py-1 rounded-lg text-[10px] font-bold uppercase w-fit"
                     style={{
                       background: t.type === "BUY" ? "rgba(74,222,174,0.15)" : "rgba(255,92,138,0.15)",
-                      color: t.type === "BUY" ? "#4adeae" : CORAL,
+                      color: t.type === "BUY" ? DB_GREEN : DB_RED,
                       border: `1px solid ${t.type === "BUY" ? "rgba(74,222,174,0.35)" : "rgba(255,92,138,0.35)"}`,
                     }}
                   >
                     {t.type}
                   </span>
-                  <span className="text-[11px] font-mono truncate px-2" style={{ color: MUTED }}>
+                  <span className="text-[11px] font-mono truncate px-2" style={{ color: DB_MUTED }}>
                     {t.account ? `${t.account.slice(0, 6)}…${t.account.slice(-4)}` : "—"}
                   </span>
                   <span className="text-sm font-semibold text-right text-white">
-                    {compactAmount(t.tokenAmount)} <span className="text-[10px]" style={{ color: MUTED }}>BCHOG</span>
+                    {compactAmount(t.tokenAmount)} <span className="text-[10px]" style={{ color: DB_MUTED }}>BCHOG</span>
                   </span>
-                  <span className="text-sm font-bold text-right" style={{ color: t.type === "BUY" ? "#4adeae" : CORAL }}>
+                  <span className="text-sm font-bold text-right" style={{ color: t.type === "BUY" ? DB_GREEN : DB_RED }}>
                     {formatUsd(t.valueUsd)}
                   </span>
-                  <span className="text-[11px] font-mono text-right" style={{ color: MUTED }}>{timeAgo(t.ts)}</span>
+                  <span className="text-[11px] font-mono text-right" style={{ color: DB_MUTED }}>{timeAgo(t.ts)}</span>
                 </a>
               ))
             )}
