@@ -2102,7 +2102,6 @@ function PhantomWallet({
               <div
                 className="flex flex-col pt-2 rounded-2xl mt-2"
                 style={{
-                  maxHeight: 420,
                   overflowY: "auto",
                   scrollbarWidth: "none",
                   position: "relative",
@@ -2251,7 +2250,6 @@ function PhantomWallet({
                   <div
                     className="flex flex-col rounded-2xl"
                     style={{
-                      maxHeight: 400,
                       overflowY: "auto",
                       scrollbarWidth: "none",
                       position: "relative",
@@ -2885,81 +2883,171 @@ function TradingDeskScrollDriver({
   const TAB_ORDER = ["network", "tokens", "defi", "activity"] as const;
   type Tab = typeof TAB_ORDER[number];
 
+  // locked = scroll is hijacked; false = released to normal page scroll
+  const [locked, setLocked]       = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("network");
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const sentinelRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const userOverride = useRef(false);
-  const overrideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Each sentinel is ~1 viewport-height apart inside a 4×vh tall scroll track
+  const lockedRef    = useRef(false);
+  const tabIndexRef  = useRef(0);
+  const advancingRef = useRef(false);
+  const sectionRef   = useRef<HTMLDivElement>(null);
+
+  // keep refs in sync
+  useEffect(() => { lockedRef.current = locked; }, [locked]);
+
+  // Lock scroll when the section enters the viewport
   useEffect(() => {
-    const observers: IntersectionObserver[] = [];
-    sentinelRefs.current.forEach((el, i) => {
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting && !userOverride.current) {
-            setActiveTab(TAB_ORDER[i]);
+    const el = sectionRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        // When section scrolls into view and user hasn't passed it yet → lock
+        if (entry.isIntersecting && tabIndexRef.current === 0) {
+          lockedRef.current = true;
+          setLocked(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const advanceTab = () => {
+    if (advancingRef.current) return;
+    const cur  = tabIndexRef.current;
+    const next = cur + 1;
+    if (next >= TAB_ORDER.length) {
+      // reached last tab — release scroll so page moves on
+      lockedRef.current = false;
+      setLocked(false);
+      return;
+    }
+    advancingRef.current = true;
+    tabIndexRef.current  = next;
+    setActiveTab(TAB_ORDER[next]);
+    setTimeout(() => { advancingRef.current = false; }, 600);
+    // after showing last tab, release scroll
+    if (next === TAB_ORDER.length - 1) {
+      setTimeout(() => { lockedRef.current = false; setLocked(false); }, 700);
+    }
+  };
+
+  const retreatTab = () => {
+    if (advancingRef.current) return;
+    const cur = tabIndexRef.current;
+    if (cur <= 0) return;
+    // re-lock if user scrolls back up
+    if (!lockedRef.current) { lockedRef.current = true; setLocked(true); }
+    advancingRef.current = true;
+    const prev = cur - 1;
+    tabIndexRef.current  = prev;
+    setActiveTab(TAB_ORDER[prev]);
+    setTimeout(() => { advancingRef.current = false; }, 600);
+  };
+
+  // Intercept wheel + touch while locked; also intercept upward scroll at top of section
+  useEffect(() => {
+    let touchStartY = 0;
+
+    const onWheel = (e: WheelEvent) => {
+      // If not locked but user scrolls up and section top is in view → re-enter
+      if (!lockedRef.current) {
+        if (e.deltaY < 0 && tabIndexRef.current > 0) {
+          const el = sectionRef.current;
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            if (rect.top >= -100 && rect.top <= window.innerHeight) {
+              e.preventDefault();
+              e.stopPropagation();
+              retreatTab();
+              return;
+            }
           }
-        },
-        { threshold: 0.5 }
-      );
-      obs.observe(el);
-      observers.push(obs);
-    });
-    return () => observers.forEach((o) => o.disconnect());
+        }
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.deltaY > 0) advanceTab();
+      else retreatTab();
+    };
+
+    const onTouchStart = (e: TouchEvent) => { touchStartY = e.touches[0].clientY; };
+    const onTouchMove  = (e: TouchEvent) => {
+      if (!lockedRef.current) return;
+      const dy = touchStartY - e.touches[0].clientY;
+      if (dy > 30)       { e.preventDefault(); advanceTab(); }
+      else if (dy < -30) { e.preventDefault(); retreatTab(); }
+    };
+
+    window.addEventListener("wheel",      onWheel,      { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true  });
+    window.addEventListener("touchmove",  onTouchMove,  { passive: false });
+    return () => {
+      window.removeEventListener("wheel",      onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove",  onTouchMove);
+    };
   }, []);
 
   const handleManualTab = (t: Tab) => {
-    userOverride.current = true;
+    const idx = TAB_ORDER.indexOf(t);
+    tabIndexRef.current = idx;
     setActiveTab(t);
-    if (overrideTimer.current) clearTimeout(overrideTimer.current);
-    // re-enable scroll driving after 2s of no manual interaction
-    overrideTimer.current = setTimeout(() => { userOverride.current = false; }, 2000);
+    // if user manually clicks last tab, unlock
+    if (idx === TAB_ORDER.length - 1) {
+      setTimeout(() => { lockedRef.current = false; setLocked(false); }, 700);
+    }
   };
 
   return (
-    // Outer scroll container — tall enough for 4 "panels"
-    <div ref={scrollRef} style={{ position: "relative" }}>
-      {/* Invisible scroll sentinels — each 100vh tall, stacked */}
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }} aria-hidden>
-        {TAB_ORDER.map((_, i) => (
+    <div ref={sectionRef}>
+      {/* Scroll-progress indicator — subtle dots on the right edge */}
+      <div
+        className="fixed right-5 top-1/2 -translate-y-1/2 flex-col gap-2 z-50"
+        style={{ display: locked ? "flex" : "none" }}
+        aria-hidden
+      >
+        {TAB_ORDER.map((t, i) => (
           <div
-            key={i}
-            ref={(el) => { sentinelRefs.current[i] = el; }}
+            key={t}
             style={{
-              position: "absolute",
-              top: `${(i / TAB_ORDER.length) * 100}%`,
-              left: 0,
-              width: "100%",
-              height: `${100 / TAB_ORDER.length}%`,
-              // centre point sentinel — 50px tall strip in middle of each panel
-              display: "flex",
-              alignItems: "center",
+              width: activeTab === TAB_ORDER[i] ? 8 : 4,
+              height: activeTab === TAB_ORDER[i] ? 8 : 4,
+              borderRadius: "50%",
+              background: activeTab === TAB_ORDER[i] ? PURPLE_BRIGHT : "rgba(181,76,255,0.30)",
+              transition: "all 300ms ease",
+              boxShadow: activeTab === TAB_ORDER[i] ? `0 0 8px ${PURPLE_BRIGHT}` : "none",
             }}
-          >
-            <div style={{ width: "100%", height: 2 }} />
-          </div>
+          />
         ))}
       </div>
 
-      {/* Sticky wallet card */}
-      <div style={{ position: "sticky", top: 100, zIndex: 10 }}>
-        <PhantomWallet
-          bchogBalance={bchogBalance}
-          totalNetworkValue={totalNetworkValue}
-          memeTotal={memeTotal}
-          roster={roster}
-          neverslandItems={neverslandItems}
-          veDust={veDust}
-          trades={trades}
-          activeTab={activeTab}
-          onTabChange={handleManualTab}
-        />
+      {/* Scroll hint */}
+      <div
+        className="fixed bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none z-50"
+        style={{ opacity: locked ? 1 : 0, transition: "opacity 500ms ease" }}
+        aria-hidden
+      >
+        <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.35)" }}>
+          {tabIndexRef.current < TAB_ORDER.length - 1 ? "Scroll to explore" : "Scroll to continue"}
+        </span>
+        <div className="w-px h-5 rounded-full" style={{ background: `linear-gradient(to bottom, transparent, ${PURPLE_BRIGHT})` }} />
+        <div style={{ width: 0, height: 0, borderLeft: "4px solid transparent", borderRight: "4px solid transparent", borderTop: `5px solid ${PURPLE_BRIGHT}` }} />
       </div>
 
-      {/* Scroll height spacer — 4 × 90vh gives room to cycle all 4 tabs */}
-      <div style={{ height: "360vh" }} aria-hidden />
+      <PhantomWallet
+        bchogBalance={bchogBalance}
+        totalNetworkValue={totalNetworkValue}
+        memeTotal={memeTotal}
+        roster={roster}
+        neverslandItems={neverslandItems}
+        veDust={veDust}
+        trades={trades}
+        activeTab={activeTab}
+        onTabChange={handleManualTab}
+      />
     </div>
   );
 }
