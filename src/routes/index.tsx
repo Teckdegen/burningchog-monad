@@ -31,7 +31,7 @@ const CREAM = "#FFE8B4";
 const CORAL = "#FF5C8A";
 const MUTED = "rgba(255, 232, 180, 0.45)";
 const FOOTER_BG = "#0D0418";
-const TOKEN_LOGO = "/bchoglogo.png";
+const TOKEN_LOGO = "/bchoglogo.jpg";
 
 // Dashboard / Trading Desk palette — purple/black/white, no orange
 const DB_BG = BG;
@@ -626,97 +626,83 @@ function LandingHero() {
 
 function Footer() {
   return (
-    <footer className="relative w-full px-4 sm:px-8 lg:px-16 py-6" style={{ background: "transparent" }}>
+    <footer className="relative w-full px-4 sm:px-8 lg:px-16 py-6">
+      {/* flames.jpg background — rounded edges, sits behind the pill */}
       <div
-        className="relative w-full max-w-6xl mx-auto flex items-center justify-between px-6 sm:px-8 py-4 rounded-full"
-        style={{
-          background: "rgba(18,5,42,0.55)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          border: `1px solid ${BORDER_STRONG}`,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
-        }}
+        className="relative w-full max-w-6xl mx-auto overflow-hidden"
+        style={{ borderRadius: 20 }}
       >
-        {/* Left — logo + name */}
-        <a href="#top" className="flex items-center gap-2 no-underline shrink-0" style={{ color: "white" }}>
-          <img src={TOKEN_LOGO} alt="BCHOG" className="w-7 h-7 rounded-full object-cover" />
-          <span className="text-sm font-semibold tracking-[0.16em] uppercase">BCHOG</span>
-        </a>
+        {/* flames background image */}
+        <img
+          src="/flames.jpg"
+          alt=""
+          aria-hidden
+          draggable={false}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            opacity: 0.55,
+          }}
+        />
+        {/* dark overlay so content stays readable */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(8,3,20,0.60)",
+          }}
+        />
 
-        {/* Centre — tagline */}
-        <p
-          className="absolute left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.16em] hidden sm:block whitespace-nowrap"
-          style={{ color: "rgba(255,232,180,0.35)" }}
+        {/* pill bar */}
+        <div
+          className="relative flex items-center justify-between px-6 sm:px-8 py-4"
+          style={{ zIndex: 2 }}
         >
-          Rewarding. Unstoppable.
-        </p>
-
-        {/* Right — social icons with deliberate spacing */}
-        <div className="flex items-center" style={{ gap: 10 }}>
-          {/* X */}
-          <a
-            href={SOCIALS.x}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="X (Twitter)"
-            className="no-underline flex items-center justify-center transition-all hover:scale-110"
-            style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
-            }}
-          >
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="#fff" aria-hidden>
-              <path d="M18.244 2H21.5l-7.5 8.57L23 22h-6.875l-5.38-7.03L4.6 22H1.34l8.02-9.165L1 2h7.05l4.86 6.43L18.244 2Zm-1.205 18h1.9L7.05 3.9H5.01L17.04 20Z" />
-            </svg>
+          {/* Left — logo + name */}
+          <a href="#top" className="flex items-center gap-2 no-underline shrink-0" style={{ color: "white" }}>
+            <img src={TOKEN_LOGO} alt="BCHOG" className="w-7 h-7 rounded-full object-cover" />
+            <span className="text-sm font-semibold tracking-[0.16em] uppercase">BCHOG</span>
           </a>
 
-          {/* Telegram */}
-          <a
-            href={SOCIALS.telegram}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Telegram"
-            className="no-underline flex items-center justify-center transition-all hover:scale-110"
-            style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
-            }}
+          {/* Centre — tagline */}
+          <p
+            className="absolute left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.16em] hidden sm:block whitespace-nowrap"
+            style={{ color: "rgba(255,232,180,0.40)" }}
           >
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="#fff" aria-hidden>
-              <path d="M21.95 4.27 18.6 20.06c-.25 1.1-.91 1.38-1.84.86l-5.1-3.76-2.46 2.37c-.27.27-.5.5-1.02.5l.36-5.18 9.42-8.51c.41-.36-.09-.56-.64-.2L5.05 13.18l-5.01-1.57c-1.09-.34-1.11-1.09.23-1.61l19.59-7.55c.91-.34 1.7.2 1.41 1.82Z" transform="translate(1 0)" />
-            </svg>
-          </a>
+            Rewarding. Unstoppable.
+          </p>
 
-          {/* Nad.fun — wider gap to feel intentional */}
-          <a
-            href={NADFUN_TOKEN_URL}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Buy on Nad.fun"
-            className="no-underline flex items-center justify-center overflow-hidden transition-all hover:scale-110"
-            style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
-            }}
-          >
-            <img src={nadfunLogo} alt="Nad.fun" className="w-full h-full object-cover" draggable={false} />
-          </a>
+          {/* Right — social icons */}
+          <div className="flex items-center" style={{ gap: 10 }}>
+            <a href={SOCIALS.x} target="_blank" rel="noreferrer" aria-label="X (Twitter)"
+              className="no-underline flex items-center justify-center transition-all hover:scale-110"
+              style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)" }}>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="#fff" aria-hidden>
+                <path d="M18.244 2H21.5l-7.5 8.57L23 22h-6.875l-5.38-7.03L4.6 22H1.34l8.02-9.165L1 2h7.05l4.86 6.43L18.244 2Zm-1.205 18h1.9L7.05 3.9H5.01L17.04 20Z" />
+              </svg>
+            </a>
+            <a href={SOCIALS.telegram} target="_blank" rel="noreferrer" aria-label="Telegram"
+              className="no-underline flex items-center justify-center transition-all hover:scale-110"
+              style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)" }}>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="#fff" aria-hidden>
+                <path d="M21.95 4.27 18.6 20.06c-.25 1.1-.91 1.38-1.84.86l-5.1-3.76-2.46 2.37c-.27.27-.5.5-1.02.5l.36-5.18 9.42-8.51c.41-.36-.09-.56-.64-.2L5.05 13.18l-5.01-1.57c-1.09-.34-1.11-1.09.23-1.61l19.59-7.55c.91-.34 1.7.2 1.41 1.82Z" transform="translate(1 0)" />
+              </svg>
+            </a>
+            <a href={NADFUN_TOKEN_URL} target="_blank" rel="noreferrer" aria-label="Buy on Nad.fun"
+              className="no-underline flex items-center justify-center overflow-hidden transition-all hover:scale-110"
+              style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)" }}>
+              <img src={nadfunLogo} alt="Nad.fun" className="w-full h-full object-cover" draggable={false} />
+            </a>
+          </div>
         </div>
       </div>
 
-      {/* Built on Monad — below the bar */}
+      {/* Built on Monad */}
       <p className="text-center text-[9px] uppercase tracking-[0.18em] mt-3" style={{ color: "rgba(255,255,255,0.15)" }}>
         Built on Monad
       </p>
