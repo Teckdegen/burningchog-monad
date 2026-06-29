@@ -1944,10 +1944,9 @@ function PhantomWallet({
   veDust: VeDustData | undefined;
   trades: Trade[];
 }) {
-  const [walletTab, setWalletTab] = useState<"network" | "tokens" | "defi" | "activity">("network");
+  const [walletTab, setWalletTab] = useState<"tokens" | "defi" | "activity">("tokens");
 
-  const walletTabs: { id: "network" | "tokens" | "defi" | "activity"; label: string }[] = [
-    { id: "network", label: "Wallet" },
+  const walletTabs: { id: "tokens" | "defi" | "activity"; label: string }[] = [
     { id: "tokens", label: "Tokens" },
     { id: "defi", label: "DeFi" },
     { id: "activity", label: "Activity" },
@@ -2053,40 +2052,6 @@ function PhantomWallet({
 
           {/* Tab content */}
           <div className="px-4 sm:px-6 pb-5 pt-1">
-
-            {/* Networth tab — total network summary */}
-            {walletTab === "network" && (
-              <div className="flex flex-col gap-3 pt-3">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {[
-                    { label: "BCHOG Balance", value: bchogBalance, sub: "BCHOG" },
-                    { label: "Meme Tokens", value: memeTotal > 0 ? formatUsd(memeTotal) : "$---", sub: `${roster.length} tokens` },
-                    { label: "Neverland veDUST", value: veDust?.valueUsd ? formatUsd(veDust.valueUsd) : "$---", sub: veDust ? `${veDust.nfts} NFTs` : "---" },
-                    { label: "Weekly Yield", value: veDust?.weeklyUsd ? formatUsd(veDust.weeklyUsd) : "$---", sub: "USDC" },
-                  ].map((s) => (
-                    <div
-                      key={s.label}
-                      className="rounded-2xl p-3 sm:p-4 flex flex-col gap-0.5"
-                      style={{
-                        position: "relative",
-                        overflow: "hidden",
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.09)",
-                        backdropFilter: "blur(24px)",
-                        WebkitBackdropFilter: "blur(24px)",
-                        boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(255,255,255,0.03), 0 6px 20px rgba(0,0,0,0.4)",
-                      }}
-                    >
-                      {/* top sheen */}
-                      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "45%", borderRadius: "16px 16px 60% 60% / 10px 10px 24px 24px", background: "linear-gradient(to bottom, rgba(255,255,255,0.09), transparent)", pointerEvents: "none" }} />
-                      <p className="text-[9px] uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.3)" }}>{s.label}</p>
-                      <p className="text-sm sm:text-base font-bold text-white leading-tight">{s.value}</p>
-                      <p className="text-[9px]" style={{ color: PURPLE_BRIGHT }}>{s.sub}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Tokens tab — all wallet tokens */}
             {walletTab === "tokens" && (
