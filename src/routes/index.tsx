@@ -1630,7 +1630,7 @@ function EcosystemArchitecture() {
   //   Treasury ──solid──► Rewards (curve right)
   //   Treasury ──solid──► Trading (straight down)
   //   Trading  ──dashed──► Burn   (curve bottom-left)
-  //   Burn     ──dashed──► Lock   (straight up, closes cycle)
+  //   Lock     ──dashed──► Burn   (straight down, closes cycle)
 
   const VW = 560, VH = 540;
   const T  = { x: 280, y:  72, r: 62 };
@@ -1731,9 +1731,9 @@ function EcosystemArchitecture() {
   // Trading → Burn: exit bottom-left of TR, enter right of BN
   const trToBn_start = edge(TR.x, TR.y, TR.r, Math.atan2(BN.y - TR.y, BN.x - TR.x));
   const trToBn_end   = edge(BN.x, BN.y, BN.r, Math.atan2(TR.y - BN.y, TR.x - BN.x));
-  // Burn → Lock: exit top of BN, enter bottom of LK
-  const bnToLk_start = edge(BN.x, BN.y, BN.r, -Math.PI / 2);
-  const bnToLk_end   = edge(LK.x, LK.y, LK.r, Math.PI / 2);
+  // Lock → Burn: exit bottom of LK, enter top of BN
+  const lkToBn_start = edge(LK.x, LK.y, LK.r, Math.PI / 2);
+  const lkToBn_end   = edge(BN.x, BN.y, BN.r, -Math.PI / 2);
 
   return (
     <div className="mt-4 w-full">
@@ -1781,10 +1781,10 @@ function EcosystemArchitecture() {
           d={`M${trToBn_start.x},${trToBn_start.y} C${TR.x - 60},${(TR.y + BN.y) / 2} ${BN.x + 80},${(TR.y + BN.y) / 2} ${trToBn_end.x},${trToBn_end.y}`}
           fill="none" stroke={DASH_CLR} strokeWidth="1.8" strokeDasharray="6 4" markerEnd="url(#arr-dash)"
         />
-        {/* Burn → Lock (dashed straight up, cycle closes) */}
+        {/* Lock → Burn (dashed straight down, cycle closes) */}
         <line
-          x1={bnToLk_start.x} y1={bnToLk_start.y}
-          x2={bnToLk_end.x}   y2={bnToLk_end.y}
+          x1={lkToBn_start.x} y1={lkToBn_start.y}
+          x2={lkToBn_end.x}   y2={lkToBn_end.y}
           stroke={DASH_CLR} strokeWidth="1.6" strokeDasharray="5 4" markerEnd="url(#arr-dash)"
         />
 
