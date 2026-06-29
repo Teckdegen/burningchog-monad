@@ -1821,7 +1821,7 @@ function PhantomWallet({
   const [walletTab, setWalletTab] = useState<"network" | "tokens" | "defi" | "activity">("network");
 
   const walletTabs: { id: "network" | "tokens" | "defi" | "activity"; label: string }[] = [
-    { id: "network", label: "Network" },
+    { id: "network", label: "Networth" },
     { id: "tokens", label: "Tokens" },
     { id: "defi", label: "DeFi" },
     { id: "activity", label: "Activity" },
@@ -1848,7 +1848,11 @@ function PhantomWallet({
                 color: PURPLE_BRIGHT,
               }}
             >
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: PURPLE_BRIGHT }} />
+              <img
+                src="https://pbs.twimg.com/profile_images/1967693862559698944/XTfCXXGa_400x400.jpg"
+                alt="Monad"
+                className="w-3.5 h-3.5 rounded-full object-cover"
+              />
               Monad
             </div>
             <div
@@ -1904,7 +1908,7 @@ function PhantomWallet({
           {/* Tab content */}
           <div className="px-4 sm:px-6 pb-5 pt-1">
 
-            {/* Network tab — total network summary */}
+            {/* Networth tab — total network summary */}
             {walletTab === "network" && (
               <div className="flex flex-col gap-3 pt-3">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -2007,10 +2011,14 @@ function PhantomWallet({
                 >
                   <div className="flex items-center gap-2 mb-4">
                     <div
-                      className="w-7 h-7 rounded-lg flex items-center justify-center"
+                      className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center shrink-0"
                       style={{ background: PANEL, border: `1px solid rgba(181,76,255,0.3)` }}
                     >
-                      <Lock size={13} color={PURPLE_BRIGHT} strokeWidth={1.8} />
+                      <img
+                        src="https://pbs.twimg.com/profile_images/2066183456401338368/wZHKC1Nj_400x400.jpg"
+                        alt="Neverland"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <p className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: PURPLE_BRIGHT }}>
                       Neverland veDUST
@@ -2445,89 +2453,81 @@ function SectionMock({
               {timelineSteps.map((step, i) => {
                 const isLeft = step.side === "left";
                 return (
-                  <Reveal key={step.num} delay={i * 110} dir={isLeft ? -1 : 1}>
+                  <div key={step.num} style={{ marginBottom: i < timelineSteps.length - 1 ? 48 : 0 }}>
                     <div
                       className="relative grid"
-                      style={{ gridTemplateColumns: "1fr 80px 1fr", marginBottom: i < timelineSteps.length - 1 ? 48 : 0 }}
+                      style={{ gridTemplateColumns: "1fr 80px 1fr" }}
                     >
-                      {/* Left column */}
-                      <div className={`flex ${isLeft ? "justify-end pr-6" : "justify-start pl-6"}`}
-                        style={{ gridColumn: isLeft ? 1 : 3 }}>
-                        <div
-                          className="rounded-2xl p-5 max-w-[340px]"
-                          style={{
-                            background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
-                            border: `1.5px solid ${step.accent}55`,
-                            boxShadow: `0 0 32px 0 ${step.accent}1a, inset 0 1px 0 rgba(255,255,255,0.07)`,
-                          }}
-                        >
-                          <p
-                            className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1.5"
-                            style={{ color: step.accent }}
+                      {/* Card — col 1 for left-side, col 3 for right-side */}
+                      <div
+                        className={`flex ${isLeft ? "justify-end pr-6" : "justify-start pl-6"}`}
+                        style={{ gridColumn: isLeft ? 1 : 3, gridRow: 1 }}
+                      >
+                        <Reveal delay={i * 110} dir={isLeft ? -1 : 1}>
+                          <div
+                            className="rounded-2xl p-5 w-full"
+                            style={{
+                              maxWidth: 340,
+                              background: `linear-gradient(135deg, ${SURFACE} 0%, ${PANEL} 100%)`,
+                              border: `1.5px solid ${step.accent}55`,
+                              boxShadow: `0 0 32px 0 ${step.accent}1a, inset 0 1px 0 rgba(255,255,255,0.07)`,
+                            }}
                           >
-                            {step.num}
-                          </p>
-                          <p className="text-[15px] font-bold text-white mb-3">{step.title}</p>
-                          <ul className="flex flex-col gap-1.5">
-                            {step.bullets.map((b) => (
-                              <li key={b} className="flex items-start gap-2">
-                                <span className="text-[10px] mt-0.5" style={{ color: step.accent }}>+</span>
-                                <span className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>{b}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          {/* Lock progress bar on phase 03 */}
-                          {i === 2 && (
-                            <div className="mt-4">
-                              <div className="flex justify-between text-[9px] mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
-                                <span>Lock progress</span>
-                                <span>{Math.round(lockProgress)}%</span>
+                            <p
+                              className="text-[10px] font-bold uppercase tracking-[0.22em] mb-1.5"
+                              style={{ color: step.accent }}
+                            >
+                              {step.num}
+                            </p>
+                            <p className="text-[15px] font-bold text-white mb-3">{step.title}</p>
+                            <ul className="flex flex-col gap-1.5">
+                              {step.bullets.map((b) => (
+                                <li key={b} className="flex items-start gap-2">
+                                  <span className="text-[10px] mt-0.5 shrink-0" style={{ color: step.accent }}>+</span>
+                                  <span className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>{b}</span>
+                                </li>
+                              ))}
+                            </ul>
+                            {i === 2 && (
+                              <div className="mt-4">
+                                <div className="flex justify-between text-[9px] mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                                  <span>Lock progress</span>
+                                  <span>{Math.round(lockProgress)}%</span>
+                                </div>
+                                <div className="relative h-2.5 rounded-full overflow-hidden"
+                                  style={{ background: "rgba(255,255,255,0.07)", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4)" }}>
+                                  <div className="absolute inset-y-0 left-0 rounded-full"
+                                    style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 70%, rgba(255,255,255,0.55) 100%)`, boxShadow: `0 0 10px 2px ${PURPLE_BRIGHT}77` }} />
+                                  <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none"
+                                    style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.16), transparent)" }} />
+                                </div>
                               </div>
-                              <div className="relative h-2.5 rounded-full overflow-hidden"
-                                style={{ background: "rgba(255,255,255,0.07)", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4)" }}>
-                                <div className="absolute inset-y-0 left-0 rounded-full"
-                                  style={{ width: `${lockProgress}%`, background: `linear-gradient(90deg, ${PURPLE} 0%, ${PURPLE_BRIGHT} 70%, rgba(255,255,255,0.55) 100%)`, boxShadow: `0 0 10px 2px ${PURPLE_BRIGHT}77` }} />
-                                <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full pointer-events-none"
-                                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.16), transparent)" }} />
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                            )}
+                          </div>
+                        </Reveal>
                       </div>
 
-                      {/* Centre node */}
+                      {/* Centre node — always col 2 */}
                       <div
-                        className="flex flex-col items-center justify-start pt-4"
-                        style={{ gridColumn: 2, zIndex: 2 }}
+                        className="flex flex-col items-center justify-start pt-5"
+                        style={{ gridColumn: 2, gridRow: 1, zIndex: 2 }}
                       >
-                        {/* Dot */}
                         <div
                           className="w-3.5 h-3.5 rounded-full shrink-0"
-                          style={{
-                            background: step.accent,
-                            boxShadow: `0 0 14px 4px ${step.accent}77`,
-                          }}
+                          style={{ background: step.accent, boxShadow: `0 0 14px 4px ${step.accent}77` }}
                         />
-                        {/* Speed-line streaks */}
-                        <div className="flex gap-[3px] mt-1" aria-hidden>
+                        <div className="flex gap-[3px] mt-1.5" aria-hidden>
                           {[10, 16, 12, 8, 6].map((h, j) => (
-                            <div
-                              key={j}
-                              className="rounded-full"
-                              style={{
-                                width: 1,
-                                height: h,
-                                background: `${step.accent}${["cc","99","77","55","33"][j]}`,
-                              }}
-                            />
+                            <div key={j} className="rounded-full"
+                              style={{ width: 1, height: h, background: `${step.accent}${["cc","99","77","55","33"][j]}` }} />
                           ))}
                         </div>
                       </div>
 
-                      {/* Right spacer */}
-                      <div style={{ gridColumn: isLeft ? 3 : 1 }} />
+                      {/* Spacer — opposite column */}
+                      <div style={{ gridColumn: isLeft ? 3 : 1, gridRow: 1 }} />
                     </div>
-                  </Reveal>
+                  </div>
                 );
               })}
             </div>
