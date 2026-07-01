@@ -581,23 +581,26 @@ function LandingHero({ portfolio }: { portfolio: PortfolioToken[] }) {
     };
   }, []);
 
-  // Scatter positions — evenly spread across all edges, avoiding the centre
+  // Scatter positions — most clustered around centre, a few at edges
+  // Use vw/vh-safe values so they stay visible on mobile
   const positions = [
-    { top: "8%",  left: "3%"  },
-    { top: "18%", left: "10%" },
-    { top: "32%", left: "2%"  },
-    { top: "52%", left: "5%"  },
-    { top: "68%", left: "11%" },
-    { top: "80%", left: "4%"  },
-    { top: "6%",  right: "4%" },
-    { top: "20%", right: "9%" },
-    { top: "36%", right: "2%" },
-    { top: "54%", right: "6%" },
-    { top: "70%", right: "10%"},
-    { top: "84%", right: "3%" },
-    { top: "90%", left: "30%" },
-    { top: "88%", right: "30%"},
-    { top: "5%",  left: "40%" },
+    // Tight around the heading
+    { top: "32%", left:  "12%" },
+    { top: "28%", right: "12%" },
+    { top: "55%", left:  "14%" },
+    { top: "58%", right: "13%" },
+    { top: "38%", left:  "22%" },
+    { top: "42%", right: "20%" },
+    { top: "22%", left:  "30%" },
+    { top: "72%", left:  "28%" },
+    { top: "70%", right: "26%" },
+    { top: "20%", right: "28%" },
+    // A few wider out
+    { top: "35%", left:  "4%"  },
+    { top: "50%", right: "4%"  },
+    { top: "80%", left:  "18%" },
+    { top: "82%", right: "16%" },
+    { top: "12%", left:  "44%" },
   ] as const;
 
   // Take up to 15 tokens with logos, deduplicated
@@ -614,15 +617,9 @@ function LandingHero({ portfolio }: { portfolio: PortfolioToken[] }) {
     <section
       id="top"
       className="relative w-full flex flex-col items-center justify-center overflow-hidden"
-      style={{ height: "100dvh", backgroundColor: "#060310" }}
+      style={{ height: "100dvh", backgroundColor: BG }}
     >
-      {/* ── Radial gradient glows ── */}
-      <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse 65% 55% at 50% 38%, rgba(122,45,255,0.28) 0%, transparent 70%)" }} />
-      <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse 40% 35% at 18% 70%, rgba(181,76,255,0.14) 0%, transparent 65%)" }} />
-      <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse 35% 30% at 84% 25%, rgba(100,20,200,0.18) 0%, transparent 60%)" }} />
+      {/* no background decorations — plain site colour */}
 
       {/* ── Scattered token logos — 30% blur, move opposite for depth ── */}
       {logoTokens.map((t, i) => {
