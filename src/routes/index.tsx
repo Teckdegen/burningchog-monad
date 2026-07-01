@@ -74,6 +74,7 @@ const SECTIONS = [
   { id: "how-it-works", title: "How It Works", short: "How" },
   { id: "trading-desk", title: "Trading Desk", short: "Desk" },
   { id: "contests", title: "Contests & Collabs", short: "Contests" },
+  { id: "staking", title: "Staking", short: "Staking", soon: true },
   { id: "coming-soon", title: "Coming Soon", short: "Soon", soon: true },
 ];
 
@@ -857,7 +858,7 @@ function SectionBlock({
       id={section.id}
       className="relative w-full overflow-hidden"
       style={{
-        minHeight: section.id === "coming-soon" ? undefined : "70vh",
+        minHeight: section.id === "coming-soon" || section.id === "staking" ? undefined : "70vh",
         backgroundColor: sectionBg,
         color: "white",
         borderTop: `1px solid ${sectionBorder}`,
@@ -865,7 +866,7 @@ function SectionBlock({
     >
       <div className="absolute inset-0 bchog-grid-bg opacity-20 pointer-events-none" />
       <div
-        className={`relative px-4 sm:px-8 lg:px-16 w-full max-w-6xl mx-auto ${section.id === "coming-soon" ? "pt-10 sm:pt-12 pb-6" : "pt-16 sm:pt-20 pb-14"}`}
+        className={`relative px-4 sm:px-8 lg:px-16 w-full max-w-6xl mx-auto ${section.id === "coming-soon" || section.id === "staking" ? "pt-10 sm:pt-12 pb-6" : "pt-16 sm:pt-20 pb-14"}`}
         style={{ zIndex: 2 }}
       >
         <div className="mb-7 sm:mb-8">
@@ -2595,6 +2596,9 @@ function SectionMock({
   if (id === "contests") {
     return <ContestsCollabs />;
   }
+  if (id === "staking") {
+    return <StakingComingSoon />;
+  }
   if (id === "coming-soon") {
     return <ComingSoonBlock />;
   }
@@ -2760,6 +2764,94 @@ function ContestsCollabs() {
               </a>
             </div>
           )}
+
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
+function StakingComingSoon() {
+  return (
+    <Reveal>
+      <div
+        className="rounded-3xl overflow-hidden"
+        style={{
+          position: "relative",
+          border: "1px solid rgba(181,76,255,0.30)",
+          boxShadow: "0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03)",
+        }}
+      >
+        {/* flames background */}
+        <img src="/flames.jpg" alt="" aria-hidden draggable={false}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: 0.30 }} />
+        <div aria-hidden style={{ position: "absolute", inset: 0, background: "rgba(8,2,20,0.76)" }} />
+
+        {/* Purple glow top-centre */}
+        <div aria-hidden style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: "60%", height: "1px", background: "linear-gradient(to right, transparent, rgba(181,76,255,0.8), transparent)" }} />
+
+        <div className="relative flex flex-col items-center text-center px-6 sm:px-12 py-14 sm:py-20" style={{ zIndex: 1 }}>
+
+          {/* Icon */}
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
+            style={{
+              background: "rgba(181,76,255,0.12)",
+              border: "1px solid rgba(181,76,255,0.35)",
+              boxShadow: "0 0 32px rgba(181,76,255,0.25), inset 0 1px 0 rgba(255,255,255,0.15)",
+            }}>
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke={PURPLE_BRIGHT} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
+
+          {/* Coming soon badge */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full mb-5"
+            style={{ background: "rgba(181,76,255,0.12)", border: "1px solid rgba(181,76,255,0.28)" }}>
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: PURPLE_BRIGHT }} />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: PURPLE_BRIGHT }}>Coming Soon</span>
+          </div>
+
+          {/* Heading */}
+          <h2 className="text-white m-0 mb-4"
+            style={{ fontFamily: "'Anton', sans-serif", fontSize: "clamp(2rem,6vw,3.5rem)", letterSpacing: "-0.01em", lineHeight: 1.05,
+              textShadow: "0 0 60px rgba(181,76,255,0.4)" }}>
+            BCHOG Staking
+          </h2>
+
+          {/* Description */}
+          <p className="max-w-lg mb-8" style={{ fontSize: "clamp(0.9rem,2vw,1.05rem)", color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>
+            Lock your BCHOG, earn rewards. Staking is coming — holders who lock the most, earn the most. The flywheel gets stronger with every stake.
+          </p>
+
+          {/* Feature pills */}
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
+            {[
+              { icon: "🔒", label: "Lock & Earn" },
+              { icon: "♻️", label: "Flywheel Rewards" },
+              { icon: "📈", label: "APY Boosted" },
+              { icon: "🔥", label: "Deflationary" },
+            ].map((f) => (
+              <div key={f.label} className="flex items-center gap-2 px-4 py-2 rounded-xl"
+                style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+                <span style={{ fontSize: 14 }}>{f.icon}</span>
+                <span className="text-[12px] font-semibold text-white">{f.label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Notify CTA */}
+          <a href={SOCIALS.x} target="_blank" rel="noreferrer"
+            className="no-underline flex items-center gap-2.5 px-6 py-3 rounded-full font-bold transition-all hover:scale-[1.04]"
+            style={{ background: PURPLE_BRIGHT, color: "white", fontSize: "clamp(0.85rem,2vw,1rem)",
+              boxShadow: `0 0 28px rgba(181,76,255,0.55), 0 4px 16px rgba(0,0,0,0.4)` }}>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="white" aria-hidden>
+              <path d="M18.244 2H21.5l-7.5 8.57L23 22h-6.875l-5.38-7.03L4.6 22H1.34l8.02-9.165L1 2h7.05l4.86 6.43L18.244 2Z" />
+            </svg>
+            Get Notified on X
+          </a>
 
         </div>
       </div>
