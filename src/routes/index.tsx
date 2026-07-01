@@ -424,7 +424,7 @@ function Index() {
 
       <SiteHeader menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrollToId={scrollToId} />
 
-      <LandingHero />
+      <LandingHero portfolio={portfolio} />
 
       {SECTIONS.map((s) => (
         <SectionBlock
@@ -552,7 +552,7 @@ function SiteHeader({
   );
 }
 
-function LandingHero() {
+function LandingHero({ portfolio }: { portfolio: PortfolioToken[] }) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -581,14 +581,32 @@ function LandingHero() {
     };
   }, []);
 
-  // Floating stat chips scattered around the edges
-  const chips = [
-    { label: "Treasury",   sub: "Ecosystem Engine", top: "22%", left:  "6%"  },
-    { label: "Lock Vault", sub: "1M Target",         top: "40%", left:  "4%"  },
-    { label: "Burned",     sub: "↑ Supply Cut",      top: "24%", right: "5%"  },
-    { label: "Rewards",    sub: "Community",         top: "56%", right: "6%"  },
-    { label: "Trading",    sub: "Market Support",    top: "68%", left:  "7%"  },
+  // Scatter positions — evenly spread across all edges, avoiding the centre
+  const positions = [
+    { top: "8%",  left: "3%"  },
+    { top: "18%", left: "10%" },
+    { top: "32%", left: "2%"  },
+    { top: "52%", left: "5%"  },
+    { top: "68%", left: "11%" },
+    { top: "80%", left: "4%"  },
+    { top: "6%",  right: "4%" },
+    { top: "20%", right: "9%" },
+    { top: "36%", right: "2%" },
+    { top: "54%", right: "6%" },
+    { top: "70%", right: "10%"},
+    { top: "84%", right: "3%" },
+    { top: "90%", left: "30%" },
+    { top: "88%", right: "30%"},
+    { top: "5%",  left: "40%" },
   ] as const;
+
+  // Take up to 15 tokens with logos, deduplicated
+  const logoTokens = portfolio
+    .filter((t) => !!t.iconUrl)
+    .slice(0, positions.length);
+
+  // Sizes cycle through a few values for visual variety
+  const sizes = [44, 36, 52, 40, 44, 36, 48, 40, 52, 36, 44, 40, 48, 36, 44];
 
   const B = 20;
 
@@ -606,30 +624,42 @@ function LandingHero() {
       <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
         background: "radial-gradient(ellipse 35% 30% at 84% 25%, rgba(100,20,200,0.18) 0%, transparent 60%)" }} />
 
-      {/* ── Floating chips — move opposite for parallax depth ── */}
-      {chips.map((c) => (
-        <div
-          key={c.label}
-          aria-hidden
-          style={{
-            position: "absolute",
-            top:   "top"   in c ? c.top   : undefined,
-            left:  "left"  in c ? (c as unknown as { left: string }).left   : undefined,
-            right: "right" in c ? (c as unknown as { right: string }).right : undefined,
-            transform: `translate(${-offset.x * 1.4}px, ${-offset.y * 1.4}px)`,
-            transition: "transform 0.12s linear",
-            zIndex: 1,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <div style={{ width: 5, height: 5, borderRadius: "50%", background: PURPLE_BRIGHT, boxShadow: `0 0 8px ${PURPLE_BRIGHT}` }} />
-            <div>
-              <p style={{ margin: 0, fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.70)", letterSpacing: "0.04em" }}>{c.label}</p>
-              <p style={{ margin: 0, fontSize: 9,  color: "rgba(255,255,255,0.28)", letterSpacing: "0.06em" }}>{c.sub}</p>
+      {/* ── Scattered token logos — 30% blur, move opposite for depth ── */}
+      {logoTokens.map((t, i) => {
+        const pos = positions[i];
+        const size = sizes[i % sizes.length];
+        return (
+          <div
+            key={t.address}
+            aria-hidden
+            style={{
+              position: "absolute",
+              top:   pos.top,
+              left:  "left"  in pos ? (pos as { left: string; top: string }).left   : undefined,
+              right: "right" in pos ? (pos as { right: string; top: string }).right : undefined,
+              transform: `translate(${-offset.x * 1.6}px, ${-offset.y * 1.6}px)`,
+              transition: "transform 0.12s linear",
+              zIndex: 1,
+            }}
+          >
+            <div style={{
+              width: size, height: size,
+              borderRadius: "50%",
+              overflow: "hidden",
+              filter: "blur(1.8px)",
+              opacity: 0.70,
+              border: "1px solid rgba(181,76,255,0.20)",
+            }}>
+              <img
+                src={t.iconUrl!}
+                alt=""
+                draggable={false}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* ── Centre content — floats with cursor ── */}
       <div
@@ -665,13 +695,23 @@ function LandingHero() {
             Burning Chog
           </h1>
 
-          <p className="mt-4 uppercase tracking-[0.24em]" style={{
-            color: "rgba(255,255,255,0.32)",
-            fontSize: "clamp(0.7rem,1.5vw,0.9rem)",
-            letterSpacing: "0.26em",
-          }}>
-            Built on Monad
-          </p>
+          {/* Built on Monad + logo */}
+          <div className="flex items-center justify-center gap-2 mt-4">
+            <img
+              src="https://pbs.twimg.com/profile_images/1967693862559698944/XTfCXXGa_400x400.jpg"
+              alt="Monad"
+              style={{ width: 16, height: 16, borderRadius: "50%", objectFit: "cover", opacity: 0.65 }}
+            />
+            <p style={{
+              margin: 0,
+              color: "rgba(255,255,255,0.32)",
+              fontSize: "clamp(0.7rem,1.5vw,0.9rem)",
+              letterSpacing: "0.26em",
+              textTransform: "uppercase",
+            }}>
+              Built on Monad
+            </p>
+          </div>
         </div>
       </div>
 
