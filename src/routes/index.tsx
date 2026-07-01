@@ -553,87 +553,130 @@ function SiteHeader({
 }
 
 function LandingHero() {
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    let rafId = 0;
+    let target = { x: 0, y: 0 };
+    let current = { x: 0, y: 0 };
+
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      // ±12px max drift
+      target.x = ((clientX - cx) / cx) * 12;
+      target.y = ((clientY - cy) / cy) * 8;
+    };
+
+    const tick = () => {
+      // Lerp towards target — slow, dreamy drift
+      current.x += (target.x - current.x) * 0.04;
+      current.y += (target.y - current.y) * 0.04;
+      setOffset({ x: parseFloat(current.x.toFixed(2)), y: parseFloat(current.y.toFixed(2)) });
+      rafId = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("touchmove", onMove, { passive: true });
+    rafId = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  const floatStyle: React.CSSProperties = {
+    transform: `translate(${offset.x}px, ${offset.y}px)`,
+    transition: "transform 0.1s linear",
+    willChange: "transform",
+  };
+
+  // Corner bracket size
+  const B = 22;
+
   return (
     <section
       id="top"
-      className="relative w-full flex flex-col items-center justify-center"
-      style={{
-        height: "100dvh",
-        backgroundColor: BG,
-      }}
+      className="relative w-full flex flex-col items-center justify-center overflow-hidden"
+      style={{ height: "100dvh", backgroundColor: BG }}
     >
-      {/* blurred flames background */}
+      {/* blurred flames background — moves opposite direction for depth */}
       <img
         src="/flames.jpg"
         alt=""
         aria-hidden
         draggable={false}
         style={{
-          position: "absolute", inset: 0,
-          width: "100%", height: "100%",
+          position: "absolute", inset: "-20px",
+          width: "calc(100% + 40px)", height: "calc(100% + 40px)",
           objectFit: "cover", objectPosition: "center",
           filter: "blur(12px)",
-          transform: "scale(1.08)",
           opacity: 0.5,
+          transform: `translate(${-offset.x * 0.5}px, ${-offset.y * 0.5}px)`,
+          transition: "transform 0.1s linear",
         }}
       />
-      {/* Dark overlay so text pops */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(to bottom, rgba(10,4,28,0.50) 0%, rgba(10,4,28,0.40) 40%, rgba(10,4,28,0.75) 100%)",
-        }}
-      />
+      {/* overlay */}
+      <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(10,4,28,0.50) 0%, rgba(10,4,28,0.38) 40%, rgba(10,4,28,0.78) 100%)" }} />
 
-      {/* Content */}
+      {/* Main content — floats with cursor */}
       <div
-        className="relative flex flex-col items-center justify-center text-center w-full h-full px-6"
-        style={{ zIndex: 2 }}
+        className="relative flex flex-col items-center justify-center text-center w-full px-8 sm:px-16"
+        style={{ zIndex: 2, ...floatStyle }}
       >
-        <h1
-          className="text-white m-0"
-          style={{
-            fontFamily: "'Anton', sans-serif",
-            fontSize: "clamp(2.8rem, 10vw, 7rem)",
-            letterSpacing: "-0.02em",
-            lineHeight: 1.05,
-            maxWidth: "16ch",
-            textShadow: "0 2px 32px rgba(0,0,0,0.5)",
-          }}
-        >
-          Always less,{" "}
-          <span style={{ color: PURPLE_BRIGHT }}>always more</span>
-        </h1>
+        {/* Corner brackets around the text block */}
+        <div className="relative inline-block" style={{ padding: "clamp(28px, 5vw, 52px) clamp(24px, 6vw, 60px)" }}>
 
-        <p
-          className="mt-5 uppercase tracking-[0.22em]"
-          style={{ color: "rgba(255,255,255,0.55)", fontStyle: "italic", fontSize: "clamp(1rem, 2.8vw, 1.5rem)" }}
-        >
-          For those who get it
-        </p>
+          {/* Top-left */}
+          <svg aria-hidden style={{ position: "absolute", top: 0, left: 0, width: B, height: B }} viewBox="0 0 22 22">
+            <path d="M1 21 L1 1 L21 1" fill="none" stroke="rgba(181,76,255,0.55)" strokeWidth="1.5" />
+          </svg>
+          {/* Top-right */}
+          <svg aria-hidden style={{ position: "absolute", top: 0, right: 0, width: B, height: B }} viewBox="0 0 22 22">
+            <path d="M1 1 L21 1 L21 21" fill="none" stroke="rgba(181,76,255,0.55)" strokeWidth="1.5" />
+          </svg>
+          {/* Bottom-left */}
+          <svg aria-hidden style={{ position: "absolute", bottom: 0, left: 0, width: B, height: B }} viewBox="0 0 22 22">
+            <path d="M1 1 L1 21 L21 21" fill="none" stroke="rgba(181,76,255,0.55)" strokeWidth="1.5" />
+          </svg>
+          {/* Bottom-right */}
+          <svg aria-hidden style={{ position: "absolute", bottom: 0, right: 0, width: B, height: B }} viewBox="0 0 22 22">
+            <path d="M21 1 L21 21 L1 21" fill="none" stroke="rgba(181,76,255,0.55)" strokeWidth="1.5" />
+          </svg>
+
+          {/* Headline */}
+          <h1
+            className="text-white m-0"
+            style={{
+              fontFamily: "'Anton', sans-serif",
+              fontSize: "clamp(2.6rem, 9vw, 7rem)",
+              letterSpacing: "-0.01em",
+              lineHeight: 1.05,
+              maxWidth: "18ch",
+              textShadow: "0 2px 40px rgba(0,0,0,0.55)",
+            }}
+          >
+            Always less,{" "}
+            <span style={{ color: PURPLE_BRIGHT }}>always more</span>
+          </h1>
+
+          {/* Tagline */}
+          <p
+            className="mt-4 uppercase tracking-[0.22em]"
+            style={{ color: "rgba(255,255,255,0.52)", fontStyle: "italic", fontSize: "clamp(0.85rem, 2vw, 1.2rem)" }}
+          >
+            For those who get it
+          </p>
+        </div>
       </div>
 
       {/* Scroll cue */}
-      <div
-        className="absolute bottom-8 inset-x-0 flex flex-col items-center gap-1.5 pointer-events-none"
-        aria-hidden
-        style={{ zIndex: 3 }}
-      >
-        <div
-          className="w-px h-7 rounded-full"
-          style={{ background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.4))" }}
-        />
-        <div
-          style={{
-            width: 0, height: 0,
-            borderLeft: "3px solid transparent",
-            borderRight: "3px solid transparent",
-            borderTop: "4px solid rgba(255,255,255,0.35)",
-          }}
-        />
+      <div className="absolute bottom-8 inset-x-0 flex flex-col items-center gap-1.5 pointer-events-none" aria-hidden style={{ zIndex: 3 }}>
+        <div className="w-px h-7 rounded-full" style={{ background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.35))" }} />
+        <div style={{ width: 0, height: 0, borderLeft: "3px solid transparent", borderRight: "3px solid transparent", borderTop: "4px solid rgba(255,255,255,0.30)" }} />
       </div>
     </section>
   );
