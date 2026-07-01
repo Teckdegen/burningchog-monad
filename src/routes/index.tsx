@@ -559,25 +559,18 @@ function LandingHero() {
     let rafId = 0;
     let target = { x: 0, y: 0 };
     let current = { x: 0, y: 0 };
-
     const onMove = (e: MouseEvent | TouchEvent) => {
-      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-      const cx = window.innerWidth / 2;
-      const cy = window.innerHeight / 2;
-      // ±12px max drift
-      target.x = ((clientX - cx) / cx) * 12;
-      target.y = ((clientY - cy) / cy) * 8;
+      const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
+      target.x = ((cx - window.innerWidth / 2) / window.innerWidth) * 18;
+      target.y = ((cy - window.innerHeight / 2) / window.innerHeight) * 12;
     };
-
     const tick = () => {
-      // Lerp towards target — slow, dreamy drift
-      current.x += (target.x - current.x) * 0.04;
-      current.y += (target.y - current.y) * 0.04;
-      setOffset({ x: parseFloat(current.x.toFixed(2)), y: parseFloat(current.y.toFixed(2)) });
+      current.x += (target.x - current.x) * 0.035;
+      current.y += (target.y - current.y) * 0.035;
+      setOffset({ x: +current.x.toFixed(2), y: +current.y.toFixed(2) });
       rafId = requestAnimationFrame(tick);
     };
-
     window.addEventListener("mousemove", onMove, { passive: true });
     window.addEventListener("touchmove", onMove, { passive: true });
     rafId = requestAnimationFrame(tick);
@@ -588,95 +581,104 @@ function LandingHero() {
     };
   }, []);
 
-  const floatStyle: React.CSSProperties = {
-    transform: `translate(${offset.x}px, ${offset.y}px)`,
-    transition: "transform 0.1s linear",
-    willChange: "transform",
-  };
+  // Floating stat chips scattered around the edges
+  const chips = [
+    { label: "Treasury",   sub: "Ecosystem Engine", top: "22%", left:  "6%"  },
+    { label: "Lock Vault", sub: "1M Target",         top: "40%", left:  "4%"  },
+    { label: "Burned",     sub: "↑ Supply Cut",      top: "24%", right: "5%"  },
+    { label: "Rewards",    sub: "Community",         top: "56%", right: "6%"  },
+    { label: "Trading",    sub: "Market Support",    top: "68%", left:  "7%"  },
+  ] as const;
 
-  // Corner bracket size
-  const B = 22;
+  const B = 20;
 
   return (
     <section
       id="top"
       className="relative w-full flex flex-col items-center justify-center overflow-hidden"
-      style={{ height: "100dvh", backgroundColor: BG }}
+      style={{ height: "100dvh", backgroundColor: "#060310" }}
     >
-      {/* blurred flames background — moves opposite direction for depth */}
-      <img
-        src="/flames.jpg"
-        alt=""
-        aria-hidden
-        draggable={false}
-        style={{
-          position: "absolute", inset: "-20px",
-          width: "calc(100% + 40px)", height: "calc(100% + 40px)",
-          objectFit: "cover", objectPosition: "center",
-          filter: "blur(12px)",
-          opacity: 0.5,
-          transform: `translate(${-offset.x * 0.5}px, ${-offset.y * 0.5}px)`,
-          transition: "transform 0.1s linear",
-        }}
-      />
-      {/* overlay */}
-      <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(10,4,28,0.50) 0%, rgba(10,4,28,0.38) 40%, rgba(10,4,28,0.78) 100%)" }} />
+      {/* ── Radial gradient glows ── */}
+      <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
+        background: "radial-gradient(ellipse 65% 55% at 50% 38%, rgba(122,45,255,0.28) 0%, transparent 70%)" }} />
+      <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
+        background: "radial-gradient(ellipse 40% 35% at 18% 70%, rgba(181,76,255,0.14) 0%, transparent 65%)" }} />
+      <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
+        background: "radial-gradient(ellipse 35% 30% at 84% 25%, rgba(100,20,200,0.18) 0%, transparent 60%)" }} />
 
-      {/* Main content — floats with cursor */}
+      {/* ── Floating chips — move opposite for parallax depth ── */}
+      {chips.map((c) => (
+        <div
+          key={c.label}
+          aria-hidden
+          style={{
+            position: "absolute",
+            top:   "top"   in c ? c.top   : undefined,
+            left:  "left"  in c ? (c as unknown as { left: string }).left   : undefined,
+            right: "right" in c ? (c as unknown as { right: string }).right : undefined,
+            transform: `translate(${-offset.x * 1.4}px, ${-offset.y * 1.4}px)`,
+            transition: "transform 0.12s linear",
+            zIndex: 1,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ width: 5, height: 5, borderRadius: "50%", background: PURPLE_BRIGHT, boxShadow: `0 0 8px ${PURPLE_BRIGHT}` }} />
+            <div>
+              <p style={{ margin: 0, fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.70)", letterSpacing: "0.04em" }}>{c.label}</p>
+              <p style={{ margin: 0, fontSize: 9,  color: "rgba(255,255,255,0.28)", letterSpacing: "0.06em" }}>{c.sub}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* ── Centre content — floats with cursor ── */}
       <div
-        className="relative flex flex-col items-center justify-center text-center w-full px-8 sm:px-16"
-        style={{ zIndex: 2, ...floatStyle }}
+        className="relative flex flex-col items-center justify-center text-center w-full px-6"
+        style={{
+          zIndex: 2,
+          transform: `translate(${offset.x}px, ${offset.y}px)`,
+          transition: "transform 0.12s linear",
+        }}
       >
-        {/* Corner brackets around the text block */}
-        <div className="relative inline-block" style={{ padding: "clamp(28px, 5vw, 52px) clamp(24px, 6vw, 60px)" }}>
-
-          {/* Top-left */}
-          <svg aria-hidden style={{ position: "absolute", top: 0, left: 0, width: B, height: B }} viewBox="0 0 22 22">
-            <path d="M1 21 L1 1 L21 1" fill="none" stroke="rgba(181,76,255,0.55)" strokeWidth="1.5" />
+        <div className="relative inline-block" style={{ padding: "clamp(24px,4vw,48px) clamp(20px,5vw,52px)" }}>
+          {/* Corner brackets */}
+          <svg aria-hidden style={{ position: "absolute", top: 0, left: 0, width: B, height: B }} viewBox="0 0 20 20">
+            <path d="M1 19 L1 1 L19 1" fill="none" stroke="rgba(181,76,255,0.45)" strokeWidth="1.5" />
           </svg>
-          {/* Top-right */}
-          <svg aria-hidden style={{ position: "absolute", top: 0, right: 0, width: B, height: B }} viewBox="0 0 22 22">
-            <path d="M1 1 L21 1 L21 21" fill="none" stroke="rgba(181,76,255,0.55)" strokeWidth="1.5" />
+          <svg aria-hidden style={{ position: "absolute", top: 0, right: 0, width: B, height: B }} viewBox="0 0 20 20">
+            <path d="M1 1 L19 1 L19 19" fill="none" stroke="rgba(181,76,255,0.45)" strokeWidth="1.5" />
           </svg>
-          {/* Bottom-left */}
-          <svg aria-hidden style={{ position: "absolute", bottom: 0, left: 0, width: B, height: B }} viewBox="0 0 22 22">
-            <path d="M1 1 L1 21 L21 21" fill="none" stroke="rgba(181,76,255,0.55)" strokeWidth="1.5" />
+          <svg aria-hidden style={{ position: "absolute", bottom: 0, left: 0, width: B, height: B }} viewBox="0 0 20 20">
+            <path d="M1 1 L1 19 L19 19" fill="none" stroke="rgba(181,76,255,0.45)" strokeWidth="1.5" />
           </svg>
-          {/* Bottom-right */}
-          <svg aria-hidden style={{ position: "absolute", bottom: 0, right: 0, width: B, height: B }} viewBox="0 0 22 22">
-            <path d="M21 1 L21 21 L1 21" fill="none" stroke="rgba(181,76,255,0.55)" strokeWidth="1.5" />
+          <svg aria-hidden style={{ position: "absolute", bottom: 0, right: 0, width: B, height: B }} viewBox="0 0 20 20">
+            <path d="M19 1 L19 19 L1 19" fill="none" stroke="rgba(181,76,255,0.45)" strokeWidth="1.5" />
           </svg>
 
-          {/* Headline */}
-          <h1
-            className="text-white m-0"
-            style={{
-              fontFamily: "'Anton', sans-serif",
-              fontSize: "clamp(2.6rem, 9vw, 7rem)",
-              letterSpacing: "-0.01em",
-              lineHeight: 1.05,
-              maxWidth: "18ch",
-              textShadow: "0 2px 40px rgba(0,0,0,0.55)",
-            }}
-          >
-            Always less,{" "}
-            <span style={{ color: PURPLE_BRIGHT }}>always more</span>
+          <h1 className="text-white m-0" style={{
+            fontFamily: "'Anton', sans-serif",
+            fontSize: "clamp(3rem, 11vw, 8.5rem)",
+            letterSpacing: "-0.01em",
+            lineHeight: 1.02,
+            textShadow: "0 0 80px rgba(181,76,255,0.35), 0 2px 40px rgba(0,0,0,0.6)",
+          }}>
+            Burning Chog
           </h1>
 
-          {/* Tagline */}
-          <p
-            className="mt-4 uppercase tracking-[0.22em]"
-            style={{ color: "rgba(255,255,255,0.52)", fontStyle: "italic", fontSize: "clamp(0.85rem, 2vw, 1.2rem)" }}
-          >
-            For those who get it
+          <p className="mt-4 uppercase tracking-[0.24em]" style={{
+            color: "rgba(255,255,255,0.32)",
+            fontSize: "clamp(0.7rem,1.5vw,0.9rem)",
+            letterSpacing: "0.26em",
+          }}>
+            Built on Monad
           </p>
         </div>
       </div>
 
       {/* Scroll cue */}
       <div className="absolute bottom-8 inset-x-0 flex flex-col items-center gap-1.5 pointer-events-none" aria-hidden style={{ zIndex: 3 }}>
-        <div className="w-px h-7 rounded-full" style={{ background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.35))" }} />
-        <div style={{ width: 0, height: 0, borderLeft: "3px solid transparent", borderRight: "3px solid transparent", borderTop: "4px solid rgba(255,255,255,0.30)" }} />
+        <div className="w-px h-7 rounded-full" style={{ background: `linear-gradient(to bottom, transparent, rgba(181,76,255,0.45))` }} />
+        <div style={{ width: 0, height: 0, borderLeft: "3px solid transparent", borderRight: "3px solid transparent", borderTop: `4px solid rgba(181,76,255,0.40)` }} />
       </div>
     </section>
   );
