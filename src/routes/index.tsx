@@ -71,11 +71,11 @@ const SECTION_SUBTITLES: Record<string, string> = {
 
 const SECTIONS = [
   { id: "dashboard", title: "Dashboard", short: "Dashboard" },
-  { id: "how-it-works", title: "How It Works", short: "How It Works" },
+  { id: "how-it-works", title: "How It Works", short: "How" },
   { id: "trading-desk", title: "Trading Desk", short: "Trading" },
   { id: "contests", title: "Contests & Collabs", short: "Contests" },
   { id: "staking", title: "Staking", short: "Staking" },
-  { id: "coming-soon", title: "Coming Soon", short: "Coming Soon" },
+  { id: "coming-soon", title: "Coming Soon", short: "Soon" },
 ];
 
 // Nav items shown in the header — Dashboard is reached via logo click, kept out of nav
@@ -476,13 +476,13 @@ function SiteHeader({
             <span className="text-sm font-semibold tracking-[0.16em] uppercase">BCHOG</span>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2" style={{ zIndex: 1 }}>
+          <nav className="hidden lg:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2" style={{ zIndex: 1 }}>
             {SECTIONS.filter(s => NAV_SECTIONS.includes(s.id)).map((s) => (
               <button
                 type="button"
                 key={s.id}
                 onClick={() => scrollToId(s.id)}
-                className="px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.08em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06] whitespace-nowrap"
+                className="px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06] whitespace-nowrap"
                 style={{ color: MUTED }}
               >
                 {s.short}
@@ -500,7 +500,7 @@ function SiteHeader({
             <Menu size={20} strokeWidth={1.75} />
           </button>
           {/* Spacer mirrors logo+text width to keep nav perfectly centered */}
-          <div className="hidden lg:block w-[100px] shrink-0" style={{ position: "relative", zIndex: 1 }} aria-hidden />
+          <div className="hidden lg:block w-[120px] shrink-0" style={{ position: "relative", zIndex: 1 }} aria-hidden />
         </header>
       </div>
 
