@@ -70,13 +70,16 @@ const SECTION_SUBTITLES: Record<string, string> = {
 };
 
 const SECTIONS = [
-  { id: "dashboard", title: "Dashboard", short: "Dash" },
+  { id: "dashboard", title: "Dashboard", short: "Dashboard" },
   { id: "how-it-works", title: "How It Works", short: "How It Works" },
   { id: "trading-desk", title: "Trading Desk", short: "Trading" },
   { id: "contests", title: "Contests & Collabs", short: "Contests" },
   { id: "staking", title: "Staking", short: "Staking" },
   { id: "coming-soon", title: "Coming Soon", short: "Coming Soon" },
 ];
+
+// Nav items shown in the header — Dashboard is reached via logo click, kept out of nav
+const NAV_SECTIONS = ["how-it-works", "trading-desk", "contests", "staking", "coming-soon"];
 
 const SOCIALS = {
   x: "https://x.com/BURNINGCHOG",
@@ -474,7 +477,7 @@ function SiteHeader({
           </a>
 
           <nav className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2" style={{ zIndex: 1 }}>
-            {SECTIONS.map((s) => (
+            {SECTIONS.filter(s => NAV_SECTIONS.includes(s.id)).map((s) => (
               <button
                 type="button"
                 key={s.id}
@@ -517,7 +520,7 @@ function SiteHeader({
             <X size={20} />
           </button>
           <nav className="flex flex-col gap-2 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            {SECTIONS.map((s, i) => (
+            {SECTIONS.filter(s => NAV_SECTIONS.includes(s.id)).map((s, i) => (
               <button
                 type="button"
                 key={s.id}
