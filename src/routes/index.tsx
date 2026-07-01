@@ -70,12 +70,12 @@ const SECTION_SUBTITLES: Record<string, string> = {
 };
 
 const SECTIONS = [
-  { id: "dashboard", title: "Dashboard", short: "Dashboard" },
-  { id: "how-it-works", title: "How It Works", short: "How" },
-  { id: "trading-desk", title: "Trading Desk", short: "Desk" },
+  { id: "dashboard", title: "Dashboard", short: "Dash" },
+  { id: "how-it-works", title: "How It Works", short: "How It Works" },
+  { id: "trading-desk", title: "Trading Desk", short: "Trading" },
   { id: "contests", title: "Contests & Collabs", short: "Contests" },
-  { id: "staking", title: "Staking", short: "Staking", soon: true },
-  { id: "coming-soon", title: "Coming Soon", short: "Soon", soon: true },
+  { id: "staking", title: "Staking", short: "Staking" },
+  { id: "coming-soon", title: "Coming Soon", short: "Coming Soon" },
 ];
 
 const SOCIALS = {
@@ -473,24 +473,16 @@ function SiteHeader({
             <span className="text-sm font-semibold tracking-[0.16em] uppercase">BCHOG</span>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-0.5 absolute left-1/2 -translate-x-1/2" style={{ zIndex: 1 }}>
+          <nav className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2" style={{ zIndex: 1 }}>
             {SECTIONS.map((s) => (
               <button
                 type="button"
                 key={s.id}
                 onClick={() => scrollToId(s.id)}
-                className="flex items-center px-3.5 py-1.5 text-[12px] font-semibold uppercase tracking-[0.1em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06]"
+                className="px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.08em] rounded-full transition-colors hover:text-white hover:bg-white/[0.06] whitespace-nowrap"
                 style={{ color: MUTED }}
               >
-                <span>{s.short}</span>
-                {s.soon && (
-                  <span
-                    className="ml-2 text-[9px] font-bold uppercase tracking-[0.1em] align-middle"
-                    style={{ color: CORAL }}
-                  >
-                    soon
-                  </span>
-                )}
+                {s.short}
               </button>
             ))}
           </nav>
@@ -539,11 +531,6 @@ function SiteHeader({
                   </span>
                   <span className="text-lg font-medium tracking-tight">{s.title}</span>
                 </div>
-                {s.soon && (
-                  <span className="text-[10px] font-medium uppercase tracking-[0.14em]" style={{ color: CREAM }}>
-                    Soon
-                  </span>
-                )}
               </button>
             ))}
           </nav>
@@ -2828,16 +2815,15 @@ function StakingComingSoon() {
           {/* Feature pills */}
           <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
             {[
-              { icon: "🔒", label: "Lock & Earn" },
-              { icon: "♻️", label: "Flywheel Rewards" },
-              { icon: "📈", label: "APY Boosted" },
-              { icon: "🔥", label: "Deflationary" },
-            ].map((f) => (
-              <div key={f.label} className="flex items-center gap-2 px-4 py-2 rounded-xl"
+              "Lock & Earn",
+              "Flywheel Rewards",
+              "APY Boosted",
+              "Deflationary",
+            ].map((label) => (
+              <div key={label} className="flex items-center px-4 py-2 rounded-xl"
                 style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)",
                   backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
-                <span style={{ fontSize: 14 }}>{f.icon}</span>
-                <span className="text-[12px] font-semibold text-white">{f.label}</span>
+                <span className="text-[12px] font-semibold text-white">{label}</span>
               </div>
             ))}
           </div>
